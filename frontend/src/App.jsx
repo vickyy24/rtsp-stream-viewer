@@ -10,17 +10,6 @@ import LayoutsPage from "./views/LayoutsPage.jsx";
 import LiveDashboard from "./views/LiveDashboard.jsx";
 import SettingsPage from "./views/SettingsPage.jsx";
 
-const pageTitles = {
-    live: "Live",
-    "single-camera": "Live camera",
-    cameras: "Cameras",
-    layouts: "Layouts",
-    archive: "Archive",
-    connections: "Connections",
-    settings: "Settings",
-    "add-camera": "Add camera",
-};
-
 function App() {
     const [activePage, setActivePage] = useState("live");
     const [selectedCameraId, setSelectedCameraId] = useState(null);
@@ -118,22 +107,15 @@ function App() {
     ]));
 
     return (
-        <div className="min-h-screen bg-[var(--color-app-background)] text-stone-900 lg:flex">
+        <div className="flex h-dvh min-h-0 overflow-hidden bg-[var(--color-app-background)] text-stone-900">
             <Sidebar activePage={activePage} onNavigate={setActivePage} />
-            <main className="min-w-0 flex-1 px-4 py-4 sm:px-6 lg:px-8" id="main-content">
-                <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4">
-                    <WorkspaceHeader
-                        onSearchChange={setSearch}
-                        searchValue={search}
-                        title={pageTitles[activePage]}
-                    />
-
-                    <div className="flex items-center gap-2 text-xs text-stone-400 sm:hidden">
-                        <span>Workspace</span>
-                        <span aria-hidden="true">/</span>
-                        <span className="font-medium text-stone-700">{pageTitles[activePage]}</span>
-                    </div>
-
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                <WorkspaceHeader
+                    onSearchChange={setSearch}
+                    searchValue={search}
+                />
+                <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 lg:px-8">
+                    <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4">
                     <div hidden={activePage !== "live" && activePage !== "single-camera"}>
                         {activePage === "single-camera" && (
                             <div className="mb-3 flex items-center justify-between">
@@ -206,8 +188,9 @@ function App() {
                         />
                     )}
                     {activePage === "settings" && <SettingsPage />}
-                </div>
-            </main>
+                    </div>
+                </main>
+            </div>
         </div>
     );
 }

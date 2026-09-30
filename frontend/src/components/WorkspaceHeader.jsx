@@ -12,11 +12,7 @@ function useClock() {
     return now;
 }
 
-export default function WorkspaceHeader({
-    onSearchChange,
-    searchValue,
-    title,
-}) {
+export default function WorkspaceHeader({ onSearchChange, searchValue }) {
     const now = useClock();
 
     async function toggleFullscreen() {
@@ -28,15 +24,8 @@ export default function WorkspaceHeader({
     }
 
     return (
-        <header className="flex flex-col gap-4 border-b border-stone-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 flex-1 items-center gap-4">
-                <div className="hidden min-w-0 sm:block">
-                    <p className="truncate text-xs text-stone-400">Workspace / {title}</p>
-                    <h1 className="mt-1 truncate text-lg font-semibold tracking-tight text-stone-900">
-                        {title}
-                    </h1>
-                </div>
-                <label className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-stone-200 bg-[var(--color-surface)] px-3 py-2 sm:max-w-sm">
+        <header className="sticky top-0 z-20 flex shrink-0 flex-col gap-3 border-b border-stone-200 bg-[var(--color-surface)] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 lg:px-8">
+            <label className="flex min-w-0 w-full items-center gap-2 rounded-lg border border-stone-200 bg-white/70 px-3 py-2 sm:max-w-sm">
                     <LuSearch aria-hidden="true" className="size-4 shrink-0 text-stone-400" />
                     <span className="sr-only">Search cameras</span>
                     <input
@@ -46,10 +35,9 @@ export default function WorkspaceHeader({
                         type="search"
                         value={searchValue}
                     />
-                </label>
-            </div>
+            </label>
 
-            <div className="flex items-center justify-between gap-4 sm:justify-end">
+            <div className="flex items-center justify-between gap-3 sm:justify-end sm:gap-4">
                 <div className="text-right">
                     <p className="text-[10px] text-stone-400">
                         {new Intl.DateTimeFormat(undefined, {
@@ -69,14 +57,14 @@ export default function WorkspaceHeader({
                 </div>
                 <span
                     aria-label="Notifications are not configured"
-                    className="flex size-9 items-center justify-center rounded-lg text-stone-400"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-lg text-stone-400"
                     title="Notifications are not configured"
                 >
                     <LuBell aria-hidden="true" className="size-[18px]" />
                 </span>
                 <button
                     aria-label="Toggle fullscreen"
-                    className="hidden size-9 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100 sm:flex"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100"
                     onClick={toggleFullscreen}
                     type="button"
                 >
@@ -84,7 +72,7 @@ export default function WorkspaceHeader({
                 </button>
                 <span
                     aria-label="Signal workspace"
-                    className="flex size-8 items-center justify-center rounded-full bg-[var(--color-clay-500)] text-xs font-semibold text-white"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-clay-500)] text-xs font-semibold text-white"
                 >
                     S
                 </span>

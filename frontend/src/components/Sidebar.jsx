@@ -6,67 +6,71 @@ import {
     LuNetwork,
     LuSettings,
 } from "react-icons/lu";
-import CameraIcon from "./CameraIcon.jsx";
+import SignalLogo from "./SignalLogo.jsx";
 
-const navigation = [
+const groups = [
     {
         label: "Workspace",
         items: [
-            { id: "live", label: "Live", icon: LuLayoutDashboard },
-            { id: "cameras", label: "Cameras", icon: LuCamera },
-            { id: "layouts", label: "Layouts", icon: LuLayoutGrid },
-            { id: "archive", label: "Archive", icon: LuArchive },
+            { id: "live", label: "Live", Icon: LuLayoutDashboard },
+            { id: "cameras", label: "Cameras", Icon: LuCamera },
+            { id: "layouts", label: "Layouts", Icon: LuLayoutGrid },
+            { id: "archive", label: "Archive", Icon: LuArchive },
         ],
     },
     {
         label: "System",
         items: [
-            { id: "connections", label: "Connections", icon: LuNetwork },
-            { id: "settings", label: "Settings", icon: LuSettings },
+            { id: "connections", label: "Connections", Icon: LuNetwork },
+            { id: "settings", label: "Settings", Icon: LuSettings },
         ],
     },
 ];
 
 export default function Sidebar({ activePage, onNavigate }) {
     return (
-        <aside className="flex w-full shrink-0 flex-col border-b border-stone-200 bg-[var(--color-surface)] px-4 py-4 lg:min-h-screen lg:w-56 lg:border-b-0 lg:border-r lg:px-4 lg:py-6">
-            <a className="flex items-center gap-3 px-1" href="#main-content" aria-label="Signal home">
-                <span className="flex size-10 items-center justify-center rounded-xl bg-[var(--color-forest-800)] text-white shadow-sm">
-                    <CameraIcon className="size-5" />
+        <aside className="sticky top-0 flex h-dvh w-14 shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-1.5 py-3 sm:w-16 sm:px-2 md:w-36 md:px-3 md:py-5">
+            <button
+                aria-label="Signal live dashboard"
+                className="mb-5 flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)] md:mb-8 md:justify-start"
+                onClick={() => onNavigate("live")}
+                title="Signal live dashboard"
+                type="button"
+            >
+                <SignalLogo className="size-7 shrink-0" />
+                <span className="hidden min-w-0 text-left md:block">
+                    <span className="block whitespace-nowrap text-[11px] font-bold tracking-[0.28em] text-stone-900">SIGNAL</span>
+                    <span className="mt-0.5 block whitespace-nowrap text-[6px] font-medium tracking-wide text-stone-500">RTSP STREAM VIEWER</span>
                 </span>
-                <span className="min-w-0">
-                    <span className="block text-sm font-bold tracking-[0.22em] text-stone-900">
-                        SIGNAL
-                    </span>
-                    <span className="block text-[10px] uppercase tracking-wide text-stone-500">
-                        RTSP stream viewer
-                    </span>
-                </span>
-            </a>
+            </button>
 
-            <nav aria-label="Main navigation" className="mt-6 flex gap-5 overflow-x-auto lg:mt-9 lg:flex-1 lg:flex-col lg:gap-6">
-                {navigation.map((group) => (
-                    <div className="shrink-0 lg:w-full" key={group.label}>
-                        <p className="mb-2 hidden px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-400 lg:block">
+            <nav aria-label="Main navigation" className="flex flex-col gap-4 md:gap-6">
+                {groups.map((group, groupIndex) => (
+                    <div
+                        className={groupIndex > 0 ? "border-t border-stone-200 pt-4 md:pt-5" : ""}
+                        key={group.label}
+                    >
+                        <p className="mb-2 hidden px-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-stone-400 md:block">
                             {group.label}
                         </p>
-                        <div className="flex gap-1 lg:flex-col">
-                            {group.items.map(({ id, label, icon: Icon }) => {
-                                const active = activePage === id
+                        <div className="flex flex-col gap-1">
+                            {group.items.map(({ id, label, Icon }) => {
+                                const selected = id === activePage
                                     || (id === "live" && activePage === "single-camera");
                                 return (
                                     <button
-                                        aria-current={active ? "page" : undefined}
-                                        className={`flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition lg:w-full ${active
-                                            ? "bg-[var(--color-forest-100)] text-[var(--color-forest-700)]"
-                                            : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"
+                                        aria-current={selected ? "page" : undefined}
+                                        className={`flex min-h-10 items-center justify-center gap-2 rounded-lg px-2 text-xs transition-colors md:justify-start ${selected
+                                            ? "bg-[var(--color-clay-50)] font-semibold text-[var(--color-clay-700)]"
+                                            : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
                                             }`}
                                         key={id}
                                         onClick={() => onNavigate(id)}
+                                        title={label}
                                         type="button"
                                     >
                                         <Icon aria-hidden="true" className="size-[18px] shrink-0" />
-                                        {label}
+                                        <span className="sr-only md:not-sr-only">{label}</span>
                                     </button>
                                 );
                             })}
@@ -75,14 +79,14 @@ export default function Sidebar({ activePage, onNavigate }) {
                 ))}
             </nav>
 
-            <div className="mt-5 hidden rounded-xl border border-stone-200 bg-stone-50 p-3 lg:block">
-                <div className="flex items-center gap-2 text-xs font-semibold text-stone-700">
-                    <span className="size-2 rounded-full bg-[var(--color-olive-500)]" />
-                    Local workspace
+            <div className="mt-auto hidden border-t border-stone-200 pt-4 md:block">
+                <div className="flex items-center gap-2">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-clay-500)] text-xs font-semibold text-white">S</span>
+                    <span className="min-w-0">
+                        <span className="block truncate text-[11px] font-semibold text-stone-800">Signal</span>
+                        <span className="block truncate text-[10px] text-stone-500">Stream workspace</span>
+                    </span>
                 </div>
-                <p className="mt-1.5 text-xs leading-5 text-stone-500">
-                    Camera list is kept in this browser session.
-                </p>
             </div>
         </aside>
     );

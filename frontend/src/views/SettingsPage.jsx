@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { LuSettings, LuShieldCheck, LuVideo } from "react-icons/lu";
 import PageHeading from "../components/PageHeading.jsx";
 
@@ -14,6 +15,7 @@ function SettingRow({ label, value, detail }) {
 }
 
 export default function SettingsPage() {
+    const [activeSection, setActiveSection] = useState("general-settings");
     const endpoint = import.meta.env.VITE_STREAM_WS_URL || "Local default (port 8000)";
 
     return (
@@ -25,22 +27,26 @@ export default function SettingsPage() {
             <div className="grid gap-4 xl:grid-cols-[13rem_minmax(0,1fr)]">
                 <nav aria-label="Settings categories" className="flex gap-2 overflow-x-auto xl:flex-col">
                     {[
-                        ["General", "#general-settings", LuSettings],
-                        ["Stream", "#stream-settings", LuVideo],
-                        ["Access", "#access-settings", LuShieldCheck],
-                    ].map(([label, target, Icon], index) => (
-                        <a
-                            aria-current={index === 0 ? "location" : undefined}
-                            className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-left text-xs font-medium ${index === 0
+                        ["General", "general-settings", LuSettings],
+                        ["Stream", "stream-settings", LuVideo],
+                        ["Access", "access-settings", LuShieldCheck],
+                    ].map(([label, target, Icon]) => (
+                        <button
+                            aria-pressed={activeSection === target}
+                            className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-left text-xs font-medium ${activeSection === target
                                 ? "bg-[var(--color-forest-100)] text-[var(--color-forest-800)]"
                                 : "text-stone-500 hover:bg-stone-100"
                                 }`}
-                            href={target}
                             key={label}
+                            onClick={() => {
+                                setActiveSection(target);
+                                document.getElementById(target)?.scrollIntoView({ block: "start", behavior: "smooth" });
+                            }}
+                            type="button"
                         >
                             <Icon aria-hidden="true" className="size-4" />
                             {label}
-                        </a>
+                        </button>
                     ))}
                 </nav>
                 <div className="flex flex-col gap-4">

@@ -16,6 +16,9 @@ if not SECRET_KEY:
     if not DEBUG:
         raise RuntimeError("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
     SECRET_KEY = "development-only-insecure-key"
+STREAM_ACCESS_KEY = os.environ.get("STREAM_ACCESS_KEY", "")
+if not DEBUG and not STREAM_ACCESS_KEY:
+    raise RuntimeError("STREAM_ACCESS_KEY must be set when DJANGO_DEBUG is false.")
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
@@ -32,6 +35,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "channels",
     "corsheaders",
+    "streams.apps.StreamsConfig",
 ]
 
 MIDDLEWARE = [
@@ -98,7 +102,19 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = os.environ.get(
+    "DJANGO_SECURE_SSL_REDIRECT", "false"
+).lower() == "true"
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 CHANNEL_LAYERS = {
     "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
 }
+
+FFMPEG_BINARY = os.environ.get("FFMPEG_BINARY", "ffmpeg")
+RTSP_MAX_CONCURRENT_STREAMS = max(
+    1,
+    int(os.environ.get("RTSP_MAX_CONCURRENT_STREAMS", "4")),
+)

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 function CameraIcon({ className = "size-5" }) {
     return (
@@ -107,20 +107,140 @@ function Sidebar() {
     );
 }
 
-function StreamCard({ stream, index }) {
+function StreamCard({ stream, index, onStatusChange, onRetry, onToggle, onRemove }) {
+    const [status, setStatus] = useState(stream.playing ? "connecting" : "paused");
+    const [frameUrl, setFrameUrl] = useState("");
+    const [message, setMessage] = useState("");
+
+    useEffect(() => {
+        if (!stream.playing) {
+            setStatus("paused");
+            setMessage("");
+            return undefined;
+        }
+
+        let currentFrameUrl = "";
+        let closeRequested = false;
+        let errorReported = false;
+        let keepAliveInterval;
+        const configuredUrl = import.meta.env.VITE_STREAM_WS_URL;
+        const socketUrl = configuredUrl || `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.hostname}:8000/ws/streams/`;
+        const socket = new WebSocket(socketUrl);
+        socket.binaryType = "blob";
+        setStatus("connecting");
+        setMessage("");
+        onStatusChange(stream.id, "connecting");
+
+        socket.onopen = () => {
+            if (closeRequested) return;
+            socket.send(JSON.stringify({ type: "authenticate", key: stream.accessKey }));
+            keepAliveInterval = window.setInterval(() => {
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ type: "ping" }));
+                }
+            }, 5 * 60 * 1000);
+        };
+        socket.onmessage = (event) => {
+            if (closeRequested) return;
+            if (typeof event.data !== "string") {
+                const nextUrl = URL.createObjectURL(event.data);
+                if (currentFrameUrl) URL.revokeObjectURL(currentFrameUrl);
+                currentFrameUrl = nextUrl;
+                setFrameUrl(nextUrl);
+                return;
+            }
+
+            let payload;
+            try {
+                payload = JSON.parse(event.data);
+            } catch {
+                return;
+            }
+            if (payload.type === "status") {
+                setStatus(payload.status);
+                onStatusChange(stream.id, payload.status);
+            } else if (payload.type === "authenticated") {
+                socket.send(JSON.stringify({ type: "start", url: stream.url }));
+            } else if (payload.type === "error") {
+                errorReported = true;
+                window.clearInterval(keepAliveInterval);
+                setStatus("error");
+                setMessage(payload.message || "The camera could not be reached.");
+                onStatusChange(stream.id, "error");
+            }
+        };
+        socket.onerror = () => {
+            if (closeRequested) return;
+            errorReported = true;
+            window.clearInterval(keepAliveInterval);
+            setStatus("error");
+            setMessage("Could not reach the stream service. Check that the backend is running.");
+            onStatusChange(stream.id, "error");
+        };
+        socket.onclose = () => {
+            window.clearInterval(keepAliveInterval);
+            if (currentFrameUrl) URL.revokeObjectURL(currentFrameUrl);
+            if (!closeRequested && !errorReported) {
+                setStatus("error");
+                setMessage("The connection to the camera service was closed.");
+                onStatusChange(stream.id, "error");
+            }
+        };
+
+        return () => {
+            closeRequested = true;
+            window.clearInterval(keepAliveInterval);
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: "stop" }));
+            }
+            socket.close();
+            if (currentFrameUrl) URL.revokeObjectURL(currentFrameUrl);
+            setFrameUrl("");
+        };
+    }, [stream.accessKey, stream.id, stream.playing, stream.retryCount, stream.url, onStatusChange]);
+
+    const statusLabel = {
+        connecting: "Connecting",
+        live: "Live",
+        error: "Connection issue",
+        paused: "Paused",
+        stopped: "Paused",
+    }[status] || "Connecting";
+
     return (
         <article className="overflow-hidden rounded-2xl border border-stone-200 bg-paper shadow-sm shadow-stone-200/50">
             <div className="camera-preview relative flex aspect-video items-center justify-center bg-stone-100">
-                <div className="flex flex-col items-center text-stone-400">
-                    <CameraIcon className="size-8" />
-                    <span className="mt-3 text-xs font-medium">Waiting for connection</span>
-                </div>
+                {frameUrl && status === "live" ? (
+                    <img
+                        alt={`Live feed from camera ${index + 1}`}
+                        className="size-full object-contain"
+                        src={frameUrl}
+                    />
+                ) : (
+                    <div className="flex max-w-sm flex-col items-center px-5 text-center text-stone-400">
+                        <CameraIcon className="size-8" />
+                        <span className="mt-3 max-w-xs text-xs font-medium leading-5">
+                            {message || (status === "connecting" ? "Connecting to camera…" : status === "error" ? "Camera connection failed" : "Camera paused")}
+                        </span>
+                        {status === "error" && (
+                            <button
+                                className="mt-3 text-xs font-semibold text-forest-700 hover:text-forest-900"
+                                onClick={onRetry}
+                                type="button"
+                            >
+                                Retry connection
+                            </button>
+                        )}
+                    </div>
+                )}
                 <span className="absolute left-3 top-3 rounded-full border border-white/80 bg-paper/90 px-2.5 py-1 text-[11px] font-semibold text-stone-600 shadow-sm">
                     CAMERA {String(index + 1).padStart(2, "0")}
                 </span>
                 <span className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-stone-200 bg-paper/90 px-2.5 py-1 text-[11px] font-medium text-stone-500 shadow-sm">
-                    <span className="size-1.5 rounded-full bg-stone-400" />
-                    Not connected
+                    <span
+                        className={`size-1.5 rounded-full ${status === "live" ? "bg-olive-500" : status === "error" ? "bg-rose-500" : "bg-stone-400"}`}
+                    />
+                    {statusLabel}
                 </span>
             </div>
             <div className="flex items-center justify-between gap-4 px-4 py-3.5">
@@ -128,16 +248,34 @@ function StreamCard({ stream, index }) {
                     <h3 className="truncate text-sm font-semibold text-stone-800">Camera {index + 1}</h3>
                     <p className="mt-0.5 truncate text-xs text-stone-400">{stream.host}</p>
                 </div>
-                <button
-                    aria-label={`Remove camera ${index + 1}`}
-                    className="flex size-9 shrink-0 items-center justify-center rounded-lg text-stone-400 transition hover:bg-rose-50 hover:text-rose-600"
-                    onClick={stream.onRemove}
-                    type="button"
-                >
-                    <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 7h14M10 11v6m4-6v6M6.5 7l.8 12h9.4l.8-12M9 7V4.75h6V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                </button>
+                <div className="flex shrink-0 items-center gap-1">
+                    <button
+                        aria-label={`${stream.playing ? "Pause" : "Play"} camera ${index + 1}`}
+                        className="flex size-9 items-center justify-center rounded-lg text-stone-500 transition hover:bg-forest-50 hover:text-forest-700"
+                        onClick={onToggle}
+                        type="button"
+                    >
+                        {stream.playing ? (
+                            <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 5h4v14H7zm6 0h4v14h-4z" />
+                            </svg>
+                        ) : (
+                            <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 4.8v14.4a.8.8 0 0 0 1.2.7l11-7.2a.8.8 0 0 0 0-1.4l-11-7.2a.8.8 0 0 0-1.2.7Z" />
+                            </svg>
+                        )}
+                    </button>
+                    <button
+                        aria-label={`Remove camera ${index + 1}`}
+                        className="flex size-9 shrink-0 items-center justify-center rounded-lg text-stone-400 transition hover:bg-rose-50 hover:text-rose-600"
+                        onClick={onRemove}
+                        type="button"
+                    >
+                        <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none">
+                            <path d="M5 7h14M10 11v6m4-6v6M6.5 7l.8 12h9.4l.8-12M9 7V4.75h6V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </article>
     );
@@ -145,8 +283,14 @@ function StreamCard({ stream, index }) {
 
 function App() {
     const [streamUrl, setStreamUrl] = useState("");
+    const [accessKey, setAccessKey] = useState("");
     const [streams, setStreams] = useState([]);
     const [error, setError] = useState("");
+    const [statuses, setStatuses] = useState({});
+
+    const updateStatus = useCallback((streamId, status) => {
+        setStatuses((current) => current[streamId] === status ? current : { ...current, [streamId]: status });
+    }, []);
 
     function handleSubmit(event) {
         event.preventDefault();
@@ -171,12 +315,19 @@ function App() {
                 id: crypto.randomUUID(),
                 url: streamUrl.trim(),
                 host: parsedUrl.hostname,
+                accessKey,
+                playing: true,
+                retryCount: 0,
             },
         ]);
         setStreamUrl("");
     }
 
     function removeStream(streamId) {
+        setStatuses((current) => {
+            const { [streamId]: removed, ...remaining } = current;
+            return remaining;
+        });
         setStreams((currentStreams) =>
             currentStreams.filter((stream) => stream.id !== streamId),
         );
@@ -228,7 +379,7 @@ function App() {
                         <div className="rounded-2xl border border-stone-200 bg-paper p-5 shadow-sm shadow-stone-200/40">
                             <p className="text-xs font-medium text-stone-500">Live now</p>
                             <div className="mt-3 flex items-end justify-between">
-                                <span className="text-3xl font-semibold tracking-tight text-stone-900">0</span>
+                                <span className="text-3xl font-semibold tracking-tight text-stone-900">{Object.values(statuses).filter((status) => status === "live").length}</span>
                                 <span className="mb-1 rounded-lg bg-forest-50 p-2 text-olive-700">
                                     <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none">
                                         <path d="M5 12h3l2-6 4 12 2-6h3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -257,7 +408,7 @@ function App() {
                                 <h2 id="add-camera-heading" className="text-base font-semibold text-stone-900">Add a camera</h2>
                                 <p className="mt-1 text-sm text-stone-500">Paste an RTSP address to add it to your workspace.</p>
                             </div>
-                            <form className="flex w-full flex-col gap-2 sm:flex-row md:max-w-2xl" onSubmit={handleSubmit}>
+                            <form className="grid w-full gap-2 sm:grid-cols-2 md:max-w-3xl" onSubmit={handleSubmit}>
                                 <label className="sr-only" htmlFor="stream-url">RTSP stream URL</label>
                                 <input
                                     autoComplete="off"
@@ -268,7 +419,17 @@ function App() {
                                     type="url"
                                     value={streamUrl}
                                 />
-                                <button className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-forest-800 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-forest-200 transition hover:bg-forest-900 focus:outline-none focus:ring-4 focus:ring-forest-200" type="submit">
+                                <label className="sr-only" htmlFor="stream-access-key">Workspace access key</label>
+                                <input
+                                    autoComplete="off"
+                                    className="min-w-0 rounded-xl border border-stone-200 bg-canvas-soft px-4 py-3 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-olive-600 focus:bg-paper focus:ring-4 focus:ring-forest-100"
+                                    id="stream-access-key"
+                                    onChange={(event) => setAccessKey(event.target.value)}
+                                    placeholder="Workspace access key (hosted)"
+                                    type="password"
+                                    value={accessKey}
+                                />
+                                <button className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-forest-800 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-forest-200 transition hover:bg-forest-900 focus:outline-none focus:ring-4 focus:ring-forest-200 sm:col-span-2 sm:justify-self-end" type="submit">
                                     <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none">
                                         <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                                     </svg>
@@ -279,7 +440,7 @@ function App() {
                         {error && (
                             <p className="mt-3 text-sm font-medium text-rose-600" role="alert">{error}</p>
                         )}
-                        <p className="mt-3 text-xs text-stone-400">Camera credentials stay hidden in this view.</p>
+                        <p className="mt-3 text-xs text-stone-400">Camera addresses and the workspace key stay in memory and aren’t displayed on camera cards.</p>
                     </section>
 
                     <section aria-labelledby="streams-heading" className="flex flex-col gap-5">
@@ -297,10 +458,11 @@ function App() {
                                     <StreamCard
                                         index={index}
                                         key={stream.id}
-                                        stream={{
-                                            ...stream,
-                                            onRemove: () => removeStream(stream.id),
-                                        }}
+                                        stream={stream}
+                                        onRemove={() => removeStream(stream.id)}
+                                        onStatusChange={updateStatus}
+                                        onRetry={() => setStreams((current) => current.map((item) => item.id === stream.id ? { ...item, accessKey, retryCount: item.retryCount + 1 } : item))}
+                                        onToggle={() => setStreams((current) => current.map((item) => item.id === stream.id ? { ...item, playing: !item.playing } : item))}
                                     />
                                 ))}
                             </div>

@@ -51,7 +51,6 @@ py -3.12 -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 $env:DJANGO_DEBUG = "true"
-python manage.py migrate
 daphne --websocket-max-message-size 4096 -b 127.0.0.1 -p 8000 config.asgi:application
 ```
 
@@ -61,21 +60,30 @@ On Windows, FFmpeg can be installed with `winget install --id Gyan.FFmpeg.Shared
 
 ## Environment variables
 
-Backend configuration is read from environment variables. [`backend/.env.example`](backend/.env.example) contains local development settings and defaults. Production requires `DJANGO_SECRET_KEY` and `STREAM_ACCESS_KEY`; the Render Blueprint generates both. `DJANGO_ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, and `CSRF_TRUSTED_ORIGINS` must match the deployed hosts. `DJANGO_SECURE_SSL_REDIRECT` enables app-level HTTPS redirects when the hosting proxy does not provide them. `FFMPEG_BINARY` selects the FFmpeg executable, and `RTSP_MAX_CONCURRENT_STREAMS` limits per-process FFmpeg work. Never commit production secrets or credential-bearing RTSP URLs.
+Backend configuration is read from environment variables. [`backend/.env.example`](backend/.env.example) contains local development settings and defaults. Production requires `DJANGO_SECRET_KEY` and `STREAM_ACCESS_KEY`; the Render Blueprint generates both. `DJANGO_ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS` must match the deployed hosts. `DJANGO_SECURE_SSL_REDIRECT` enables app-level HTTPS redirects when the hosting proxy does not provide them. `FFMPEG_BINARY` selects the FFmpeg executable, and `RTSP_MAX_CONCURRENT_STREAMS` limits per-process FFmpeg work. Never commit production secrets or credential-bearing RTSP URLs.
 
-## WebSockets and streaming
+## API and stream flow
 
-The ASGI WebSocket endpoint is `/ws/streams/`. On connect the server sends a `ready` JSON event. The client first sends `{"type":"authenticate","key":"…"}` and then `{"type":"start","url":"rtsp://…"}` after the server confirms access. Production requires a `STREAM_ACCESS_KEY`; Render generates one from the Blueprint. Copy its value from the Render environment settings and enter it in the masked workspace-key field in the frontend. Local debug mode can run with an empty key. The server sends status/error JSON events and binary JPEG frames. The browser sends a small keepalive every five minutes while a stream is active; the server replies with `pong`. Send `{"type":"stop"}` or close the socket to terminate the FFmpeg process. The backend limits concurrent streams with `RTSP_MAX_CONCURRENT_STREAMS` (default 4); this is a per-process limit. Each active stream uses FFmpeg to transcode to reduced-resolution MJPEG frames, so provision compute for the expected camera count. RTSP URLs, including credentials, stay in frontend memory and are not persisted or included in logs; the backend uses argument-based process creation and does not echo the submitted URL. The access key is also kept in frontend memory and transmitted only over `wss://` in deployment.
+There are two backend endpoints:
+
+- `GET /health/` is a small HTTP health check used by Render.
+- `WS /ws/streams/` is the real-time streaming API. Use `ws://127.0.0.1:8000/ws/streams/` locally and `wss://<render-service-host>/ws/streams/` after deployment.
+
+For each camera, the browser opens a WebSocket, sends `{"type":"authenticate","key":"…"}`, and then sends `{"type":"start","url":"rtsp://…"}` after the server confirms access. The backend validates the URL, starts one FFmpeg process, and returns JPEG frames as binary WebSocket messages with JSON status/error messages. Play/pause/remove closes or starts that camera's connection. The browser sends a keepalive every five minutes; the server replies with `pong`. The backend limits active streams per process (default 4). RTSP URLs and the shared access key remain in browser memory and are not persisted.
+
+The project does not currently need a database: there are no user accounts, saved camera records, or server-side session records. Stream cards exist only in the current browser session. `db.sqlite3` was an unused local file created by Django's default admin/auth scaffold; that scaffold and the SQLite setting have been removed. No database account or external database needs to be created for the current feature set. If persistent camera lists or individual user accounts are added later, we should choose and configure a production database then.
+
+The workspace key is shared service access control, not a user account. Render generates `STREAM_ACCESS_KEY` when the Blueprint is deployed. Copy it from the Render service's environment settings and type it in the masked workspace-key field in the frontend. In local debug mode the key may be blank. Use `wss://` over the public internet.
 
 ## Deployment
 
 ### Frontend on Vercel
 
-Create a Vercel project connected to this repository and set the project root to `frontend`. Use `npm run build` as the build command and `dist` as the output directory. Deploy once to receive the frontend's `vercel.app` origin. After deploying the backend, set the Vercel environment variable `VITE_STREAM_WS_URL` to the backend's secure WebSocket URL ending in `/ws/streams/` (for example, `wss://your-backend-host/ws/streams/`) and redeploy.
+Create a Vercel project connected to this repository and set the project root to `frontend`. Use `npm run build` as the build command and `dist` as the output directory. Deploy once to receive the frontend's `vercel.app` origin. After deploying the backend, enter that exact frontend origin in Render's `CORS_ALLOWED_ORIGINS`. Then set the Vercel environment variable `VITE_STREAM_WS_URL` to the backend's secure WebSocket URL ending in `/ws/streams/` (for example, `wss://your-backend-host/ws/streams/`) and redeploy.
 
 ### Backend
 
-The root `render.yaml` and `backend/Dockerfile` configure a Render Docker web service with FFmpeg, Daphne, a health check, generated Django and workspace access keys, and the free compute plan. Connect the GitHub repository to Render as a Blueprint. When prompted for `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS`, enter the exact Vercel origin from the first frontend deploy (for example, `https://your-project.vercel.app`). Use the same value for both. Render supplies `PORT`; the container binds Daphne to it. Copy the generated `STREAM_ACCESS_KEY` from Render's environment settings; the site prompts for it in a masked field. The in-memory Channels layer is suitable for this single-instance demo service; choose a shared channel layer before scaling the backend to multiple instances.
+The root `render.yaml` and `backend/Dockerfile` configure a Render Docker web service with FFmpeg, Daphne, a health check, generated Django and workspace access keys, and the free compute plan. Docker is used to install FFmpeg and run Daphne as an ASGI server that supports the HTTP health check and persistent WebSocket connections; it does not replace WebSockets. Connect the GitHub repository to Render as a Blueprint. Enter the Vercel origin in `CORS_ALLOWED_ORIGINS`. Render supplies `PORT`; the container binds Daphne to it. Copy the generated `STREAM_ACCESS_KEY` from Render's environment settings and set the Vercel `VITE_STREAM_WS_URL` to `wss://<render-service-host>/ws/streams/`. The in-memory Channels layer is suitable for a single service instance; choose a shared channel layer before scaling the backend to multiple instances.
 
 The free Render service uses 0.1 CPU and 512 MB RAM, can spin down after 15 minutes without inbound traffic, has an ephemeral filesystem, and is restricted to one instance and 750 workspace hours per month. Render documents free instances as suitable for previews and hobby use, not production. CPU and memory may limit real-time decoding or multiple simultaneous cameras. Keep `RTSP_MAX_CONCURRENT_STREAMS` small on free compute; raise it only after moving to suitable capacity. A deployed RTSP source must permit outbound connections from the backend host.
 

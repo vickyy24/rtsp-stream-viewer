@@ -34,7 +34,7 @@ export default function SettingsPage() {
                         <button
                             aria-pressed={activeSection === target}
                             className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-left text-xs font-medium ${activeSection === target
-                                ? "bg-[var(--color-forest-100)] text-[var(--color-forest-800)]"
+                                ? "bg-[var(--color-action-50)] text-[var(--color-action-700)]"
                                 : "text-stone-500 hover:bg-stone-100"
                                 }`}
                             key={label}

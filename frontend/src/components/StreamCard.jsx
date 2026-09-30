@@ -120,7 +120,7 @@ export default function StreamCard({ stream, index, onStatusChange, onRetry, onT
                         </span>
                         {status === "error" && (
                             <button
-                                className="mt-3 text-xs font-semibold text-[var(--color-forest-700)] hover:text-[var(--color-forest-900)]"
+                                className="mt-3 text-xs font-semibold text-[var(--color-action-700)] hover:text-[var(--color-action-500)]"
                                 onClick={onRetry}
                                 type="button"
                             >
@@ -147,7 +147,7 @@ export default function StreamCard({ stream, index, onStatusChange, onRetry, onT
                 <div className="flex shrink-0 items-center gap-1">
                     <button
                         aria-label={`${stream.playing ? "Pause" : "Play"} camera ${index + 1}`}
-                        className="flex size-9 items-center justify-center rounded-lg text-stone-500 transition hover:bg-[var(--color-forest-50)] hover:text-[var(--color-forest-700)]"
+                        className="flex size-9 items-center justify-center rounded-lg text-stone-500 transition hover:bg-[var(--color-action-50)] hover:text-[var(--color-action-700)]"
                         onClick={onToggle}
                         type="button"
                     >

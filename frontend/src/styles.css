@@ -25,6 +25,10 @@
     --color-clay-50: #f5eadf;
     --color-clay-500: #bf7545;
     --color-clay-700: #b86e3e;
+    --color-action-50: #fff0eb;
+    --color-action-100: #ffd4c6;
+    --color-action-500: #d75b40;
+    --color-action-700: #b84631;
 }
 
 * {

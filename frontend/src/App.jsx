@@ -124,7 +124,7 @@ function App() {
                                     title={selectedCamera?.name || "Live camera"}
                                 />
                                 <button
-                                    className="text-xs font-semibold text-[var(--color-forest-700)] hover:underline"
+                                    className="text-xs font-semibold text-[var(--color-action-700)] hover:underline"
                                     onClick={() => setActivePage("live")}
                                     type="button"
                                 >

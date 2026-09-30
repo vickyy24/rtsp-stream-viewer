@@ -29,28 +29,28 @@ const groups = [
 
 export default function Sidebar({ activePage, onNavigate }) {
     return (
-        <aside className="sticky top-0 flex h-dvh w-14 shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-1.5 py-3 sm:w-16 sm:px-2 md:w-36 md:px-3 md:py-5">
+        <aside className="sticky top-0 flex h-dvh w-14 shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-1.5 py-3 sm:w-16 sm:px-2 lg:w-56 lg:px-4 lg:py-6">
             <button
                 aria-label="Signal live dashboard"
-                className="mb-5 flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)] md:mb-8 md:justify-start"
+                className="mb-5 flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)] lg:mb-8 lg:justify-start"
                 onClick={() => onNavigate("live")}
                 title="Signal live dashboard"
                 type="button"
             >
                 <SignalLogo className="size-7 shrink-0" />
-                <span className="hidden min-w-0 text-left md:block">
+                <span className="hidden min-w-0 text-left lg:block">
                     <span className="block whitespace-nowrap text-[11px] font-bold tracking-[0.28em] text-stone-900">SIGNAL</span>
                     <span className="mt-0.5 block whitespace-nowrap text-[6px] font-medium tracking-wide text-stone-500">RTSP STREAM VIEWER</span>
                 </span>
             </button>
 
-            <nav aria-label="Main navigation" className="flex flex-col gap-4 md:gap-6">
+            <nav aria-label="Main navigation" className="flex flex-col gap-4 lg:gap-6">
                 {groups.map((group, groupIndex) => (
                     <div
-                        className={groupIndex > 0 ? "border-t border-stone-200 pt-4 md:pt-5" : ""}
+                        className={groupIndex > 0 ? "border-t border-stone-200 pt-4 lg:pt-5" : ""}
                         key={group.label}
                     >
-                        <p className="mb-2 hidden px-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-stone-400 md:block">
+                        <p className="mb-2 hidden px-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-stone-400 lg:block">
                             {group.label}
                         </p>
                         <div className="flex flex-col gap-1">
@@ -60,7 +60,7 @@ export default function Sidebar({ activePage, onNavigate }) {
                                 return (
                                     <button
                                         aria-current={selected ? "page" : undefined}
-                                        className={`flex min-h-10 items-center justify-center gap-2 rounded-lg px-2 text-xs transition-colors md:justify-start ${selected
+                                        className={`flex min-h-10 items-center justify-center gap-2 rounded-lg px-2 text-xs transition-colors lg:justify-start ${selected
                                             ? "bg-[var(--color-clay-50)] font-semibold text-[var(--color-clay-700)]"
                                             : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
                                             }`}
@@ -70,7 +70,7 @@ export default function Sidebar({ activePage, onNavigate }) {
                                         type="button"
                                     >
                                         <Icon aria-hidden="true" className="size-[18px] shrink-0" />
-                                        <span className="sr-only md:not-sr-only">{label}</span>
+                                        <span className="sr-only lg:not-sr-only">{label}</span>
                                     </button>
                                 );
                             })}
@@ -79,7 +79,7 @@ export default function Sidebar({ activePage, onNavigate }) {
                 ))}
             </nav>
 
-            <div className="mt-auto hidden border-t border-stone-200 pt-4 md:block">
+            <div className="mt-auto hidden border-t border-stone-200 pt-4 lg:block">
                 <div className="flex items-center gap-2">
                     <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-clay-500)] text-xs font-semibold text-white">S</span>
                     <span className="min-w-0">

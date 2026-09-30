@@ -1,10 +1,10 @@
 import {
-    LuArchive,
-    LuCamera,
-    LuLayoutDashboard,
+    LuHistory,
     LuLayoutGrid,
+    LuMonitor,
     LuNetwork,
     LuSettings,
+    LuVideo,
 } from "react-icons/lu";
 import SignalLogo from "./SignalLogo.jsx";
 
@@ -12,10 +12,10 @@ const groups = [
     {
         label: "Workspace",
         items: [
-            { id: "live", label: "Live", Icon: LuLayoutDashboard },
-            { id: "cameras", label: "Cameras", Icon: LuCamera },
+            { id: "live", label: "Live", Icon: LuVideo },
+            { id: "cameras", label: "Cameras", Icon: LuMonitor },
             { id: "layouts", label: "Layouts", Icon: LuLayoutGrid },
-            { id: "archive", label: "Archive", Icon: LuArchive },
+            { id: "archive", label: "Archive", Icon: LuHistory },
         ],
     },
     {

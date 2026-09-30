@@ -18,7 +18,7 @@ function LayoutPreview({ columns, rows, active }) {
             {Array.from({ length: slots }, (_, index) => (
                 <span
                     className={`rounded-sm border ${active && index === 0
-                        ? "border-[var(--color-action-500)] bg-[var(--color-action-50)]"
+                        ? "border-[var(--color-forest-700)] bg-[var(--color-forest-100)]"
                         : "border-stone-200 bg-[var(--color-surface)]"
                         }`}
                     key={index}
@@ -39,7 +39,7 @@ export default function LayoutsPage({ layout, onApply }) {
                 {layouts.map((item) => (
                     <article
                         className={`rounded-xl border bg-[var(--color-surface)] p-3 ${layout === item.id
-                            ? "border-[var(--color-action-500)] ring-1 ring-[var(--color-action-500)]"
+                            ? "border-[var(--color-forest-700)] ring-1 ring-[var(--color-forest-700)]"
                             : "border-stone-200"
                             }`}
                         key={item.id}
@@ -56,7 +56,7 @@ export default function LayoutsPage({ layout, onApply }) {
                             </div>
                             <button
                                 aria-label={`Apply ${item.label} layout`}
-                                className="flex size-8 items-center justify-center rounded-lg text-[var(--color-action-700)] hover:bg-[var(--color-action-50)]"
+                                className="flex size-8 items-center justify-center rounded-lg text-[var(--color-forest-700)] hover:bg-[var(--color-forest-50)]"
                                 onClick={() => onApply(item.id)}
                                 type="button"
                             >

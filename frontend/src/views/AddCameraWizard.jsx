@@ -91,7 +91,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                             <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600">
                                 Camera name
                                 <input
-                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-action-500)]"
+                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)]"
                                     onChange={(event) => setName(event.target.value)}
                                     placeholder="e.g. Main entrance"
                                     value={name}
@@ -100,7 +100,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                             <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600">
                                 Location (optional)
                                 <input
-                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-action-500)]"
+                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)]"
                                     onChange={(event) => setLocationName(event.target.value)}
                                     placeholder="e.g. Office, parking lot"
                                     value={locationName}
@@ -110,7 +110,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                                 RTSP address
                                 <input
                                     autoComplete="off"
-                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-action-500)]"
+                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)]"
                                     onChange={(event) => {
                                         setUrl(event.target.value);
                                         setTestState("idle");
@@ -124,7 +124,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                                 Workspace access key
                                 <input
                                     autoComplete="off"
-                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-action-500)]"
+                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)]"
                                     onChange={(event) => {
                                         setAccessKey(event.target.value);
                                         setTestState("idle");
@@ -156,7 +156,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                         {testState === "success"
                             ? <LuCircleCheck aria-hidden="true" className="size-10 text-[var(--color-olive-600)]" />
                             : testState === "testing"
-                                ? <LuCircleDot aria-hidden="true" className="size-10 text-[var(--color-action-700)]" />
+                                ? <LuCircleDot aria-hidden="true" className="size-10 text-[var(--color-forest-700)]" />
                                 : <LuCircleDot aria-hidden="true" className="size-10 text-stone-400" />}
                         <h2 className="mt-3 text-sm font-semibold text-stone-800">
                             {testState === "success" ? "Connection test passed" : testState === "testing" ? "Testing stream connection…" : "Test the camera connection"}
@@ -219,7 +219,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                     </button>
                     {step < 4 ? (
                         <button
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-action-500)] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[var(--color-action-700)] disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[var(--color-forest-900)] disabled:opacity-50"
                             disabled={step === 2 && testState !== "success"}
                             onClick={continueWizard}
                             type="button"
@@ -228,7 +228,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                         </button>
                     ) : (
                         <button
-                            className="rounded-lg bg-[var(--color-action-500)] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[var(--color-action-700)]"
+                            className="rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[var(--color-forest-900)]"
                             onClick={() => onSave({ accessKey, host: new URL(url).hostname, location: locationName.trim(), name: name.trim(), url: url.trim() })}
                             type="button"
                         >

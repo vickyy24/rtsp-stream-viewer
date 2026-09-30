@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+@theme {
+    --color-canvas: #f3f2ec;
+    --color-canvas-soft: #f5f4ed;
+    --color-paper: #fffefa;
+    --color-forest-50: #edf0e5;
+    --color-forest-100: #e9eddf;
+    --color-forest-200: #dfe5d5;
+    --color-forest-600: #5b7047;
+    --color-forest-700: #40583e;
+    --color-forest-800: #344c38;
+    --color-forest-900: #263a2d;
+    --color-olive-500: #78894c;
+    --color-olive-600: #7e8e5c;
+    --color-olive-700: #627744;
+    --color-clay-50: #f5eadf;
+    --color-clay-500: #bf7545;
+    --color-clay-700: #b86e3e;
+}
+
 :root {
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
         "Segoe UI", sans-serif;
@@ -9,10 +28,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
-    --color-app-background: #f7f8fa;
-    --color-surface: #ffffff;
-    --color-border: #e2e8f0;
-    --color-accent: #2563eb;
+    --color-app-background: #f3f2ec;
+    --color-surface: #fffefa;
+    --color-border: #e1e0d5;
+    --color-accent: #344c38;
+    --color-accent-soft: #e9eddf;
+    --color-signal: #bf7545;
 }
 
 * {
@@ -42,8 +63,8 @@ a {
 }
 
 ::selection {
-    color: #172554;
-    background: #dbeafe;
+    color: #344c38;
+    background: #e9eddf;
 }
 
 .empty-grid {
@@ -61,9 +82,9 @@ a {
 }
 
 .camera-preview {
-    background-image: radial-gradient(#d9e1ec 0.7px, transparent 0.7px);
+    background-image: radial-gradient(#d9d9cd 0.7px, transparent 0.7px);
     background-size: 14px 14px;
-    background-color: #f8fafc;
+    background-color: #f5f4ed;
 }
 
 @media (prefers-reduced-motion: no-preference) {

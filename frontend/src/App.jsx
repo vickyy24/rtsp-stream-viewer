@@ -24,15 +24,15 @@ function NavItem({ active = false, children, icon }) {
         <button
             className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
                 active
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                    ? "bg-forest-100 text-forest-700"
+                    : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"
             }`}
             type="button"
         >
             <span className="shrink-0">{icon}</span>
             {children}
             {active && (
-                <span className="ml-auto size-1.5 rounded-full bg-blue-600" />
+                <span className="ml-auto size-1.5 rounded-full bg-olive-500" />
             )}
         </button>
     );
@@ -40,27 +40,27 @@ function NavItem({ active = false, children, icon }) {
 
 function Sidebar() {
     return (
-        <aside className="flex w-full shrink-0 flex-col border-b border-slate-200 bg-white px-5 py-4 lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-r lg:px-5 lg:py-7">
+        <aside className="flex w-full shrink-0 flex-col border-b border-stone-200 bg-paper px-5 py-4 lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-r lg:px-5 lg:py-7">
             <a
                 className="flex items-center gap-3 px-1"
                 href="#main-content"
                 aria-label="Frame home"
             >
-                <span className="flex size-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-200">
+                <span className="flex size-10 items-center justify-center rounded-xl bg-forest-800 text-white shadow-sm shadow-forest-200">
                     <CameraIcon className="size-5" />
                 </span>
                 <span>
-                    <span className="block text-[15px] font-semibold tracking-tight text-slate-900">
+                    <span className="block text-[15px] font-semibold tracking-tight text-stone-900">
                         Frame
                     </span>
-                    <span className="block text-xs text-slate-400">
+                    <span className="block text-xs text-stone-400">
                         CAMERA WORKSPACE
                     </span>
                 </span>
             </a>
 
             <div className="mt-8 hidden lg:block">
-                <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-400">
+                <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.13em] text-stone-400">
                     Workspace
                 </p>
                 <nav aria-label="Main navigation" className="flex flex-col gap-1">
@@ -87,19 +87,19 @@ function Sidebar() {
             </div>
 
             <div className="mt-5 flex items-center justify-between lg:hidden">
-                <span className="text-xs font-medium text-slate-400">YOUR WORKSPACE</span>
-                <span className="flex items-center gap-2 text-xs font-medium text-emerald-700">
-                    <span className="size-2 rounded-full bg-emerald-500" />
+                <span className="text-xs font-medium text-stone-400">YOUR WORKSPACE</span>
+                <span className="flex items-center gap-2 text-xs font-medium text-olive-700">
+                    <span className="size-2 rounded-full bg-olive-500" />
                     Local workspace
                 </span>
             </div>
 
-            <div className="mt-auto hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 lg:block">
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                    <span className="size-2 rounded-full bg-emerald-500" />
+            <div className="mt-auto hidden rounded-2xl border border-stone-200 bg-stone-50 p-4 lg:block">
+                <div className="flex items-center gap-2 text-xs font-semibold text-stone-700">
+                    <span className="size-2 rounded-full bg-olive-500" />
                     Workspace ready
                 </div>
-                <p className="mt-2 text-xs leading-5 text-slate-500">
+                <p className="mt-2 text-xs leading-5 text-stone-500">
                     Your camera connections will appear here when added.
                 </p>
             </div>
@@ -109,28 +109,28 @@ function Sidebar() {
 
 function StreamCard({ stream, index }) {
     return (
-        <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/50">
-            <div className="camera-preview relative flex aspect-video items-center justify-center bg-slate-100">
-                <div className="flex flex-col items-center text-slate-400">
+        <article className="overflow-hidden rounded-2xl border border-stone-200 bg-paper shadow-sm shadow-stone-200/50">
+            <div className="camera-preview relative flex aspect-video items-center justify-center bg-stone-100">
+                <div className="flex flex-col items-center text-stone-400">
                     <CameraIcon className="size-8" />
                     <span className="mt-3 text-xs font-medium">Waiting for connection</span>
                 </div>
-                <span className="absolute left-3 top-3 rounded-full border border-white/80 bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-slate-600 shadow-sm">
+                <span className="absolute left-3 top-3 rounded-full border border-white/80 bg-paper/90 px-2.5 py-1 text-[11px] font-semibold text-stone-600 shadow-sm">
                     CAMERA {String(index + 1).padStart(2, "0")}
                 </span>
-                <span className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-500 shadow-sm">
-                    <span className="size-1.5 rounded-full bg-slate-400" />
+                <span className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-stone-200 bg-paper/90 px-2.5 py-1 text-[11px] font-medium text-stone-500 shadow-sm">
+                    <span className="size-1.5 rounded-full bg-stone-400" />
                     Not connected
                 </span>
             </div>
             <div className="flex items-center justify-between gap-4 px-4 py-3.5">
                 <div className="min-w-0">
-                    <h3 className="truncate text-sm font-semibold text-slate-800">Camera {index + 1}</h3>
-                    <p className="mt-0.5 truncate text-xs text-slate-400">{stream.host}</p>
+                    <h3 className="truncate text-sm font-semibold text-stone-800">Camera {index + 1}</h3>
+                    <p className="mt-0.5 truncate text-xs text-stone-400">{stream.host}</p>
                 </div>
                 <button
                     aria-label={`Remove camera ${index + 1}`}
-                    className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-lg text-stone-400 transition hover:bg-rose-50 hover:text-rose-600"
                     onClick={stream.onRemove}
                     type="button"
                 >
@@ -183,7 +183,7 @@ function App() {
     }
 
     return (
-        <div className="min-h-screen bg-[#f7f8fa] text-slate-900 lg:flex">
+        <div className="min-h-screen bg-canvas text-stone-900 lg:flex">
             <Sidebar />
 
             <main
@@ -191,84 +191,84 @@ function App() {
                 id="main-content"
             >
                 <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
-                    <header className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center">
+                    <header className="flex flex-col justify-between gap-4 border-b border-stone-200 pb-6 sm:flex-row sm:items-center">
                         <div>
-                            <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-400">
+                            <div className="mb-2 flex items-center gap-2 text-xs font-medium text-stone-400">
                                 <span>Workspace</span>
                                 <span aria-hidden="true">/</span>
-                                <span className="text-slate-600">Live view</span>
+                                <span className="text-stone-600">Live view</span>
                             </div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">
+                            <h1 className="text-2xl font-semibold tracking-tight text-stone-900 sm:text-[28px]">
                                 Good to see you
                             </h1>
-                            <p className="mt-1.5 text-sm text-slate-500">
+                            <p className="mt-1.5 text-sm text-stone-500">
                                 Keep an eye on every camera, all in one place.
                             </p>
                         </div>
-                        <div className="flex items-center gap-3 self-start rounded-full border border-slate-200 bg-white px-3.5 py-2 sm:self-auto">
+                        <div className="flex items-center gap-3 self-start rounded-full border border-stone-200 bg-paper px-3.5 py-2 sm:self-auto">
                             <span className="relative flex size-2.5">
-                                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-30" />
-                                <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
+                                <span className="absolute inline-flex size-full animate-ping rounded-full bg-clay-500 opacity-30" />
+                                <span className="relative inline-flex size-2.5 rounded-full bg-olive-500" />
                             </span>
-                            <span className="text-xs font-medium text-slate-600">Workspace online</span>
+                            <span className="text-xs font-medium text-stone-600">Workspace online</span>
                         </div>
                     </header>
 
                     <section aria-label="Workspace summary" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40">
-                            <p className="text-xs font-medium text-slate-500">Total cameras</p>
+                        <div className="rounded-2xl border border-stone-200 bg-paper p-5 shadow-sm shadow-stone-200/40">
+                            <p className="text-xs font-medium text-stone-500">Total cameras</p>
                             <div className="mt-3 flex items-end justify-between">
-                                <span className="text-3xl font-semibold tracking-tight text-slate-900">{streams.length}</span>
-                                <span className="mb-1 rounded-lg bg-blue-50 p-2 text-blue-600">
+                                <span className="text-3xl font-semibold tracking-tight text-stone-900">{streams.length}</span>
+                                <span className="mb-1 rounded-lg bg-forest-50 p-2 text-forest-600">
                                     <CameraIcon className="size-4" />
                                 </span>
                             </div>
-                            <p className="mt-2 text-xs text-slate-400">In this workspace</p>
+                            <p className="mt-2 text-xs text-stone-400">In this workspace</p>
                         </div>
-                        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40">
-                            <p className="text-xs font-medium text-slate-500">Live now</p>
+                        <div className="rounded-2xl border border-stone-200 bg-paper p-5 shadow-sm shadow-stone-200/40">
+                            <p className="text-xs font-medium text-stone-500">Live now</p>
                             <div className="mt-3 flex items-end justify-between">
-                                <span className="text-3xl font-semibold tracking-tight text-slate-900">0</span>
-                                <span className="mb-1 rounded-lg bg-emerald-50 p-2 text-emerald-600">
+                                <span className="text-3xl font-semibold tracking-tight text-stone-900">0</span>
+                                <span className="mb-1 rounded-lg bg-forest-50 p-2 text-olive-700">
                                     <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none">
                                         <path d="M5 12h3l2-6 4 12 2-6h3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </span>
                             </div>
-                            <p className="mt-2 text-xs text-slate-400">Streams connected</p>
+                            <p className="mt-2 text-xs text-stone-400">Streams connected</p>
                         </div>
-                        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40">
-                            <p className="text-xs font-medium text-slate-500">Workspace status</p>
+                        <div className="rounded-2xl border border-stone-200 bg-paper p-5 shadow-sm shadow-stone-200/40">
+                            <p className="text-xs font-medium text-stone-500">Workspace status</p>
                             <div className="mt-3 flex items-end justify-between">
-                                <span className="text-xl font-semibold tracking-tight text-emerald-700">Ready</span>
-                                <span className="mb-1 rounded-lg bg-amber-50 p-2 text-amber-600">
+                                <span className="text-xl font-semibold tracking-tight text-olive-700">Ready</span>
+                                <span className="mb-1 rounded-lg bg-clay-50 p-2 text-clay-700">
                                     <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none">
                                         <path d="M12 8v4m0 4h.01M10.3 4.9 2.8 18a1.4 1.4 0 0 0 1.2 2.1h16a1.4 1.4 0 0 0 1.2-2.1l-7.5-13.1a1.9 1.9 0 0 0-3.4 0Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </span>
                             </div>
-                            <p className="mt-2 text-xs text-slate-400">Waiting for first stream</p>
+                            <p className="mt-2 text-xs text-stone-400">Waiting for first stream</p>
                         </div>
                     </section>
 
-                    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40 sm:p-6" aria-labelledby="add-camera-heading">
+                    <section className="rounded-2xl border border-stone-200 bg-paper p-5 shadow-sm shadow-stone-200/40 sm:p-6" aria-labelledby="add-camera-heading">
                         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                             <div>
-                                <h2 id="add-camera-heading" className="text-base font-semibold text-slate-900">Add a camera</h2>
-                                <p className="mt-1 text-sm text-slate-500">Paste an RTSP address to add it to your workspace.</p>
+                                <h2 id="add-camera-heading" className="text-base font-semibold text-stone-900">Add a camera</h2>
+                                <p className="mt-1 text-sm text-stone-500">Paste an RTSP address to add it to your workspace.</p>
                             </div>
                             <form className="flex w-full flex-col gap-2 sm:flex-row md:max-w-2xl" onSubmit={handleSubmit}>
                                 <label className="sr-only" htmlFor="stream-url">RTSP stream URL</label>
                                 <input
                                     autoComplete="off"
-                                    className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                                    className="min-w-0 flex-1 rounded-xl border border-stone-200 bg-canvas-soft px-4 py-3 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-olive-600 focus:bg-paper focus:ring-4 focus:ring-forest-100"
                                     id="stream-url"
                                     onChange={(event) => setStreamUrl(event.target.value)}
                                     placeholder="rtsp://camera-address:554/stream"
                                     type="url"
                                     value={streamUrl}
                                 />
-                                <button className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200" type="submit">
+                                <button className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-forest-800 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-forest-200 transition hover:bg-forest-900 focus:outline-none focus:ring-4 focus:ring-forest-200" type="submit">
                                     <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none">
                                         <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                                     </svg>
@@ -279,16 +279,16 @@ function App() {
                         {error && (
                             <p className="mt-3 text-sm font-medium text-rose-600" role="alert">{error}</p>
                         )}
-                        <p className="mt-3 text-xs text-slate-400">Camera credentials stay hidden in this view.</p>
+                        <p className="mt-3 text-xs text-stone-400">Camera credentials stay hidden in this view.</p>
                     </section>
 
                     <section aria-labelledby="streams-heading" className="flex flex-col gap-5">
                         <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
                             <div>
-                                <h2 id="streams-heading" className="text-lg font-semibold tracking-tight text-slate-900">Your cameras</h2>
-                                <p className="mt-1 text-sm text-slate-500">A clear view of every connected space.</p>
+                                <h2 id="streams-heading" className="text-lg font-semibold tracking-tight text-stone-900">Your cameras</h2>
+                                <p className="mt-1 text-sm text-stone-500">A clear view of every connected space.</p>
                             </div>
-                            <span className="text-xs font-medium text-slate-500">{streams.length} {streams.length === 1 ? "camera" : "cameras"}</span>
+                            <span className="text-xs font-medium text-stone-500">{streams.length} {streams.length === 1 ? "camera" : "cameras"}</span>
                         </div>
 
                         {streams.length > 0 ? (
@@ -305,17 +305,17 @@ function App() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="empty-grid relative flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-                                <div className="empty-orbit absolute left-1/2 top-1/2 size-56 -translate-x-1/2 -translate-y-1/2 rounded-full border border-blue-100" />
-                                <div className="empty-orbit empty-orbit-delayed absolute left-1/2 top-1/2 size-40 -translate-x-1/2 -translate-y-1/2 rounded-full border border-slate-200" />
-                                <div className="relative mb-4 flex size-14 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-blue-600 shadow-sm">
+                            <div className="empty-grid relative flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-stone-300 bg-paper px-6 py-12 text-center">
+                                <div className="empty-orbit absolute left-1/2 top-1/2 size-56 -translate-x-1/2 -translate-y-1/2 rounded-full border border-forest-200" />
+                                <div className="empty-orbit empty-orbit-delayed absolute left-1/2 top-1/2 size-40 -translate-x-1/2 -translate-y-1/2 rounded-full border border-stone-200" />
+                                <div className="relative mb-4 flex size-14 items-center justify-center rounded-2xl border border-forest-200 bg-forest-50 text-forest-600 shadow-sm">
                                     <CameraIcon className="size-6" />
                                 </div>
-                                <h3 className="relative text-base font-semibold text-slate-800">Your view starts here</h3>
-                                <p className="relative mt-2 max-w-sm text-sm leading-6 text-slate-500">
+                                <h3 className="relative text-base font-semibold text-stone-800">Your view starts here</h3>
+                                <p className="relative mt-2 max-w-sm text-sm leading-6 text-stone-500">
                                     Add your first camera above. Your stream tiles will gather here in a responsive grid.
                                 </p>
-                                <a className="relative mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 transition hover:text-blue-800" href="#stream-url">
+                                <a className="relative mt-5 inline-flex items-center gap-2 text-sm font-semibold text-forest-700 transition hover:text-forest-900" href="#stream-url">
                                     Add your first camera
                                     <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none">
                                         <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />

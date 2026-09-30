@@ -17,7 +17,10 @@ The React workspace accepts RTSP camera addresses and opens an independent Djang
 ## Repository layout
 
 ```text
-frontend/       React application
+frontend/
+  src/
+    components/ Reusable camera, navigation, form, summary, and grid components
+    App.jsx      Workspace state and composition
 backend/        Django and Channels application
 README.md       Project setup and operations guide
 ```

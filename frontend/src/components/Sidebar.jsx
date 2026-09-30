@@ -37,7 +37,7 @@ export default function Sidebar({ activePage, onNavigate }) {
                 title="Signal live dashboard"
                 type="button"
             >
-                <SignalLogo className="size-7 shrink-0" />
+                <SignalLogo className="size-8 shrink-0" />
                 <span className="hidden min-w-0 text-left lg:block">
                     <span className="block whitespace-nowrap text-[11px] font-bold tracking-[0.28em] text-stone-900">SIGNAL</span>
                     <span className="mt-0.5 block whitespace-nowrap text-[6px] font-medium tracking-wide text-stone-500">RTSP STREAM VIEWER</span>

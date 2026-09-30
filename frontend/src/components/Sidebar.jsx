@@ -61,7 +61,7 @@ export default function Sidebar({ activePage, onNavigate }) {
                                     <button
                                         aria-current={selected ? "page" : undefined}
                                         className={`flex min-h-10 items-center justify-center gap-2 rounded-lg px-2 text-xs transition-colors lg:justify-start ${selected
-                                            ? "bg-[var(--color-clay-50)] font-semibold text-[var(--color-clay-700)]"
+                                            ? "bg-[var(--color-forest-100)] font-semibold text-[var(--color-forest-700)]"
                                             : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
                                             }`}
                                         key={id}

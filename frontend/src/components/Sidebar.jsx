@@ -29,7 +29,7 @@ const groups = [
 
 export default function Sidebar({ activePage, onNavigate }) {
     return (
-        <aside className="sticky top-0 flex h-dvh w-14 shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-1.5 py-3 sm:w-16 sm:px-2 lg:w-56 lg:px-4 lg:py-6">
+        <aside className="sticky top-0 flex h-dvh w-14 shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-1.5 py-3 sm:w-16 sm:px-2 lg:w-52 lg:px-4 lg:py-6">
             <button
                 aria-label="Signal live dashboard"
                 className="mb-5 flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)] lg:mb-8 lg:justify-start"
@@ -39,8 +39,8 @@ export default function Sidebar({ activePage, onNavigate }) {
             >
                 <SignalLogo className="size-8 shrink-0" />
                 <span className="hidden min-w-0 text-left lg:block">
-                    <span className="block whitespace-nowrap text-[11px] font-bold tracking-[0.28em] text-stone-900">SIGNAL</span>
-                    <span className="mt-0.5 block whitespace-nowrap text-[6px] font-medium tracking-wide text-stone-500">RTSP STREAM VIEWER</span>
+                    <span className="block whitespace-nowrap text-xs font-bold tracking-[0.3em] text-stone-900">SIGNAL</span>
+                    <span className="mt-0.5 block whitespace-nowrap text-[7px] font-medium tracking-wide text-stone-500">RTSP STREAM VIEWER</span>
                 </span>
             </button>
 

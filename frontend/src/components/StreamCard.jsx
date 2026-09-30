@@ -11,6 +11,7 @@ export default function StreamCard({ stream, index, onStatusChange, onRetry, onT
         if (!stream.playing) {
             setStatus("paused");
             setMessage("");
+            onStatusChange(stream.id, "paused");
             return undefined;
         }
 
@@ -107,7 +108,7 @@ export default function StreamCard({ stream, index, onStatusChange, onRetry, onT
             <div className="camera-preview relative flex aspect-video items-center justify-center bg-stone-100">
                 {frameUrl && status === "live" ? (
                     <img
-                        alt={`Live feed from camera ${index + 1}`}
+                        alt={`Live feed from ${stream.name || `camera ${index + 1}`}`}
                         className="size-full object-contain"
                         src={frameUrl}
                     />
@@ -140,8 +141,8 @@ export default function StreamCard({ stream, index, onStatusChange, onRetry, onT
             </div>
             <div className="flex items-center justify-between gap-4 px-4 py-3.5">
                 <div className="min-w-0">
-                    <h3 className="truncate text-sm font-semibold text-stone-800">Camera {index + 1}</h3>
-                    <p className="mt-0.5 truncate text-xs text-stone-400">{stream.host}</p>
+                    <h3 className="truncate text-sm font-semibold text-stone-800">{stream.name || `Camera ${index + 1}`}</h3>
+                    <p className="mt-0.5 truncate text-xs text-stone-400">{stream.location || stream.host}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                     <button

@@ -4,7 +4,7 @@ A responsive web application for viewing one or more RTSP camera feeds in a brow
 
 ## Project status
 
-The React workspace accepts RTSP camera addresses and opens an independent Django Channels WebSocket for each camera. The backend launches a bounded FFmpeg process per active connection and forwards JPEG frames to the browser. Each tile includes play/pause, retry, remove, connecting/live/error states, and the grid adapts to screen size.
+The React workspace accepts RTSP camera addresses and opens an independent Django Channels WebSocket for each camera. The backend launches a bounded FFmpeg process per active connection and forwards JPEG frames to the browser. The interface is organized into Live, Cameras, Layouts, Archive, Connections, and Settings views. Camera setup includes a real WebSocket/FFmpeg connection test. Camera and workspace state currently remain in browser memory; recording and persistent user accounts are not implemented.
 
 ## Technology
 
@@ -19,8 +19,10 @@ The React workspace accepts RTSP camera addresses and opens an independent Djang
 ```text
 frontend/
   src/
-    components/ Reusable camera, navigation, form, summary, and grid components
-    App.jsx      Workspace state and composition
+    components/ Reusable camera, navigation, header, and grid components
+    views/      Dashboard, camera wizard, archive, layout, settings, and connection screens
+    services/   WebSocket connection helpers
+    App.jsx     Workspace state and view composition
 backend/        Django and Channels application
 README.md       Project setup and operations guide
 ```

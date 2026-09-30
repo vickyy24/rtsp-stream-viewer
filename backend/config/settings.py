@@ -4,7 +4,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")
+local_env_file = BASE_DIR / ".env"
+if local_env_file.exists():
+    load_dotenv(local_env_file)
+elif os.environ.get("DJANGO_DEBUG", "false").lower() == "true":
+    load_dotenv(BASE_DIR / ".env.example")
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")

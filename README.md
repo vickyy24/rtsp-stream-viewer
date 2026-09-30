@@ -47,16 +47,16 @@ cd backend
 py -3.12 -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-Copy-Item .env.example .env
+$env:DJANGO_DEBUG = "true"
 python manage.py migrate
 python manage.py runserver
 ```
 
-Set a unique `DJANGO_SECRET_KEY` in `backend/.env` before exposing the service. `.env` files are ignored by Git.
+When `DJANGO_DEBUG=true` and no local `.env` exists, Django loads the development values from `backend/.env.example`. Set `DJANGO_SECRET_KEY` to a unique value before exposing the service. Production must provide its configuration through the hosting environment; it does not load the development example.
 
 ## Environment variables
 
-Backend configuration is read from environment variables. See [`backend/.env.example`](backend/.env.example) for the local settings and defaults. Production secrets must be configured in the hosting platform, not committed to this repository.
+Backend configuration is read from environment variables. [`backend/.env.example`](backend/.env.example) contains local development settings and defaults. Production secrets must be configured in the hosting platform, not committed to this repository.
 
 ## WebSockets and streaming
 

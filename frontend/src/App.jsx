@@ -12,6 +12,7 @@ import SettingsPage from "./views/SettingsPage.jsx";
 
 function App() {
     const [activePage, setActivePage] = useState("live");
+    const [cameraReturnPage, setCameraReturnPage] = useState("live");
     const [selectedCameraId, setSelectedCameraId] = useState(null);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
@@ -60,7 +61,7 @@ function App() {
         };
         setStreams((current) => [...current, newCamera]);
         addActivity(`${newCamera.name} added to the workspace`);
-        setActivePage("live");
+        setActivePage(cameraReturnPage);
     }
 
     function removeCamera(streamId) {
@@ -93,6 +94,15 @@ function App() {
         setActivePage("single-camera");
     }
 
+    function openCameraWizard() {
+        setCameraReturnPage(activePage === "cameras" ? "cameras" : "live");
+        setActivePage("add-camera");
+    }
+
+    function closeCameraWizard() {
+        setActivePage(cameraReturnPage);
+    }
+
     const selectedCamera = streams.find((stream) => stream.id === selectedCameraId);
     const visibleStreams = activePage === "single-camera" && selectedCamera
         ? [selectedCamera]
@@ -108,7 +118,10 @@ function App() {
 
     return (
         <div className="flex h-dvh min-h-0 overflow-hidden bg-[var(--color-app-background)] text-stone-900">
-            <Sidebar activePage={activePage} onNavigate={setActivePage} />
+            <Sidebar
+                activePage={activePage === "add-camera" ? cameraReturnPage : activePage}
+                onNavigate={setActivePage}
+            />
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
                 <WorkspaceHeader
                     onSearchChange={setSearch}
@@ -135,7 +148,7 @@ function App() {
                         <LiveDashboard
                             activities={activities}
                             layout={activePage === "single-camera" ? "1x1" : layout}
-                            onAddCamera={() => setActivePage("add-camera")}
+                            onAddCamera={openCameraWizard}
                             onRemove={removeCamera}
                             onRetry={retryCamera}
                             onStatusChange={updateStatus}
@@ -148,7 +161,7 @@ function App() {
 
                     {activePage === "cameras" && (
                         <CamerasPage
-                            onAddCamera={() => setActivePage("add-camera")}
+                            onAddCamera={openCameraWizard}
                             onOpenCamera={showCamera}
                             onRemove={removeCamera}
                             onToggle={toggleCamera}
@@ -162,7 +175,7 @@ function App() {
                     )}
                     {activePage === "add-camera" && (
                         <AddCameraWizard
-                            onCancel={() => setActivePage("cameras")}
+                            onCancel={closeCameraWizard}
                             onSave={addCamera}
                         />
                     )}

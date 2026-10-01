@@ -58,7 +58,7 @@ a {
 }
 
 .brand-gradient {
-    background-image: var(--brand-gradient);
+    background-color: var(--color-brand-teal);
     color: white;
 }
 

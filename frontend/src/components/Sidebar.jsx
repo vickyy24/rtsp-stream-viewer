@@ -61,7 +61,7 @@ export default function Sidebar({ activePage, onNavigate }) {
                                     <button
                                         aria-current={selected ? "page" : undefined}
                                         className={`relative flex min-h-10 items-center justify-center gap-2 rounded-lg px-2 text-xs transition-colors lg:justify-start ${selected
-                                            ? "bg-[var(--color-forest-200)] font-semibold text-stone-900 before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-full before:bg-[var(--color-forest-800)]"
+                                            ? "bg-[var(--color-forest-200)] font-semibold text-stone-900"
                                             : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
                                             }`}
                                         key={id}
@@ -69,6 +69,12 @@ export default function Sidebar({ activePage, onNavigate }) {
                                         title={label}
                                         type="button"
                                     >
+                                        {selected && (
+                                            <span
+                                                aria-hidden="true"
+                                                className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-lg bg-[var(--color-forest-800)]"
+                                            />
+                                        )}
                                         <Icon aria-hidden="true" className="size-[18px] shrink-0" />
                                         <span className="sr-only lg:not-sr-only">{label}</span>
                                     </button>

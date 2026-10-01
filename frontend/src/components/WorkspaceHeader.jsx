@@ -72,7 +72,7 @@ export default function WorkspaceHeader({ onSearchChange, searchValue }) {
                 </button>
                 <span
                     aria-label="Signal workspace"
-                    className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-clay-500)] text-xs font-semibold text-white"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-forest-800)] text-xs font-semibold text-white"
                 >
                     S
                 </span>

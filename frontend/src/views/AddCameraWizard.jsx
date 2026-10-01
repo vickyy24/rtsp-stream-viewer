@@ -15,7 +15,7 @@ function StepIndicator({ currentStep }) {
                 return (
                     <li className="flex items-center gap-2" key={label}>
                         <span className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${complete || active
-                            ? "bg-[var(--color-clay-500)] text-white"
+                            ? "bg-[var(--color-forest-800)] text-white"
                             : "bg-stone-100 text-stone-500"
                             }`}>
                             {complete ? <LuCheck aria-hidden="true" className="size-3.5" /> : step}

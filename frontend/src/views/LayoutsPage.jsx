@@ -18,7 +18,7 @@ function LayoutPreview({ columns, rows, active }) {
             {Array.from({ length: slots }, (_, index) => (
                 <span
                     className={`rounded-sm border ${active && index === 0
-                        ? "border-[var(--color-forest-700)] bg-[var(--color-forest-100)]"
+                        ? "border-[var(--color-forest-700)] bg-[var(--color-forest-200)]"
                         : "border-stone-200 bg-[var(--color-surface)]"
                         }`}
                     key={index}

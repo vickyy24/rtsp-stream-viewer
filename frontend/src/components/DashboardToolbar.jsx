@@ -21,7 +21,7 @@ export default function DashboardToolbar({
                     <button
                         aria-pressed={layout === value}
                         className={`min-w-12 rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${layout === value
-                            ? "border-[var(--color-forest-700)] bg-[var(--color-forest-100)] text-[var(--color-forest-900)]"
+                            ? "border-[var(--color-forest-700)] bg-[var(--color-forest-200)] text-[var(--color-forest-900)]"
                             : "border-stone-200 text-stone-600 hover:bg-stone-50"
                             }`}
                         key={value}

@@ -25,6 +25,10 @@
     --color-clay-50: #f0f3e9;
     --color-clay-500: #71854f;
     --color-clay-700: #52683d;
+    --color-brand-teal: #287f85;
+    --color-brand-sage: #559b75;
+    --color-brand-olive: #718f46;
+    --brand-gradient: linear-gradient(110deg, var(--color-brand-teal), var(--color-brand-sage) 52%, var(--color-brand-olive));
 }
 
 * {
@@ -51,6 +55,22 @@ input {
 button,
 a {
     -webkit-tap-highlight-color: transparent;
+}
+
+.brand-gradient {
+    background-image: var(--brand-gradient);
+    color: white;
+}
+
+.brand-gradient:hover {
+    filter: brightness(0.94);
+}
+
+.brand-gradient:disabled {
+    background-image: none;
+    background-color: #d6d3d1;
+    color: #78716c;
+    filter: none;
 }
 
 ::selection {

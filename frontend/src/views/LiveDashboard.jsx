@@ -107,7 +107,7 @@ export default function LiveDashboard({
                         <p className="mt-0.5 text-xs text-stone-500">Live camera feeds in this workspace</p>
                     </div>
                     <button
-                        className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[var(--color-forest-800)] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[var(--color-forest-900)]"
+                        className="brand-gradient inline-flex min-h-10 items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors"
                         onClick={onAddCamera}
                         type="button"
                     >
@@ -143,7 +143,7 @@ export default function LiveDashboard({
                                 Add an RTSP camera to begin monitoring its live feed.
                             </p>
                             <button
-                                className="mt-4 rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[var(--color-forest-900)]"
+                                className="brand-gradient mt-4 rounded-lg px-4 py-2.5 text-xs font-semibold"
                                 onClick={onAddCamera}
                                 type="button"
                             >

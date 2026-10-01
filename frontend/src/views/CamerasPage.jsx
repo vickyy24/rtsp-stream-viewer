@@ -38,7 +38,7 @@ export default function CamerasPage({
             <PageHeading
                 action={(
                     <button
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-forest-900)]"
+                        className="brand-gradient inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold"
                         onClick={onAddCamera}
                         type="button"
                     >
@@ -72,7 +72,7 @@ export default function CamerasPage({
                             <button
                                 aria-pressed={statusFilter === id}
                                 className={`rounded-lg border px-3 py-2 text-xs font-medium ${statusFilter === id
-                                    ? "border-[var(--color-forest-700)] bg-[var(--color-forest-50)] text-[var(--color-forest-800)]"
+                                    ? "border-[var(--color-forest-700)] bg-[var(--color-forest-200)] text-[var(--color-forest-900)]"
                                     : "border-stone-200 text-stone-500 hover:bg-stone-50"
                                     }`}
                                 key={id}

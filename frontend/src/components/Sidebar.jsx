@@ -81,7 +81,7 @@ export default function Sidebar({ activePage, onNavigate }) {
 
             <div className="mt-auto hidden border-t border-stone-200 pt-4 lg:block">
                 <div className="flex items-center gap-2">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-forest-800)] text-xs font-semibold text-white">S</span>
+                    <span className="brand-gradient flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">S</span>
                     <span className="min-w-0">
                         <span className="block truncate text-[11px] font-semibold text-stone-800">Signal</span>
                         <span className="block truncate text-[10px] text-stone-500">Stream workspace</span>

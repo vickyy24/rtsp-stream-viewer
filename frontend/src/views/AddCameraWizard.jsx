@@ -15,7 +15,7 @@ function StepIndicator({ currentStep }) {
                 return (
                     <li className="flex items-center gap-2" key={label}>
                         <span className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${complete || active
-                            ? "bg-[var(--color-forest-800)] text-white"
+                            ? "brand-gradient text-white"
                             : "bg-stone-100 text-stone-500"
                             }`}>
                             {complete ? <LuCheck aria-hidden="true" className="size-3.5" /> : step}
@@ -210,7 +210,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                         {error && <p className="mt-3 text-xs text-rose-600" role="alert">{error}</p>}
                         {testState !== "success" && (
                             <button
-                                className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[var(--color-forest-800)] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[var(--color-forest-900)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none disabled:hover:bg-stone-300"
+                                className="brand-gradient mt-4 inline-flex min-h-10 items-center justify-center rounded-lg px-5 py-2.5 text-xs font-semibold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:text-stone-500 disabled:shadow-none"
                                 disabled={testState === "testing"}
                                 onClick={handleTest}
                                 type="button"
@@ -262,7 +262,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                     </button>
                     {step < 4 ? (
                         <button
-                            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[var(--color-forest-900)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:hover:bg-stone-300"
+                            className="brand-gradient inline-flex min-h-10 items-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:text-stone-500"
                             disabled={step === 2 && testState !== "success"}
                             onClick={continueWizard}
                             type="button"
@@ -271,7 +271,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                         </button>
                     ) : (
                         <button
-                            className="rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[var(--color-forest-900)]"
+                            className="brand-gradient rounded-lg px-4 py-2.5 text-xs font-semibold"
                             onClick={saveCamera}
                             type="button"
                         >

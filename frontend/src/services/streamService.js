@@ -1,9 +1,12 @@
+
 const apiUrl = (
   import.meta.env.API_URL ||
-  `${location.protocol}//${location.hostname}:8000`
+  (import.meta.env.DEV
+    ? "http://localhost:8000"
+    : "https://rtsp-stream-viewer-api.onrender.com")
 ).replace(/\/+$/, "");
 
-console.log("apiUrl",apiUrl)
+console.log("apiUrl:", apiUrl);
 
 const WORKSPACE_KEY_STORAGE = "rtsp-viewer-workspace-key";
 

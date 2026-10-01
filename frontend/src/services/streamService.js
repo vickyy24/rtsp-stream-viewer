@@ -1,5 +1,7 @@
-const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "")
-    || `${location.protocol}//${location.hostname}:8000`;
+const apiUrl = (
+  import.meta.env.API_URL ||
+  `${location.protocol}//${location.hostname}:8000`
+).replace(/\/+$/, "");
 
 const WORKSPACE_KEY_STORAGE = "rtsp-viewer-workspace-key";
 

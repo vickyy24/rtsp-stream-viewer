@@ -54,6 +54,9 @@ class FfmpegTests(SimpleTestCase):
         self.assertEqual(command[0], "ffmpeg-custom")
         self.assertIn("-protocol_whitelist", command)
         self.assertIn("-rtsp_transport", command)
+        self.assertIn("-timeout", command)
+        self.assertNotIn("-rw_timeout", command)
+        self.assertIn("-flush_packets", command)
         self.assertIn("image2pipe", command)
         self.assertNotIn("shell", command)
 

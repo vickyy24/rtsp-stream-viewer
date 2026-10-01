@@ -7,21 +7,29 @@ export function testStreamConnection({ accessKey, url }) {
     return new Promise((resolve, reject) => {
         const socket = new WebSocket(getStreamSocketUrl());
         let settled = false;
+        let closed = false;
+        let releaseTimeout;
         let authenticated = false;
         const timeout = window.setTimeout(() => {
-            finish(new Error("No video arrived before the connection test timed out."));
+            fail(new Error("No video arrived before the connection test timed out."));
         }, 23000);
 
-        function finish(error) {
-            if (settled) return;
-            settled = true;
+        function stop() {
+            if (closed) return;
+            closed = true;
+            window.clearTimeout(releaseTimeout);
             window.clearTimeout(timeout);
             if (socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({ type: "stop" }));
             }
             socket.close();
-            if (error) reject(error);
-            else resolve();
+        }
+
+        function fail(error) {
+            if (settled) return;
+            settled = true;
+            stop();
+            reject(error);
         }
 
         socket.onopen = () => {
@@ -40,14 +48,30 @@ export function testStreamConnection({ accessKey, url }) {
                 authenticated = true;
                 socket.send(JSON.stringify({ type: "start", url }));
             } else if (message.type === "status" && message.status === "live") {
-                finish();
+                if (!settled) {
+                    settled = true;
+                    window.clearTimeout(timeout);
+                    resolve({
+                        isOpen: () => socket.readyState === WebSocket.OPEN,
+                        release: () => {
+                            window.clearTimeout(releaseTimeout);
+                            releaseTimeout = window.setTimeout(stop, 0);
+                        },
+                        socket,
+                        stop,
+                        take: () => {
+                            window.clearTimeout(releaseTimeout);
+                            return !closed && socket.readyState === WebSocket.OPEN ? socket : null;
+                        },
+                    });
+                }
             } else if (message.type === "error") {
-                finish(new Error(message.message || "The stream connection failed."));
+                fail(new Error(message.message || "The stream connection failed."));
             }
         };
-        socket.onerror = () => finish(new Error("Could not reach the stream service."));
+        socket.onerror = () => fail(new Error("Could not reach the stream service."));
         socket.onclose = () => {
-            if (!settled) finish(new Error("The stream service closed the test connection."));
+            if (!settled) fail(new Error("The stream service closed the test connection."));
         };
     });
 }

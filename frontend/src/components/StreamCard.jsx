@@ -21,21 +21,29 @@ export default function StreamCard({ stream, index, isSelected, onFrame, onSelec
         let keepAliveInterval;
         const configuredUrl = import.meta.env.VITE_STREAM_WS_URL;
         const socketUrl = configuredUrl || `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.hostname}:8000/ws/streams/`;
-        const socket = new WebSocket(socketUrl);
+        const sessionSocket = stream.session?.take();
+        const activeSession = sessionSocket ? stream.session : null;
+        const socket = sessionSocket || new WebSocket(socketUrl);
         socket.binaryType = "blob";
-        setStatus("connecting");
+        setStatus(activeSession ? "live" : "connecting");
         setMessage("");
-        onStatusChange(stream.id, "connecting");
+        onStatusChange(stream.id, activeSession ? "live" : "connecting");
 
-        socket.onopen = () => {
-            if (closeRequested) return;
-            socket.send(JSON.stringify({ type: "authenticate", key: stream.accessKey }));
+        function startKeepAlive() {
+            if (keepAliveInterval) return;
             keepAliveInterval = window.setInterval(() => {
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(JSON.stringify({ type: "ping" }));
                 }
             }, 5 * 60 * 1000);
+        }
+
+        socket.onopen = () => {
+            if (closeRequested) return;
+            socket.send(JSON.stringify({ type: "authenticate", key: stream.accessKey }));
+            startKeepAlive();
         };
+        if (activeSession && socket.readyState === WebSocket.OPEN) startKeepAlive();
         socket.onmessage = (event) => {
             if (closeRequested) return;
             if (typeof event.data !== "string") {
@@ -87,14 +95,16 @@ export default function StreamCard({ stream, index, isSelected, onFrame, onSelec
         return () => {
             closeRequested = true;
             window.clearInterval(keepAliveInterval);
-            if (socket.readyState === WebSocket.OPEN) {
+            if (activeSession) {
+                activeSession.release();
+            } else if (socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({ type: "stop" }));
+                socket.close();
             }
-            socket.close();
             if (currentFrameUrl) URL.revokeObjectURL(currentFrameUrl);
             setFrameUrl("");
         };
-    }, [onFrame, onStatusChange, stream.accessKey, stream.id, stream.playing, stream.retryCount, stream.url]);
+    }, [onFrame, onStatusChange, stream.accessKey, stream.id, stream.playing, stream.retryCount, stream.session, stream.url]);
 
     const statusLabel = {
         connecting: "Connecting",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LuCheck, LuChevronLeft, LuChevronRight, LuCircleCheck, LuCircleDot } from "react-icons/lu";
 import PageHeading from "../components/PageHeading.jsx";
 import { testStreamConnection } from "../services/streamService.js";
@@ -38,12 +38,29 @@ export default function AddCameraWizard({ onCancel, onSave }) {
     const [accessKey, setAccessKey] = useState("");
     const [testState, setTestState] = useState("idle");
     const [error, setError] = useState("");
+    const [testSession, setTestSession] = useState(null);
+    const testSessionRef = useRef(null);
+    const handedOffRef = useRef(false);
+
+    useEffect(() => () => {
+        if (!handedOffRef.current) testSessionRef.current?.stop();
+    }, []);
+
+    function clearTestSession() {
+        testSessionRef.current?.stop();
+        testSessionRef.current = null;
+        setTestSession(null);
+        setTestState("idle");
+    }
 
     async function handleTest() {
+        clearTestSession();
         setTestState("testing");
         setError("");
         try {
-            await testStreamConnection({ accessKey, url: url.trim() });
+            const session = await testStreamConnection({ accessKey, url: url.trim() });
+            testSessionRef.current = session;
+            setTestSession(session);
             setTestState("success");
         } catch (testError) {
             setTestState("error");
@@ -73,6 +90,32 @@ export default function AddCameraWizard({ onCancel, onSave }) {
         }
         if (step === 2 && testState !== "success") return;
         setStep((current) => Math.min(4, current + 1));
+    }
+
+    function goBack() {
+        if (step === 2) {
+            clearTestSession();
+            setError("");
+        }
+        setStep((current) => Math.max(1, current - 1));
+    }
+
+    function saveCamera() {
+        if (!testSession?.isOpen()) {
+            setError("The tested stream disconnected. Test it again before saving.");
+            clearTestSession();
+            setStep(2);
+            return;
+        }
+        handedOffRef.current = true;
+        onSave({
+            accessKey,
+            host: new URL(url).hostname,
+            location: locationName.trim(),
+            name: name.trim(),
+            session: testSession,
+            url: url.trim(),
+        });
     }
 
     return (
@@ -113,7 +156,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                                     className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)]"
                                     onChange={(event) => {
                                         setUrl(event.target.value);
-                                        setTestState("idle");
+                                        clearTestSession();
                                     }}
                                     placeholder="rtsp://camera-address:554/stream"
                                     type="url"
@@ -127,7 +170,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                                     className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)]"
                                     onChange={(event) => {
                                         setAccessKey(event.target.value);
-                                        setTestState("idle");
+                                        clearTestSession();
                                     }}
                                     placeholder="Required on hosted backend"
                                     type="password"
@@ -212,7 +255,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-200 pt-4">
                     <button
                         className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-stone-300 bg-[var(--color-surface)] px-4 py-2.5 text-xs font-semibold text-stone-700 shadow-sm transition-colors hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2"
-                        onClick={step === 1 ? onCancel : () => setStep((current) => Math.max(1, current - 1))}
+                        onClick={step === 1 ? onCancel : goBack}
                         type="button"
                     >
                         {step === 1 ? "Cancel" : <><LuChevronLeft className="size-4" /> Back</>}
@@ -229,7 +272,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                     ) : (
                         <button
                             className="rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[var(--color-forest-900)]"
-                            onClick={() => onSave({ accessKey, host: new URL(url).hostname, location: locationName.trim(), name: name.trim(), url: url.trim() })}
+                            onClick={saveCamera}
                             type="button"
                         >
                             Save camera

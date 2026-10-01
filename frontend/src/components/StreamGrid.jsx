@@ -7,7 +7,6 @@ export default function StreamGrid({
     onFrame,
     onSelect,
     onStatusChange,
-    onToggle,
     selectedId,
     streams,
 }) {
@@ -40,7 +39,6 @@ export default function StreamGrid({
                     onSelect={() => onSelect(stream.id)}
                     onStatusChange={onStatusChange}
                     onRetry={() => onRetry(stream.id)}
-                    onToggle={() => onToggle(stream.id)}
                 />
             ))}
         </div>

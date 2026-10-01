@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { LuExpand, LuPause, LuPlay } from "react-icons/lu";
+import { LuExpand } from "react-icons/lu";
 import CameraIcon from "./CameraIcon.jsx";
 
-export default function StreamCard({ stream, index, isSelected, isFullscreen, onFrame, onSelect, onStatusChange, onRetry, onToggle }) {
+export default function StreamCard({ stream, index, isSelected, isFullscreen, onFrame, onSelect, onStatusChange, onRetry }) {
     const [status, setStatus] = useState(stream.playing ? "connecting" : "paused");
     const [frameUrl, setFrameUrl] = useState("");
     const [message, setMessage] = useState("");
@@ -197,14 +197,6 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                             Retry
                         </button>
                     )}
-                    <button
-                        aria-label={`${stream.playing ? "Pause" : "Play"} camera ${index + 1}`}
-                        className="flex size-8 items-center justify-center rounded-md bg-black/60 text-white transition hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                        onClick={onToggle}
-                        type="button"
-                    >
-                        {stream.playing ? <LuPause aria-hidden="true" className="size-4" /> : <LuPlay aria-hidden="true" className="size-4" />}
-                    </button>
                 </div>
                 <button
                     aria-label="Toggle fullscreen for this camera"

@@ -54,6 +54,7 @@ class StreamConsumer(AsyncWebsocketConsumer):
         self.process = None
         self.stderr_task = None
         self.frame_task = None
+        self.stderr_tail = bytearray()
         self.process_lock = asyncio.Lock()
         self.capacity_acquired = False
         self.disconnecting = False
@@ -134,6 +135,7 @@ class StreamConsumer(AsyncWebsocketConsumer):
             )
             return
         self.capacity_acquired = True
+        self.stderr_tail.clear()
 
         await self._send_event({"type": "status", "status": "connecting"})
         try:
@@ -169,9 +171,15 @@ class StreamConsumer(AsyncWebsocketConsumer):
                 )
                 frame = await asyncio.wait_for(frame_reader.read_frame(), timeout)
                 if frame is None:
-                    await self._send_error(
-                        "The camera connection ended before video was received."
-                    )
+                    if self.stderr_task:
+                        try:
+                            await asyncio.wait_for(
+                                asyncio.shield(self.stderr_task),
+                                PROCESS_STOP_TIMEOUT_SECONDS,
+                            )
+                        except asyncio.TimeoutError:
+                            pass
+                    await self._send_error(self._ffmpeg_failure_message())
                     return
 
                 await self.send(bytes_data=frame)
@@ -193,8 +201,20 @@ class StreamConsumer(AsyncWebsocketConsumer):
                 await self._stop_stream(notify=False)
 
     async def _drain_stderr(self, reader):
-        while await reader.read(4096):
-            pass
+        while chunk := await reader.read(4096):
+            self.stderr_tail.extend(chunk)
+            if len(self.stderr_tail) > 16 * 1024:
+                del self.stderr_tail[:-16 * 1024]
+
+    def _ffmpeg_failure_message(self):
+        diagnostics = self.stderr_tail.decode("utf-8", errors="replace").lower()
+        if "401" in diagnostics and "unauthor" in diagnostics:
+            return "The RTSP server rejected this address or its token (401 Unauthorized). Check the stream URL and access token."
+        if "403" in diagnostics or "forbidden" in diagnostics:
+            return "The RTSP server denied access (403 Forbidden). Check the account permissions for this stream."
+        if "404" in diagnostics or "not found" in diagnostics:
+            return "The RTSP server could not find this stream (404 Not Found). Check the stream path."
+        return "The camera connection ended before video was received. Check the stream address and network access."
 
     async def _stop_stream(self, notify):
         self.stopping_stream = True

@@ -29,7 +29,7 @@ const groups = [
 
 export default function Sidebar({ activePage, onNavigate }) {
     return (
-        <aside className="sticky top-0 flex h-dvh w-14 shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-1.5 py-3 sm:w-16 sm:px-2 lg:w-[232px] lg:px-[17px] lg:py-6">
+        <aside className="sticky top-0 flex h-dvh w-14 shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-1.5 py-3 sm:w-16 sm:px-2 lg:w-52 lg:px-4 lg:py-6">
             <button
                 aria-label="Signal live dashboard"
                 className="mb-5 flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)] lg:mb-8 lg:justify-start"
@@ -50,18 +50,18 @@ export default function Sidebar({ activePage, onNavigate }) {
                         className={groupIndex > 0 ? "border-t border-stone-200 pt-4 lg:pt-5" : ""}
                         key={group.label}
                     >
-                        <p className="mb-2 hidden px-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-stone-400 lg:mb-4 lg:block">
+                        <p className="mb-2 hidden px-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-stone-400 lg:block">
                             {group.label}
                         </p>
-                        <div className="flex flex-col gap-1 lg:gap-2">
+                        <div className="flex flex-col gap-1">
                             {group.items.map(({ id, label, Icon }) => {
                                 const selected = id === activePage
                                     || (id === "live" && activePage === "single-camera");
                                 return (
                                     <button
                                         aria-current={selected ? "page" : undefined}
-                                        className={`flex min-h-10 items-center justify-center gap-2 rounded-lg px-2 text-xs transition-colors lg:min-h-14 lg:justify-start lg:gap-3 lg:rounded-lg lg:border-l-4 lg:border-transparent lg:px-3 lg:text-base ${selected
-                                            ? "bg-[var(--color-forest-100)] font-semibold text-stone-900 lg:border-[var(--color-forest-800)]"
+                                        className={`flex min-h-10 items-center justify-center gap-2 rounded-lg px-2 text-xs transition-colors lg:justify-start lg:border-l-4 lg:border-l-transparent ${selected
+                                            ? "bg-[var(--color-forest-200)] font-semibold text-stone-900 lg:border-l-[var(--color-forest-800)]"
                                             : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
                                             }`}
                                         key={id}
@@ -69,7 +69,7 @@ export default function Sidebar({ activePage, onNavigate }) {
                                         title={label}
                                         type="button"
                                     >
-                                        <Icon aria-hidden="true" className="size-[18px] shrink-0 lg:size-6" />
+                                        <Icon aria-hidden="true" className="size-[18px] shrink-0" />
                                         <span className="sr-only lg:not-sr-only">{label}</span>
                                     </button>
                                 );

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { LuPause, LuPlay, LuTrash2 } from "react-icons/lu";
+import { LuExpand, LuPause, LuPlay } from "react-icons/lu";
 import CameraIcon from "./CameraIcon.jsx";
 
-export default function StreamCard({ stream, index, isSelected, isFullscreen, onFrame, onSelect, onStatusChange, onRetry, onToggle, onRemove }) {
+export default function StreamCard({ stream, index, isSelected, isFullscreen, onFrame, onSelect, onStatusChange, onRetry, onToggle, onFullscreen }) {
     const [status, setStatus] = useState(stream.playing ? "connecting" : "paused");
     const [frameUrl, setFrameUrl] = useState("");
     const [message, setMessage] = useState("");
@@ -118,27 +118,30 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
             ? "border-[var(--color-olive-600)] ring-1 ring-[var(--color-olive-600)]"
             : "border-stone-200/80"
             }`}>
-            <button
-                aria-pressed={isSelected}
-                className={`camera-preview relative flex w-full items-center justify-center overflow-hidden bg-stone-900 text-left ${isFullscreen ? "min-h-0 flex-1 aspect-auto" : "aspect-video"}`}
-                onClick={onSelect}
-                type="button"
-            >
-                {frameUrl ? (
-                    <img
-                        alt={`Live feed from ${stream.name || `camera ${index + 1}`}`}
-                        className="size-full object-cover"
-                        src={frameUrl}
-                    />
-                ) : (
-                    <div className="flex max-w-sm flex-col items-center px-5 text-center text-white/55">
-                        <CameraIcon className="size-9" />
-                        <span className="mt-3 max-w-xs text-xs font-medium leading-5 text-white/75">
-                            {message || (status === "connecting" ? "Connecting to camera…" : status === "error" ? "Camera connection failed" : "Camera paused")}
+            <div className={`camera-preview group relative flex w-full items-center justify-center overflow-hidden bg-stone-900 text-left ${isFullscreen ? "min-h-0 flex-1 aspect-auto" : "aspect-[3/2]"}`}>
+                <button
+                    aria-label={`Select ${stream.name || `camera ${index + 1}`}`}
+                    aria-pressed={isSelected}
+                    className="absolute inset-0 z-0 flex items-center justify-center text-left"
+                    onClick={onSelect}
+                    type="button"
+                >
+                    {frameUrl ? (
+                        <img
+                            alt={`Live feed from ${stream.name || `camera ${index + 1}`}`}
+                            className="size-full object-cover"
+                            src={frameUrl}
+                        />
+                    ) : (
+                        <span className="flex max-w-sm flex-col items-center px-5 text-center text-white/55">
+                            <CameraIcon className="size-9" />
+                            <span className="mt-3 max-w-xs text-xs font-medium leading-5 text-white/75">
+                                {message || (status === "connecting" ? "Connecting to camera…" : status === "error" ? "Camera connection failed" : "Camera paused")}
+                            </span>
                         </span>
-                    </div>
-                )}
-                <span className={`absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide ${status === "live"
+                    )}
+                </button>
+                <span className={`pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide ${status === "live"
                     ? "bg-black/75 text-[var(--color-olive-500)]"
                     : status === "error"
                         ? "bg-rose-950/90 text-rose-200"
@@ -147,40 +150,34 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                     <span className={`size-2 rounded-full ${status === "live" ? "bg-[var(--color-olive-500)]" : status === "error" ? "bg-rose-400" : "bg-stone-300"}`} />
                     {statusLabel}
                 </span>
-                <span className="absolute right-3 top-3 rounded-md bg-black/70 px-2.5 py-1.5 text-[10px] font-medium text-white">
+                <span className="pointer-events-none absolute right-3 top-3 z-10 rounded-md bg-black/70 px-2.5 py-1.5 text-[11px] font-medium text-white">
                     {new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date())}
                 </span>
                 {frameUrl && status === "error" && message && (
-                    <span className="absolute inset-x-3 top-14 z-10 mx-auto max-w-lg rounded-lg bg-rose-950/90 px-3 py-2 text-center text-xs font-medium leading-5 text-rose-100 shadow-lg">
+                    <span className="pointer-events-none absolute inset-x-3 top-14 z-10 mx-auto max-w-lg rounded-lg bg-rose-950/90 px-3 py-2 text-center text-xs font-medium leading-5 text-rose-100 shadow-lg">
                         {message}
                     </span>
                 )}
-                <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-3 pb-3 pt-10 text-white">
+                <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pb-3 pt-12 text-white">
                     <span className="min-w-0">
-                        <span className="block truncate text-xs font-semibold uppercase tracking-wide">
+                        <span className="block truncate text-sm font-semibold uppercase tracking-wide">
                             CAM {String(index + 1).padStart(2, "0")} / {stream.location || stream.name || "Camera"}
                         </span>
-                        <span className="mt-1 block truncate text-[10px] text-white/85">
-                            {stream.name || stream.host}
+                        <span className="mt-1 block truncate text-xs text-white/85">
+                            {stream.location && stream.location !== stream.name ? stream.location : stream.host}
                         </span>
                     </span>
-                    <span aria-hidden="true" className="flex h-6 shrink-0 items-end gap-1">
+                    <span aria-hidden="true" className="flex h-6 shrink-0 items-end gap-1 pr-14">
                         {[9, 14, 20].map((height) => (
                             <span className={`w-1.5 rounded-t-sm ${status === "live" ? "bg-[var(--color-olive-500)]" : "bg-white/40"}`} key={height} style={{ height }} />
                         ))}
                     </span>
                 </span>
-            </button>
-            <div className="flex shrink-0 items-center justify-between gap-3 px-3 py-2.5">
-                <div className="min-w-0">
-                    <h3 className="truncate text-xs font-semibold text-stone-900">{stream.name || `Camera ${index + 1}`}</h3>
-                    <p className="mt-0.5 truncate text-[10px] text-stone-500">{stream.location || stream.host}</p>
-                </div>
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5">
                     {status === "error" && (
                         <button
                             aria-label={`Retry camera ${index + 1}`}
-                            className="rounded-md px-2 py-1.5 text-[10px] font-semibold text-[var(--color-forest-700)] hover:bg-[var(--color-forest-50)]"
+                            className="rounded-md bg-black/75 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-black"
                             onClick={onRetry}
                             type="button"
                         >
@@ -188,24 +185,20 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                         </button>
                     )}
                     <button
+                        aria-label="Fullscreen dashboard"
+                        className="flex size-8 items-center justify-center rounded-md bg-black/60 text-white transition hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        onClick={onFullscreen}
+                        type="button"
+                    >
+                        <LuExpand aria-hidden="true" className="size-4" />
+                    </button>
+                    <button
                         aria-label={`${stream.playing ? "Pause" : "Play"} camera ${index + 1}`}
-                        className="flex size-8 items-center justify-center rounded-md border border-stone-200 text-stone-600 transition hover:bg-[var(--color-forest-50)] hover:text-[var(--color-forest-700)]"
+                        className="flex size-8 items-center justify-center rounded-md bg-black/60 text-white opacity-0 transition hover:bg-black/85 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white group-hover:opacity-100"
                         onClick={onToggle}
                         type="button"
                     >
-                        {stream.playing ? (
-                            <LuPause aria-hidden="true" className="size-4" />
-                        ) : (
-                            <LuPlay aria-hidden="true" className="size-4" />
-                        )}
-                    </button>
-                    <button
-                        aria-label={`Remove camera ${index + 1}`}
-                        className="flex size-8 shrink-0 items-center justify-center rounded-md border border-stone-200 text-stone-500 transition hover:bg-rose-50 hover:text-rose-600"
-                        onClick={onRemove}
-                        type="button"
-                    >
-                        <LuTrash2 aria-hidden="true" className="size-4" />
+                        {stream.playing ? <LuPause aria-hidden="true" className="size-4" /> : <LuPlay aria-hidden="true" className="size-4" />}
                     </button>
                 </div>
             </div>

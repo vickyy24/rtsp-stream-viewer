@@ -149,7 +149,6 @@ function App() {
                             activities={activities}
                             layout={activePage === "single-camera" ? "1x1" : layout}
                             onAddCamera={openCameraWizard}
-                            onRemove={removeCamera}
                             onRetry={retryCamera}
                             onStatusChange={updateStatus}
                             onToggle={toggleCamera}

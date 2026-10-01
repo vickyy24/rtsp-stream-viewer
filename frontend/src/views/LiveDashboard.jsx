@@ -9,7 +9,6 @@ export default function LiveDashboard({
     activities,
     layout,
     onAddCamera,
-    onRemove,
     onRetry,
     onStatusChange,
     onToggle,
@@ -125,8 +124,8 @@ export default function LiveDashboard({
                         <StreamGrid
                             layout={layout}
                             isFullscreen={isFullscreen}
+                            onFullscreen={toggleFullscreen}
                             onFrame={receiveFrame}
-                            onRemove={onRemove}
                             onRetry={onRetry}
                             onSelect={setSelectedId}
                             onStatusChange={onStatusChange}

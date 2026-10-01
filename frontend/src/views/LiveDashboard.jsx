@@ -124,7 +124,6 @@ export default function LiveDashboard({
                         <StreamGrid
                             layout={layout}
                             isFullscreen={isFullscreen}
-                            onFullscreen={toggleFullscreen}
                             onFrame={receiveFrame}
                             onRetry={onRetry}
                             onSelect={setSelectedId}

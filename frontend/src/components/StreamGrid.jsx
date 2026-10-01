@@ -3,7 +3,6 @@ import StreamCard from "./StreamCard.jsx";
 export default function StreamGrid({
     layout,
     isFullscreen,
-    onFullscreen,
     onRetry,
     onFrame,
     onSelect,
@@ -36,7 +35,6 @@ export default function StreamGrid({
                     key={stream.id}
                     stream={stream}
                     isFullscreen={isFullscreen}
-                    onFullscreen={onFullscreen}
                     isSelected={selectedId === stream.id}
                     onFrame={onFrame}
                     onSelect={() => onSelect(stream.id)}

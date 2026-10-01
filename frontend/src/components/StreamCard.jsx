@@ -1,11 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LuExpand, LuPause, LuPlay } from "react-icons/lu";
 import CameraIcon from "./CameraIcon.jsx";
 
-export default function StreamCard({ stream, index, isSelected, isFullscreen, onFrame, onSelect, onStatusChange, onRetry, onToggle, onFullscreen }) {
+export default function StreamCard({ stream, index, isSelected, isFullscreen, onFrame, onSelect, onStatusChange, onRetry, onToggle }) {
     const [status, setStatus] = useState(stream.playing ? "connecting" : "paused");
     const [frameUrl, setFrameUrl] = useState("");
     const [message, setMessage] = useState("");
+    const previewRef = useRef(null);
+
+    async function togglePreviewFullscreen() {
+        if (document.fullscreenElement === previewRef.current) {
+            await document.exitFullscreen();
+            return;
+        }
+        if (document.fullscreenElement) await document.exitFullscreen();
+        await previewRef.current?.requestFullscreen();
+    }
 
     useEffect(() => {
         if (!stream.playing) {
@@ -118,7 +128,10 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
             ? "border-[var(--color-olive-600)] ring-1 ring-[var(--color-olive-600)]"
             : "border-stone-200/80"
             }`}>
-            <div className={`camera-preview group relative flex w-full items-center justify-center overflow-hidden bg-stone-900 text-left ${isFullscreen ? "min-h-0 flex-1 aspect-auto" : "aspect-[3/2]"}`}>
+            <div
+                className={`camera-preview group relative flex w-full items-center justify-center overflow-hidden bg-stone-900 text-left ${isFullscreen ? "min-h-0 flex-1 aspect-auto" : "aspect-[3/2]"}`}
+                ref={previewRef}
+            >
                 <button
                     aria-label={`Select ${stream.name || `camera ${index + 1}`}`}
                     aria-pressed={isSelected}
@@ -185,9 +198,9 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                         </button>
                     )}
                     <button
-                        aria-label="Fullscreen dashboard"
+                        aria-label="Toggle fullscreen for this camera"
                         className="flex size-8 items-center justify-center rounded-md bg-black/60 text-white transition hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                        onClick={onFullscreen}
+                        onClick={togglePreviewFullscreen}
                         type="button"
                     >
                         <LuExpand aria-hidden="true" className="size-4" />

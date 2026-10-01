@@ -81,3 +81,10 @@ a {
 .camera-preview {
     background-color: #20251e;
 }
+
+.camera-preview:fullscreen {
+    width: 100vw;
+    height: 100dvh;
+    aspect-ratio: auto;
+    border-radius: 0;
+}

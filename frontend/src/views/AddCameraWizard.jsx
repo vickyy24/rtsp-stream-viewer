@@ -211,7 +211,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                 {error && step === 1 && <p className="pb-3 text-xs text-rose-600" role="alert">{error}</p>}
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-200 pt-4">
                     <button
-                        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-stone-500 hover:bg-stone-100"
+                        className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-stone-300 bg-[var(--color-surface)] px-4 py-2.5 text-xs font-semibold text-stone-700 shadow-sm transition-colors hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2"
                         onClick={step === 1 ? onCancel : () => setStep((current) => Math.max(1, current - 1))}
                         type="button"
                     >

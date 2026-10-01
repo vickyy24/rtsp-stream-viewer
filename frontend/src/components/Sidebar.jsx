@@ -69,7 +69,7 @@ export default function Sidebar({ activePage, onNavigate }) {
                                         title={label}
                                         type="button"
                                     >
-                                        <Icon aria-hidden="true" className={`size-[18px] shrink-0 ${selected ? "fill-current" : ""}`} />
+                                        <Icon aria-hidden="true" className="size-[18px] shrink-0" />
                                         <span className="sr-only lg:not-sr-only">{label}</span>
                                     </button>
                                 );

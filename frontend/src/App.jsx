@@ -5,6 +5,7 @@ import WorkspaceHeader from "./components/WorkspaceHeader.jsx";
 import AppRoutes from "./app/AppRoutes.jsx";
 import AppLayout from "./components/layout/AppLayout.jsx";
 import LiveDashboard from "./views/LiveDashboard.jsx";
+import { paths } from "./app/paths.js";
 import { deleteSavedCamera, getWorkspaceKey, listCameras, saveCamera } from "./services/streamService.js";
 
 function App() {
@@ -12,17 +13,19 @@ function App() {
     const location = useLocation();
     const singleCameraMatch = useMatch("/live/camera/:cameraId");
     const selectedCameraId = singleCameraMatch?.params.cameraId || null;
-    const activePage = location.pathname.startsWith("/cameras") ? "cameras"
+    const activePage = location.pathname === paths.addCamera
+        ? (location.state?.returnTo === paths.cameras ? "cameras" : "live")
+        : location.pathname.startsWith("/cameras") ? "cameras"
         : location.pathname.startsWith("/layouts") ? "layouts"
             : location.pathname.startsWith("/archive") ? "archive"
                 : location.pathname.startsWith("/connections") ? "connections"
                     : location.pathname.startsWith("/settings") ? "settings" : "live";
-    const showLive = activePage === "live";
+    const showLive = location.pathname === paths.live
+        || location.pathname.startsWith(`${paths.live}/camera/`);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [layout, setLayout] = useState("2x2");
     const [streams, setStreams] = useState([]);
-    const [cameraLoadError, setCameraLoadError] = useState("");
     const [statuses, setStatuses] = useState({});
     const [activities, setActivities] = useState([]);
     const streamListRef = useRef(streams);
@@ -40,10 +43,7 @@ function App() {
                 playing: true,
                 retryCount: 0,
             })));
-            setCameraLoadError("");
-        }).catch((error) => {
-            if (active) setCameraLoadError(error.message);
-        });
+        }).catch(() => {});
         return () => { active = false; };
     }, []);
 
@@ -94,10 +94,8 @@ function App() {
                 playing: true,
                 retryCount: 0,
             })));
-            setCameraLoadError("");
-        } catch (error) {
+        } catch {
             setStreams((current) => [...current, newCamera]);
-            setCameraLoadError(error.message);
         }
         addActivity(`${newCamera.name} added to the workspace`);
         navigate(location.state?.returnTo || "/live", { replace: true });
@@ -107,8 +105,7 @@ function App() {
         const camera = streamListRef.current.find((stream) => stream.id === streamId);
         try {
             await deleteSavedCamera(streamId);
-        } catch (error) {
-            setCameraLoadError(error.message);
+        } catch {
             return;
         }
         setStreams((current) => current.filter((stream) => stream.id !== streamId));
@@ -135,7 +132,7 @@ function App() {
     }
 
     function openCameraWizard() {
-        navigate("/cameras/add", { state: { returnTo: location.pathname.startsWith("/cameras") ? "/cameras" : "/live" } });
+        navigate(paths.addCamera, { state: { returnTo: location.pathname.startsWith(paths.cameras) ? paths.cameras : paths.live } });
     }
 
     const selectedCamera = streams.find((stream) => stream.id === selectedCameraId);
@@ -157,11 +154,11 @@ function App() {
                     {selectedCamera && (
                         <div className="mb-3 flex items-center justify-between">
                             <div>
-                                <h1 className="text-base font-semibold text-stone-900">{selectedCamera.name || "Live camera"}</h1>
+                                <h1 className="text-xl font-semibold tracking-tight text-stone-900">{selectedCamera.name || "Live camera"}</h1>
                                 <p className="mt-0.5 text-xs text-stone-500">{selectedCamera.location || selectedCamera.host || "Single camera view"}</p>
                             </div>
                             <button
-                                className="text-xs font-semibold text-[var(--color-forest-700)] hover:underline"
+                                className="text-sm font-semibold text-[var(--color-forest-700)] hover:underline"
                                 onClick={() => navigate("/live")}
                                 type="button"
                             >
@@ -182,11 +179,6 @@ function App() {
                     />
                 </>
             )}
-            notice={cameraLoadError && location.pathname !== "/cameras/add" ? (
-                <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700" role="status">
-                    Camera storage: {cameraLoadError} Add a camera with the workspace key to reconnect to this workspace.
-                </p>
-            ) : null}
             showLive={showLive}
             sidebar={<Sidebar activePage={activePage} />}
         >

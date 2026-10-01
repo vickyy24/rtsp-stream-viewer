@@ -33,7 +33,7 @@ export default function SettingsPage() {
                     ].map(([label, target, Icon]) => (
                         <button
                             aria-pressed={activeSection === target}
-                            className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-left text-xs font-medium ${activeSection === target
+                            className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium ${activeSection === target
                                 ? "bg-[var(--color-forest-200)] text-[var(--color-forest-900)]"
                                 : "text-stone-500 hover:bg-stone-100"
                                 }`}
@@ -51,7 +51,7 @@ export default function SettingsPage() {
                 </nav>
                 <div className="flex flex-col gap-4">
                     <section className="scroll-mt-4 rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4" id="general-settings">
-                        <h2 className="text-sm font-semibold text-stone-800">General</h2>
+                        <h2 className="text-base font-semibold text-stone-800">General</h2>
                         <div className="mt-2">
                             <SettingRow
                                 detail="Product name shown in this workspace"
@@ -61,7 +61,7 @@ export default function SettingsPage() {
                         </div>
                     </section>
                     <section className="scroll-mt-4 rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4" id="stream-settings">
-                        <h2 className="text-sm font-semibold text-stone-800">Stream</h2>
+                        <h2 className="text-base font-semibold text-stone-800">Stream</h2>
                         <div className="mt-2">
                             <SettingRow
                                 detail="WebSocket endpoint used by camera players"
@@ -76,7 +76,7 @@ export default function SettingsPage() {
                         </div>
                     </section>
                     <section className="scroll-mt-4 rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4" id="access-settings">
-                        <h2 className="text-sm font-semibold text-stone-800">Access and unavailable features</h2>
+                        <h2 className="text-base font-semibold text-stone-800">Access and unavailable features</h2>
                         <p className="mt-2 text-xs leading-5 text-stone-500">
                             Stream access uses one workspace key from the backend environment; there are no individual user accounts. Recording, notifications, and saved workspace preferences are not implemented. This screen reports service configuration and does not offer settings the backend cannot store.
                         </p>

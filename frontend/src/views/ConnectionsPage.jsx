@@ -11,13 +11,13 @@ export default function ConnectionsPage({ onRemove, onRetry, onToggle, statuses,
             <section className="overflow-hidden rounded-xl border border-stone-200 bg-[var(--color-surface)]">
                 <div className="flex items-center gap-2 border-b border-stone-200 px-4 py-3">
                     <LuNetwork aria-hidden="true" className="size-4 text-stone-500" />
-                    <h2 className="text-sm font-semibold text-stone-800">RTSP connections</h2>
+                    <h2 className="text-base font-semibold text-stone-800">RTSP connections</h2>
                     <span className="ml-auto text-xs text-stone-400">{streams.length} total</span>
                 </div>
                 {streams.length ? (
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[600px] text-left">
-                            <thead className="bg-stone-50 text-[11px] uppercase tracking-wide text-stone-400">
+                            <thead className="bg-stone-50 text-xs uppercase tracking-wide text-stone-400">
                                 <tr>
                                     <th className="px-4 py-3 font-semibold">Camera</th>
                                     <th className="px-4 py-3 font-semibold">RTSP host</th>

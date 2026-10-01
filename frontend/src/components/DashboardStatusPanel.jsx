@@ -10,7 +10,7 @@ function Metric({ icon: Icon, label, value, tone }) {
                 <Icon aria-hidden="true" className="size-4" />
             </span>
             <div className="min-w-0">
-                <p className="truncate text-[11px] text-stone-500">{label}</p>
+                <p className="truncate text-xs text-stone-500">{label}</p>
                 <p className="text-sm font-semibold text-stone-900">{value}</p>
             </div>
         </div>
@@ -40,7 +40,7 @@ function ActivityList({ activities }) {
                     <span className="min-w-0 flex-1 text-xs leading-4 text-stone-600">
                         {activity.message}
                     </span>
-                    <time className="shrink-0 text-[10px] text-stone-400">
+                    <time className="shrink-0 text-xs text-stone-400">
                         {new Intl.DateTimeFormat(undefined, {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -58,8 +58,8 @@ export default function DashboardStatusPanel({ liveCount, errorCount, total, act
         <aside className="flex min-w-0 flex-col gap-3">
             <section className="rounded-xl border border-stone-200/80 bg-[var(--color-surface)] p-4">
                 <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-sm font-semibold text-stone-900">System status</h2>
-                    <span className="text-[11px] text-[var(--color-forest-700)]">Live</span>
+                    <h2 className="text-base font-semibold text-stone-900">System status</h2>
+                    <span className="text-xs text-[var(--color-forest-700)]">Live</span>
                 </div>
                 <div className="mt-4 flex items-center gap-3 border-b border-stone-200/70 pb-4">
                     <span
@@ -107,8 +107,8 @@ export default function DashboardStatusPanel({ liveCount, errorCount, total, act
 
             <section className="rounded-xl border border-stone-200/80 bg-[var(--color-surface)] p-4">
                 <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-stone-900">Recent activity</h2>
-                    <span className="text-[11px] text-stone-400">This session</span>
+                    <h2 className="text-base font-semibold text-stone-900">Recent activity</h2>
+                    <span className="text-xs text-stone-400">This session</span>
                 </div>
                 <ActivityList activities={activities} />
             </section>

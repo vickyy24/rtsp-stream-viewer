@@ -14,13 +14,13 @@ function StepIndicator({ currentStep }) {
                 const active = step === currentStep;
                 return (
                     <li className="flex items-center gap-2" key={label}>
-                        <span className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${complete || active
+                        <span className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${complete || active
                             ? "brand-gradient text-white"
                             : "bg-stone-100 text-stone-500"
                             }`}>
                             {complete ? <LuCheck aria-hidden="true" className="size-3.5" /> : step}
                         </span>
-                        <span className={`truncate text-[11px] font-medium ${active ? "text-stone-800" : "text-stone-500"}`}>
+                        <span className={`truncate text-xs font-medium ${active ? "text-stone-800" : "text-stone-500"}`}>
                             {label}
                         </span>
                     </li>
@@ -139,7 +139,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                 {step === 1 && (
                     <div className="grid gap-5 py-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
                         <div className="flex flex-col gap-4">
-                            <h2 className="text-sm font-semibold text-stone-800">Camera details</h2>
+                            <h2 className="text-base font-semibold text-stone-800">Camera details</h2>
                             <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600">
                                 Camera name
                                 <input
@@ -188,7 +188,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                             </label>
                         </div>
                         <aside className="rounded-lg border border-stone-200 bg-stone-50 p-4">
-                            <h3 className="text-xs font-semibold text-stone-700">Connection status</h3>
+                            <h3 className="text-sm font-semibold text-stone-700">Connection status</h3>
                             <ol className="mt-4 flex flex-col gap-4">
                                 {["Waiting for connection", "Resolving stream", "Establishing connection", "Receiving video"].map((label, index) => (
                                     <li className="flex items-center gap-2.5 text-xs text-stone-500" key={label}>
@@ -210,7 +210,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                             : testState === "testing"
                                 ? <LuCircleDot aria-hidden="true" className="size-10 text-[var(--color-forest-700)]" />
                                 : <LuCircleDot aria-hidden="true" className="size-10 text-stone-400" />}
-                        <h2 className="mt-3 text-sm font-semibold text-stone-800">
+                        <h2 className="mt-3 text-base font-semibold text-stone-800">
                             {testState === "success" ? "Connection test passed" : testState === "testing" ? "Testing stream connection…" : "Test the camera connection"}
                         </h2>
                         <p className="mt-1 max-w-md text-xs leading-5 text-stone-500">
@@ -219,7 +219,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                         {error && <p className="mt-3 text-xs text-rose-600" role="alert">{error}</p>}
                         {testState !== "success" && (
                             <button
-                                className="brand-gradient mt-4 inline-flex min-h-10 items-center justify-center rounded-lg px-5 py-2.5 text-xs font-semibold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:text-stone-500 disabled:shadow-none"
+                                className="brand-gradient mt-4 inline-flex min-h-10 items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:text-stone-500 disabled:shadow-none"
                                 disabled={testState === "testing"}
                                 onClick={handleTest}
                                 type="button"
@@ -234,11 +234,11 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                     <div className="grid min-h-64 gap-4 py-5 md:grid-cols-[minmax(0,1fr)_16rem]">
                         <div className="flex aspect-video flex-col items-center justify-center rounded-lg border border-stone-200 bg-stone-100 text-center">
                             <LuCircleCheck aria-hidden="true" className="size-8 text-[var(--color-olive-600)]" />
-                            <h2 className="mt-3 text-sm font-semibold text-stone-800">Source is reachable</h2>
+                            <h2 className="mt-3 text-base font-semibold text-stone-800">Source is reachable</h2>
                             <p className="mt-1 text-xs text-stone-500">A live preview starts after saving this camera.</p>
                         </div>
                         <aside className="rounded-lg border border-stone-200 p-4">
-                            <h3 className="text-xs font-semibold text-stone-700">Camera preview</h3>
+                            <h3 className="text-sm font-semibold text-stone-700">Camera preview</h3>
                             <dl className="mt-3 flex flex-col gap-2 text-xs">
                                 <div><dt className="text-stone-400">Name</dt><dd className="mt-0.5 text-stone-700">{name}</dd></div>
                                 <div><dt className="text-stone-400">Location</dt><dd className="mt-0.5 text-stone-700">{locationName || "Not set"}</dd></div>
@@ -250,7 +250,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
 
                 {step === 4 && (
                     <div className="flex min-h-64 flex-col justify-center py-6">
-                        <h2 className="text-sm font-semibold text-stone-800">Review and save</h2>
+                        <h2 className="text-base font-semibold text-stone-800">Review and save</h2>
                         <p className="mt-1 text-xs text-stone-500">The camera connection is stored securely by the stream service so it can reconnect after refresh.</p>
                         <dl className="mt-5 grid gap-4 rounded-lg border border-stone-200 bg-stone-50 p-4 sm:grid-cols-2">
                             <div><dt className="text-xs text-stone-400">Camera name</dt><dd className="mt-1 text-sm font-medium text-stone-700">{name}</dd></div>
@@ -263,7 +263,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                 {error && step === 1 && <p className="pb-3 text-xs text-rose-600" role="alert">{error}</p>}
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-200 pt-4">
                     <button
-                        className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-stone-300 bg-[var(--color-surface)] px-4 py-2.5 text-xs font-semibold text-stone-700 shadow-sm transition-colors hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2"
+                        className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-stone-300 bg-[var(--color-surface)] px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition-colors hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2"
                         onClick={step === 1 ? onCancel : goBack}
                         type="button"
                     >
@@ -271,7 +271,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                     </button>
                     {step < 4 ? (
                         <button
-                            className="brand-gradient inline-flex min-h-10 items-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:text-stone-500"
+                            className="brand-gradient inline-flex min-h-10 items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:text-stone-500"
                             disabled={step === 2 && testState !== "success"}
                             onClick={continueWizard}
                             type="button"
@@ -280,7 +280,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                         </button>
                     ) : (
                         <button
-                            className="brand-gradient rounded-lg px-4 py-2.5 text-xs font-semibold disabled:cursor-wait disabled:opacity-70"
+                            className="brand-gradient rounded-lg px-4 py-2.5 text-sm font-semibold disabled:cursor-wait disabled:opacity-70"
                             disabled={saving}
                             onClick={saveCamera}
                             type="button"

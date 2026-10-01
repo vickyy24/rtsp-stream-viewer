@@ -36,7 +36,7 @@ export default function CamerasPage({
     });
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
             <PageHeading
                 action={(
                     <Button
@@ -73,8 +73,8 @@ export default function CamerasPage({
                         return (
                             <button
                                 aria-pressed={statusFilter === id}
-                                className={`rounded-lg border px-3 py-2 text-xs font-medium ${statusFilter === id
-                                    ? "border-[var(--color-forest-700)] bg-[var(--color-forest-200)] text-[var(--color-forest-900)]"
+                                className={`rounded-lg border px-5 py-1 text-sm font-medium transition-colors ${statusFilter === id
+                                    ? "brand-gradient border-transparent shadow-sm"
                                     : "border-stone-200 text-stone-500 hover:bg-stone-50"
                                     }`}
                                 key={id}
@@ -104,7 +104,7 @@ export default function CamerasPage({
                 </div>
             ) : (
                 <div className="rounded-xl border border-dashed border-stone-300 bg-[var(--color-surface)] px-6 py-14 text-center">
-                    <h3 className="text-sm font-semibold text-stone-800">
+                    <h3 className="text-base font-semibold text-stone-800">
                         {streams.length ? "No cameras match this filter" : "No cameras added yet"}
                     </h3>
                     <p className="mt-1 text-xs text-stone-500">

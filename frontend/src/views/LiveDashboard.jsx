@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LuLayoutGrid, LuPlus, LuScanEye } from "react-icons/lu";
+import { LuLayoutGrid, LuScanEye } from "react-icons/lu";
 import CameraThumbnails from "../components/CameraThumbnails.jsx";
 import DashboardStatusPanel from "../components/DashboardStatusPanel.jsx";
 import DashboardToolbar from "../components/DashboardToolbar.jsx";
@@ -11,7 +11,6 @@ export default function LiveDashboard({
     onAddCamera,
     onRetry,
     onStatusChange,
-    onToggle,
     onViewLayouts,
     streams,
     statuses,
@@ -72,12 +71,6 @@ export default function LiveDashboard({
         if (previousUrl) window.setTimeout(() => URL.revokeObjectURL(previousUrl), 1500);
     }, []);
 
-    const pauseAll = useCallback(() => {
-        streams.forEach((stream) => {
-            if (stream.playing) onToggle(stream.id);
-        });
-    }, [onToggle, streams]);
-
     const toggleFullscreen = useCallback(async () => {
         if (document.fullscreenElement) {
             await document.exitFullscreen();
@@ -101,19 +94,8 @@ export default function LiveDashboard({
     return (
         <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_17.5rem]">
             <section className="min-w-0">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <h1 className="text-base font-semibold text-stone-900">Live dashboard</h1>
-                        <p className="mt-0.5 text-xs text-stone-500">Live camera feeds in this workspace</p>
-                    </div>
-                    <button
-                        className="brand-gradient inline-flex min-h-10 items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors"
-                        onClick={onAddCamera}
-                        type="button"
-                    >
-                        <LuPlus aria-hidden="true" className="size-4" />
-                        Add camera
-                    </button>
+                <div className="mb-3">
+                    <h1 className="text-xl font-semibold tracking-tight text-stone-900">Live camera feed</h1>
                 </div>
 
                 <div
@@ -136,17 +118,10 @@ export default function LiveDashboard({
                             <span className="flex size-12 items-center justify-center rounded-xl bg-[var(--color-forest-50)] text-[var(--color-forest-700)]">
                                 <LuLayoutGrid aria-hidden="true" className="size-5" />
                             </span>
-                            <h2 className="mt-4 text-sm font-semibold text-stone-900">No cameras in this view</h2>
-                            <p className="mt-1 max-w-sm text-xs leading-5 text-stone-500">
-                                Add an RTSP camera to begin monitoring its live feed.
+                            <h2 className="mt-4 text-base font-semibold text-stone-900">No cameras in this view</h2>
+                            <p className="mt-1 max-w-sm text-sm leading-5 text-stone-500">
+                                Use Add camera in the toolbar to connect an RTSP stream and begin monitoring.
                             </p>
-                            <button
-                                className="brand-gradient mt-4 rounded-lg px-4 py-2.5 text-xs font-semibold"
-                                onClick={onAddCamera}
-                                type="button"
-                            >
-                                Add your first camera
-                            </button>
                         </div>
                     )}
 
@@ -155,7 +130,7 @@ export default function LiveDashboard({
                         isFullscreen={isFullscreen}
                         layout={layout}
                         onLayoutChange={onViewLayouts}
-                        onPauseAll={pauseAll}
+                        onAddCamera={onAddCamera}
                         onSnapshot={takeSnapshot}
                         onToggleFullscreen={toggleFullscreen}
                         streams={streams}
@@ -171,7 +146,7 @@ export default function LiveDashboard({
                 </div>
             </section>
 
-            <div className="flex min-w-0 flex-col gap-3">
+            <div className="relative top-1 flex min-w-0 flex-col gap-3">
                 <DashboardStatusPanel
                     activities={activities}
                     errorCount={errorCount}
@@ -181,7 +156,7 @@ export default function LiveDashboard({
                 <section className="rounded-xl border border-stone-200/80 bg-[var(--color-surface)] p-4">
                     <div className="mb-3 flex items-center gap-2">
                         <LuScanEye aria-hidden="true" className="size-4 text-[var(--color-forest-700)]" />
-                        <h2 className="text-sm font-semibold text-stone-900">Stream details</h2>
+                        <h2 className="text-base font-semibold text-stone-900">Stream details</h2>
                         {selectedStream && (
                             <span className={`ml-auto size-2 shrink-0 rounded-full ${selectedStatus === "live" ? "bg-[var(--color-olive-500)]" : selectedStatus === "error" ? "bg-rose-500" : "bg-stone-300"}`} />
                         )}
@@ -194,7 +169,7 @@ export default function LiveDashboard({
                             <DetailRow label="Source host" value={selectedStream.host || "Unavailable"} />
                         </dl>
                     ) : (
-                        <p className="text-xs leading-5 text-stone-500">Add a camera to see its connection details.</p>
+                        <p className="text-sm leading-5 text-stone-500">Add a camera to see its connection details.</p>
                     )}
                 </section>
             </div>

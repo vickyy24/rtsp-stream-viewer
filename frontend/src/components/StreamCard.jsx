@@ -163,7 +163,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                     <span className={`size-2 rounded-full ${status === "live" ? "bg-[var(--color-olive-500)]" : status === "error" ? "bg-rose-400" : "bg-stone-300"}`} />
                     {statusLabel}
                 </span>
-                <span className="pointer-events-none absolute right-3 top-3 z-10 rounded-md bg-black/70 px-2.5 py-1.5 text-[11px] font-medium text-white">
+                <span className="pointer-events-none absolute right-3 top-3 z-10 rounded-md bg-black/70 px-2.5 py-1.5 text-xs font-medium text-white">
                     {new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date())}
                 </span>
                 {frameUrl && status === "error" && message && (
@@ -190,7 +190,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                     {status === "error" && (
                         <button
                             aria-label={`Retry camera ${index + 1}`}
-                            className="rounded-md bg-black/75 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-black"
+                            className="rounded-md bg-black/75 px-2.5 py-1.5 text-sm font-semibold text-white transition hover:bg-black"
                             onClick={onRetry}
                             type="button"
                         >

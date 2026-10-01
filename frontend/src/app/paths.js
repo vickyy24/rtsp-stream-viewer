@@ -1,7 +1,7 @@
 export const paths = {
     live: "/live",
     cameras: "/cameras",
-    addCamera: "/cameras/add",
+    addCamera: "/add-camera",
     layouts: "/layouts",
     archive: "/archive",
     connections: "/connections",

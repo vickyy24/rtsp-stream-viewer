@@ -33,7 +33,7 @@ export default function CameraRow({ camera, index, onOpen, onRemove, onToggle, s
                 <span className="mt-1 block truncate text-xs text-stone-500">
                     {camera.location || camera.host}
                 </span>
-                <span className="mt-1 block truncate text-[11px] text-stone-400">{camera.host}</span>
+                <span className="mt-1 block truncate text-xs text-stone-400">{camera.host}</span>
             </button>
             <div className="flex items-center justify-between gap-4 sm:justify-start">
                 <div className="min-w-28">
@@ -41,7 +41,7 @@ export default function CameraRow({ camera, index, onOpen, onRemove, onToggle, s
                         <span className={`size-2 rounded-full ${statusColor}`} />
                         {statusLabel}
                     </span>
-                    <span className="mt-1 block text-[11px] text-stone-400">RTSP stream</span>
+                    <span className="mt-1 block text-xs text-stone-400">RTSP stream</span>
                 </div>
                 <button
                     aria-label={`${camera.playing ? "Pause" : "Play"} ${camera.name || `camera ${index + 1}`}`}

@@ -1,18 +1,18 @@
-import { LuExpand, LuLayoutGrid, LuPause, LuCamera } from "react-icons/lu";
+import { LuExpand, LuLayoutGrid, LuPlus, LuCamera } from "react-icons/lu";
 
 export default function DashboardToolbar({
     frameAvailable,
     isFullscreen,
     layout,
     onLayoutChange,
-    onPauseAll,
+    onAddCamera,
     onSnapshot,
     onToggleFullscreen,
     streams,
 }) {
     return (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-stone-200/80 bg-[var(--color-surface)] p-2.5">
-            <div className="flex items-center gap-2 px-1 text-xs font-semibold text-stone-700">
+            <div className="flex items-center gap-2 px-1 text-sm font-semibold text-stone-700">
                 <LuLayoutGrid aria-hidden="true" className="size-4" />
                 Layout
             </div>
@@ -20,7 +20,7 @@ export default function DashboardToolbar({
                 {["1x1", "2x2", "3x3", "4x4"].map((value) => (
                     <button
                         aria-pressed={layout === value}
-                        className={`min-w-12 rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${layout === value
+                        className={`min-w-12 rounded-md border px-2.5 py-1.5 text-sm font-medium transition-colors ${layout === value
                             ? "border-[var(--color-forest-700)] bg-[var(--color-forest-200)] text-[var(--color-forest-900)]"
                             : "border-stone-200 text-stone-600 hover:bg-stone-50"
                             }`}
@@ -35,16 +35,16 @@ export default function DashboardToolbar({
             <div className="flex flex-wrap gap-1.5">
                 <ToolbarButton disabled={!streams.length} icon={LuExpand} label={isFullscreen ? "Exit full" : "Fullscreen"} onClick={onToggleFullscreen} />
                 <ToolbarButton disabled={!frameAvailable} icon={LuCamera} label="Snapshot" onClick={onSnapshot} />
-                <ToolbarButton disabled={!streams.some((stream) => stream.playing)} icon={LuPause} label="Pause all" onClick={onPauseAll} />
+                <ToolbarButton icon={LuPlus} label="Add camera" onClick={onAddCamera} primary />
             </div>
         </div>
     );
 }
 
-function ToolbarButton({ icon: Icon, label, onClick, disabled }) {
+function ToolbarButton({ icon: Icon, label, onClick, disabled, primary = false }) {
     return (
         <button
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-stone-200 bg-white/70 px-2.5 text-[11px] font-medium text-stone-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-45"
+            className={`${primary ? "brand-gradient h-10 rounded-lg px-3.5 font-semibold" : "min-h-9 rounded-md border border-stone-200 bg-white/70 px-2.5 font-medium text-stone-700 hover:bg-stone-50"} inline-flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-45`}
             disabled={disabled}
             onClick={onClick}
             type="button"

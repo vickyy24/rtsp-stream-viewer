@@ -51,7 +51,7 @@ export default function LayoutsPage({ layout, onApply }) {
                         />
                         <div className="mt-3 flex items-center justify-between gap-2">
                             <div>
-                                <h2 className="text-sm font-semibold text-stone-800">{item.label}</h2>
+                                <h2 className="text-base font-semibold text-stone-800">{item.label}</h2>
                                 <p className="mt-0.5 text-xs text-stone-500">{item.columns * item.rows} tile slots</p>
                             </div>
                             <button

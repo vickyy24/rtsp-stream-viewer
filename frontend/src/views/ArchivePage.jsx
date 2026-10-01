@@ -30,7 +30,7 @@ export default function ArchivePage({ activities, streams }) {
                         <span className="flex size-12 items-center justify-center rounded-xl bg-stone-100 text-stone-500">
                             <LuArchive aria-hidden="true" className="size-5" />
                         </span>
-                        <h2 className="mt-4 text-sm font-semibold text-stone-800">No recordings to review</h2>
+                        <h2 className="mt-4 text-base font-semibold text-stone-800">No recordings to review</h2>
                         <p className="mt-1 max-w-md text-xs leading-5 text-stone-500">
                             Recording and playback storage aren’t part of the current stream service. Live feeds are sent as temporary JPEG frames and are not saved.
                         </p>
@@ -38,8 +38,8 @@ export default function ArchivePage({ activities, streams }) {
                 </SurfaceCard>
                 <SurfaceCard as="aside">
                     <div className="flex items-center justify-between gap-2">
-                        <h2 className="text-sm font-semibold text-stone-800">Connection activity</h2>
-                        <span className="text-[10px] text-stone-400">This session</span>
+                        <h2 className="text-base font-semibold text-stone-800">Connection activity</h2>
+                        <span className="text-xs text-stone-400">This session</span>
                     </div>
                     {activities.length ? (
                         <ul className="mt-3 flex flex-col gap-3">
@@ -47,7 +47,7 @@ export default function ArchivePage({ activities, streams }) {
                                 <li className="flex gap-2 text-xs leading-5 text-stone-600" key={activity.id}>
                                     <span className={`mt-1.5 size-2 shrink-0 rounded-full ${activity.tone === "error" ? "bg-rose-500" : "bg-[var(--color-olive-500)]"}`} />
                                     <span className="min-w-0 flex-1">{activity.message}</span>
-                                    <time className="shrink-0 text-[10px] text-stone-400">
+                                    <time className="shrink-0 text-xs text-stone-400">
                                         {new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" }).format(activity.createdAt)}
                                     </time>
                                 </li>

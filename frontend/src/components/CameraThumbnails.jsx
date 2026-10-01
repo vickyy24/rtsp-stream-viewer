@@ -1,21 +1,21 @@
 import { LuCamera } from "react-icons/lu";
 
-export default function CameraThumbnails({ streams, statuses, frameUrls, selectedId, onSelect }) {
+export default function CameraThumbnails({ streams, statuses, frameUrls, selectedId, onSelect, isFullscreen }) {
     if (!streams.length) return null;
     return (
-        <section className="mt-3 rounded-xl border border-stone-200/80 bg-[var(--color-surface)] p-3">
-            <div className="mb-2.5 flex items-center justify-between gap-3">
+        <section className={`${isFullscreen ? "flex max-h-24 shrink-0 items-center gap-3 overflow-x-auto rounded-xl border border-stone-200/80 bg-[var(--color-surface)] p-2" : "mt-3 rounded-xl border border-stone-200/80 bg-[var(--color-surface)] p-3"}`}>
+            <div className={`${isFullscreen ? "sr-only" : "mb-2.5 flex items-center justify-between gap-3"}`}>
                 <h2 className="text-xs font-semibold text-stone-900">Camera thumbnails</h2>
                 <span className="text-[11px] text-stone-500">{streams.length} {streams.length === 1 ? "camera" : "cameras"}</span>
             </div>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 2xl:grid-cols-4">
+            <div className={isFullscreen ? "flex min-w-0 gap-2" : "grid grid-cols-2 gap-2 sm:grid-cols-3 2xl:grid-cols-4"}>
                 {streams.map((stream, index) => {
                     const isLive = statuses[stream.id] === "live";
                     const selected = selectedId === stream.id;
                     return (
                         <button
                             aria-pressed={selected}
-                            className={`min-w-0 overflow-hidden rounded-lg border text-left transition-colors ${selected
+                            className={`${isFullscreen ? "flex w-48 shrink-0 items-center gap-2 p-1.5" : "min-w-0"} overflow-hidden rounded-lg border text-left transition-colors ${selected
                                 ? "border-[var(--color-olive-600)] ring-1 ring-[var(--color-olive-600)]"
                                 : "border-stone-200 hover:border-stone-300"
                                 }`}
@@ -23,7 +23,7 @@ export default function CameraThumbnails({ streams, statuses, frameUrls, selecte
                             onClick={() => onSelect(stream.id)}
                             type="button"
                         >
-                            <div className="aspect-video bg-stone-900">
+                            <div className={`${isFullscreen ? "h-12 w-20 shrink-0" : "aspect-video"} bg-stone-900`}>
                                 {frameUrls[stream.id] ? (
                                     <img alt="" className="size-full object-cover" src={frameUrls[stream.id]} />
                                 ) : (

@@ -118,12 +118,13 @@ export default function LiveDashboard({
                 </div>
 
                 <div
-                    className={isFullscreen ? "fixed inset-0 z-50 overflow-auto bg-[var(--color-app-background)] p-4 sm:p-6" : ""}
+                    className={isFullscreen ? "fixed inset-0 z-50 flex flex-col gap-3 overflow-hidden bg-[var(--color-app-background)] p-3 sm:p-4" : ""}
                     ref={dashboardRef}
                 >
                     {streams.length ? (
                         <StreamGrid
                             layout={layout}
+                            isFullscreen={isFullscreen}
                             onFrame={receiveFrame}
                             onRemove={onRemove}
                             onRetry={onRetry}
@@ -164,6 +165,7 @@ export default function LiveDashboard({
                     />
                     <CameraThumbnails
                         frameUrls={frameUrls}
+                        isFullscreen={isFullscreen}
                         onSelect={setSelectedId}
                         selectedId={selectedStream?.id}
                         statuses={statuses}

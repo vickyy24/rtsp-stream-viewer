@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { LuPause, LuPlay, LuTrash2 } from "react-icons/lu";
 import CameraIcon from "./CameraIcon.jsx";
 
-export default function StreamCard({ stream, index, isSelected, onFrame, onSelect, onStatusChange, onRetry, onToggle, onRemove }) {
+export default function StreamCard({ stream, index, isSelected, isFullscreen, onFrame, onSelect, onStatusChange, onRetry, onToggle, onRemove }) {
     const [status, setStatus] = useState(stream.playing ? "connecting" : "paused");
     const [frameUrl, setFrameUrl] = useState("");
     const [message, setMessage] = useState("");
@@ -84,7 +84,6 @@ export default function StreamCard({ stream, index, isSelected, onFrame, onSelec
         };
         socket.onclose = () => {
             window.clearInterval(keepAliveInterval);
-            if (currentFrameUrl) URL.revokeObjectURL(currentFrameUrl);
             if (!closeRequested && !errorReported) {
                 setStatus("error");
                 setMessage("The connection to the camera service was closed.");
@@ -115,17 +114,17 @@ export default function StreamCard({ stream, index, isSelected, onFrame, onSelec
     }[status] || "Connecting";
 
     return (
-        <article className={`overflow-hidden rounded-xl border bg-[var(--color-surface)] transition-colors ${isSelected
+        <article className={`${isFullscreen ? "flex h-full min-h-0 flex-col" : ""} overflow-hidden rounded-xl border bg-[var(--color-surface)] transition-colors ${isSelected
             ? "border-[var(--color-olive-600)] ring-1 ring-[var(--color-olive-600)]"
             : "border-stone-200/80"
             }`}>
             <button
                 aria-pressed={isSelected}
-                className="camera-preview relative flex aspect-video w-full items-center justify-center overflow-hidden bg-stone-900 text-left"
+                className={`camera-preview relative flex w-full items-center justify-center overflow-hidden bg-stone-900 text-left ${isFullscreen ? "min-h-0 flex-1 aspect-auto" : "aspect-video"}`}
                 onClick={onSelect}
                 type="button"
             >
-                {frameUrl && status === "live" ? (
+                {frameUrl ? (
                     <img
                         alt={`Live feed from ${stream.name || `camera ${index + 1}`}`}
                         className="size-full object-cover"
@@ -151,6 +150,11 @@ export default function StreamCard({ stream, index, isSelected, onFrame, onSelec
                 <span className="absolute right-3 top-3 rounded-md bg-black/70 px-2.5 py-1.5 text-[10px] font-medium text-white">
                     {new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date())}
                 </span>
+                {frameUrl && status === "error" && message && (
+                    <span className="absolute inset-x-3 top-14 z-10 mx-auto max-w-lg rounded-lg bg-rose-950/90 px-3 py-2 text-center text-xs font-medium leading-5 text-rose-100 shadow-lg">
+                        {message}
+                    </span>
+                )}
                 <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-3 pb-3 pt-10 text-white">
                     <span className="min-w-0">
                         <span className="block truncate text-xs font-semibold uppercase tracking-wide">
@@ -167,7 +171,7 @@ export default function StreamCard({ stream, index, isSelected, onFrame, onSelec
                     </span>
                 </span>
             </button>
-            <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+            <div className="flex shrink-0 items-center justify-between gap-3 px-3 py-2.5">
                 <div className="min-w-0">
                     <h3 className="truncate text-xs font-semibold text-stone-900">{stream.name || `Camera ${index + 1}`}</h3>
                     <p className="mt-0.5 truncate text-[10px] text-stone-500">{stream.location || stream.host}</p>

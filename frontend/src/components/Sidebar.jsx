@@ -32,7 +32,7 @@ export default function Sidebar({ activePage, onNavigate }) {
         <aside className="sticky top-0 flex h-dvh w-14 shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-1.5 py-3 sm:w-16 sm:px-2 lg:w-52 lg:px-4 lg:py-6">
             <button
                 aria-label="Signal live dashboard"
-                className="mb-5 flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)] lg:mb-8 lg:ml-1 lg:justify-start"
+                className="mb-5 flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)] lg:-translate-y-1 lg:mb-8 lg:ml-1 lg:justify-start"
                 onClick={() => onNavigate("live")}
                 title="Signal live dashboard"
                 type="button"

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -17,6 +18,11 @@ if not SECRET_KEY:
         raise RuntimeError("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
     SECRET_KEY = "development-only-insecure-key"
 STREAM_ACCESS_KEY = os.environ.get("STREAM_ACCESS_KEY", "")
+CAMERA_URL_ENCRYPTION_KEY = os.environ.get("CAMERA_URL_ENCRYPTION_KEY", "")
+if not CAMERA_URL_ENCRYPTION_KEY:
+    if not DEBUG:
+        raise RuntimeError("CAMERA_URL_ENCRYPTION_KEY must be set when DJANGO_DEBUG is false.")
+    CAMERA_URL_ENCRYPTION_KEY = "MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA="
 if not DEBUG and not STREAM_ACCESS_KEY:
     raise RuntimeError("STREAM_ACCESS_KEY must be set when DJANGO_DEBUG is false.")
 ALLOWED_HOSTS = [
@@ -29,8 +35,21 @@ INSTALLED_APPS = [
     "daphne",
     "channels",
     "corsheaders",
+    "django.contrib.contenttypes",
     "streams.apps.StreamsConfig",
 ]
+
+database_url = os.environ.get("DATABASE_URL")
+if not database_url and not DEBUG:
+    raise RuntimeError("DATABASE_URL must be set when DJANGO_DEBUG is false.")
+database_url = database_url or f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+DATABASES = {
+    "default": dj_database_url.parse(
+        database_url,
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

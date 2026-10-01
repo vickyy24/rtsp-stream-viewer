@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PageHeading from "./components/PageHeading.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 import WorkspaceHeader from "./components/WorkspaceHeader.jsx";
@@ -9,6 +9,7 @@ import ConnectionsPage from "./views/ConnectionsPage.jsx";
 import LayoutsPage from "./views/LayoutsPage.jsx";
 import LiveDashboard from "./views/LiveDashboard.jsx";
 import SettingsPage from "./views/SettingsPage.jsx";
+import { deleteSavedCamera, getWorkspaceKey, listCameras, saveCamera } from "./services/streamService.js";
 
 function App() {
     const [activePage, setActivePage] = useState("live");
@@ -18,12 +19,30 @@ function App() {
     const [statusFilter, setStatusFilter] = useState("all");
     const [layout, setLayout] = useState("2x2");
     const [streams, setStreams] = useState([]);
+    const [cameraLoadError, setCameraLoadError] = useState("");
     const [statuses, setStatuses] = useState({});
     const [activities, setActivities] = useState([]);
     const streamListRef = useRef(streams);
     const statusMapRef = useRef(statuses);
     streamListRef.current = streams;
     statusMapRef.current = statuses;
+
+    useEffect(() => {
+        let active = true;
+        listCameras().then(({ cameras }) => {
+            if (!active) return;
+            setStreams(cameras.map((camera) => ({
+                ...camera,
+                accessKey: getWorkspaceKey(),
+                playing: true,
+                retryCount: 0,
+            })));
+            setCameraLoadError("");
+        }).catch((error) => {
+            if (active) setCameraLoadError(error.message);
+        });
+        return () => { active = false; };
+    }, []);
 
     const addActivity = useCallback((message, tone = "info") => {
         setActivities((current) => [
@@ -52,20 +71,43 @@ function App() {
         }
     }, [addActivity]);
 
-    function addCamera(camera) {
+    async function addCamera(camera) {
+        const savedCamera = await saveCamera({
+            name: camera.name,
+            location: camera.location,
+            url: camera.url,
+        }, camera.accessKey);
         const newCamera = {
-            ...camera,
-            id: crypto.randomUUID(),
+            ...savedCamera,
+            accessKey: camera.accessKey,
             playing: true,
             retryCount: 0,
         };
-        setStreams((current) => [...current, newCamera]);
+        try {
+            const { cameras } = await listCameras();
+            setStreams(cameras.map((cameraItem) => ({
+                ...cameraItem,
+                accessKey: camera.accessKey,
+                playing: true,
+                retryCount: 0,
+            })));
+            setCameraLoadError("");
+        } catch (error) {
+            setStreams((current) => [...current, newCamera]);
+            setCameraLoadError(error.message);
+        }
         addActivity(`${newCamera.name} added to the workspace`);
         setActivePage(cameraReturnPage);
     }
 
-    function removeCamera(streamId) {
+    async function removeCamera(streamId) {
         const camera = streamListRef.current.find((stream) => stream.id === streamId);
+        try {
+            await deleteSavedCamera(streamId);
+        } catch (error) {
+            setCameraLoadError(error.message);
+            return;
+        }
         setStreams((current) => current.filter((stream) => stream.id !== streamId));
         const nextStatuses = { ...statusMapRef.current };
         delete nextStatuses[streamId];
@@ -177,6 +219,11 @@ function App() {
                             onCancel={closeCameraWizard}
                             onSave={addCamera}
                         />
+                    )}
+                    {cameraLoadError && activePage !== "add-camera" && (
+                        <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700" role="status">
+                            Camera storage: {cameraLoadError} Add a camera with the workspace key to reconnect to this workspace.
+                        </p>
                     )}
                     {activePage === "layouts" && (
                         <LayoutsPage

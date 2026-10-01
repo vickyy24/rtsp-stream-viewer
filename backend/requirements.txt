@@ -1,4 +1,7 @@
 Django==6.1.1
 channels[daphne]==4.3.2
 django-cors-headers==4.9.0
+cryptography==46.0.3
+dj-database-url==3.0.1
+psycopg[binary]==3.2.12
 python-dotenv==1.1.1

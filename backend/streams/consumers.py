@@ -5,6 +5,7 @@ import logging
 from urllib.parse import urlsplit
 
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
 from django.conf import settings
 
 from .ffmpeg import (
@@ -14,6 +15,7 @@ from .ffmpeg import (
     build_ffmpeg_command,
     start_ffmpeg,
 )
+from .models import Camera
 
 logger = logging.getLogger(__name__)
 MAX_STREAM_URL_LENGTH = 2048
@@ -84,7 +86,10 @@ class StreamConsumer(AsyncWebsocketConsumer):
             if not self.authenticated:
                 await self._send_error("Authenticate with the workspace key before starting a camera.")
                 return
-            await self._start_stream(message.get("url"))
+            if message.get("camera_id"):
+                await self._start_saved_camera(message.get("camera_id"))
+            else:
+                await self._start_stream(message.get("url"))
         elif message.get("type") == "stop":
             await self._stop_stream(notify=True)
         elif message.get("type") == "ping":
@@ -157,6 +162,21 @@ class StreamConsumer(AsyncWebsocketConsumer):
 
         self.stderr_task = asyncio.create_task(self._drain_stderr(self.process.stderr))
         self.frame_task = asyncio.create_task(self._forward_frames())
+
+    @database_sync_to_async
+    def _load_camera_url(self, camera_id):
+        try:
+            camera = Camera.objects.get(pk=camera_id)
+            return camera.get_stream_url()
+        except (Camera.DoesNotExist, ValueError, TypeError):
+            return None
+
+    async def _start_saved_camera(self, camera_id):
+        stream_url = await self._load_camera_url(camera_id)
+        if stream_url is None:
+            await self._send_error("This saved camera could not be found or its URL is unavailable.")
+            return
+        await self._start_stream(stream_url)
 
     async def _forward_frames(self):
         frame_reader = MjpegFrameReader(self.process.stdout)

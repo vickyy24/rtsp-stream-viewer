@@ -1,3 +1,50 @@
+const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "")
+    || `${location.protocol}//${location.hostname}:8000`;
+
+const WORKSPACE_KEY_STORAGE = "rtsp-viewer-workspace-key";
+
+export function getWorkspaceKey() {
+    return sessionStorage.getItem(WORKSPACE_KEY_STORAGE) || "";
+}
+
+export function setWorkspaceKey(key) {
+    if (key) sessionStorage.setItem(WORKSPACE_KEY_STORAGE, key);
+    else sessionStorage.removeItem(WORKSPACE_KEY_STORAGE);
+}
+
+async function apiRequest(path, { key = getWorkspaceKey(), ...options } = {}) {
+    const response = await fetch(`${apiUrl}${path}`, {
+        ...options,
+        headers: {
+            ...(options.body ? { "Content-Type": "application/json" } : {}),
+            ...(key ? { Authorization: `Bearer ${key}` } : {}),
+            ...options.headers,
+        },
+    });
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || `Camera service returned ${response.status}.`);
+    }
+    return response.status === 204 ? null : response.json();
+}
+
+export function listCameras() {
+    return apiRequest("/api/cameras/");
+}
+
+export async function saveCamera(camera, key) {
+    if (key) setWorkspaceKey(key);
+    const result = await apiRequest("/api/cameras/", {
+        method: "POST",
+        body: JSON.stringify(camera),
+    });
+    return result.camera;
+}
+
+export function deleteSavedCamera(cameraId) {
+    return apiRequest(`/api/cameras/${cameraId}/`, { method: "DELETE" });
+}
+
 export function getStreamSocketUrl() {
     return import.meta.env.VITE_STREAM_WS_URL
         || `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.hostname}:8000/ws/streams/`;

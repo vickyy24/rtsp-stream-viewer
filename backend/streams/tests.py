@@ -2,7 +2,7 @@ import sys
 from unittest.mock import AsyncMock, patch
 
 from asgiref.sync import async_to_sync
-from django.test import SimpleTestCase, override_settings
+from django.test import Client, SimpleTestCase, TestCase, override_settings
 
 from .consumers import validate_stream_url
 from .ffmpeg import (
@@ -12,6 +12,58 @@ from .ffmpeg import (
     extract_jpeg_frames,
     start_ffmpeg,
 )
+from .models import Camera
+
+
+@override_settings(
+    DEBUG=False,
+    STREAM_ACCESS_KEY="workspace-test-key",
+    CAMERA_URL_ENCRYPTION_KEY="test-encryption-key",
+)
+class CameraApiTests(TestCase):
+    def setUp(self):
+        self.client = Client(HTTP_AUTHORIZATION="Bearer workspace-test-key")
+
+    def test_camera_is_persisted_and_secret_url_is_never_returned(self):
+        secret_url = "rtsp://viewer:secret-token@camera.example.test/live"
+        response = self.client.post(
+            "/api/cameras/",
+            data={"name": "Entrance", "location": "Front gate", "url": secret_url},
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        camera_id = response.json()["camera"]["id"]
+        self.assertNotIn("secret-token", response.content.decode("utf-8"))
+        camera = Camera.objects.get(pk=camera_id)
+        self.assertNotEqual(camera.encrypted_url, secret_url)
+        self.assertEqual(camera.get_stream_url(), secret_url)
+
+        listing = self.client.get("/api/cameras/")
+        self.assertEqual(listing.status_code, 200)
+        self.assertEqual(listing.json()["cameras"][0]["id"], camera_id)
+        self.assertNotContains(listing, "secret-token")
+
+    def test_camera_changes_require_workspace_access_key(self):
+        anonymous = Client()
+        response = anonymous.get("/api/cameras/")
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_camera_url_validation_and_fields_are_bounded(self):
+        invalid_url = self.client.post(
+            "/api/cameras/",
+            data={"name": "Entrance", "url": "https://example.test/video"},
+            content_type="application/json",
+        )
+        long_name = self.client.post(
+            "/api/cameras/",
+            data={"name": "x" * 121, "url": "rtsp://camera.example.test/live"},
+            content_type="application/json",
+        )
+
+        self.assertEqual(invalid_url.status_code, 400)
+        self.assertEqual(long_name.status_code, 400)
 
 
 class StreamUrlTests(SimpleTestCase):

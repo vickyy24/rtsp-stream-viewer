@@ -38,6 +38,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
     const [accessKey, setAccessKey] = useState("");
     const [testState, setTestState] = useState("idle");
     const [error, setError] = useState("");
+    const [saving, setSaving] = useState(false);
     const [testSession, setTestSession] = useState(null);
     const testSessionRef = useRef(null);
     const handedOffRef = useRef(false);
@@ -100,22 +101,30 @@ export default function AddCameraWizard({ onCancel, onSave }) {
         setStep((current) => Math.max(1, current - 1));
     }
 
-    function saveCamera() {
+    async function saveCamera() {
         if (!testSession?.isOpen()) {
             setError("The tested stream disconnected. Test it again before saving.");
             clearTestSession();
             setStep(2);
             return;
         }
-        handedOffRef.current = true;
-        onSave({
-            accessKey,
-            host: new URL(url).hostname,
-            location: locationName.trim(),
-            name: name.trim(),
-            session: testSession,
-            url: url.trim(),
-        });
+        setSaving(true);
+        setError("");
+        try {
+            const savedCamera = await onSave({
+                accessKey,
+                location: locationName.trim(),
+                name: name.trim(),
+                url: url.trim(),
+            });
+            testSession.stop();
+            testSessionRef.current = null;
+            handedOffRef.current = true;
+            return savedCamera;
+        } catch (saveError) {
+            setError(saveError.message || "Camera could not be saved. Try again.");
+            setSaving(false);
+        }
     }
 
     return (
@@ -242,7 +251,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                 {step === 4 && (
                     <div className="flex min-h-64 flex-col justify-center py-6">
                         <h2 className="text-sm font-semibold text-stone-800">Review and save</h2>
-                        <p className="mt-1 text-xs text-stone-500">This camera is held in this browser session and will not be saved to a server database.</p>
+                        <p className="mt-1 text-xs text-stone-500">The camera connection is stored securely by the stream service so it can reconnect after refresh.</p>
                         <dl className="mt-5 grid gap-4 rounded-lg border border-stone-200 bg-stone-50 p-4 sm:grid-cols-2">
                             <div><dt className="text-xs text-stone-400">Camera name</dt><dd className="mt-1 text-sm font-medium text-stone-700">{name}</dd></div>
                             <div><dt className="text-xs text-stone-400">Location</dt><dd className="mt-1 text-sm font-medium text-stone-700">{locationName || "Not set"}</dd></div>
@@ -271,11 +280,12 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                         </button>
                     ) : (
                         <button
-                            className="brand-gradient rounded-lg px-4 py-2.5 text-xs font-semibold"
+                            className="brand-gradient rounded-lg px-4 py-2.5 text-xs font-semibold disabled:cursor-wait disabled:opacity-70"
+                            disabled={saving}
                             onClick={saveCamera}
                             type="button"
                         >
-                            Save camera
+                            {saving ? "Saving…" : "Save camera"}
                         </button>
                     )}
                 </div>

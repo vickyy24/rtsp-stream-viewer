@@ -75,7 +75,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                 setStatus(payload.status);
                 onStatusChange(stream.id, payload.status);
             } else if (payload.type === "authenticated") {
-                socket.send(JSON.stringify({ type: "start", url: stream.url }));
+                socket.send(JSON.stringify({ type: "start", camera_id: stream.id }));
             } else if (payload.type === "error") {
                 errorReported = true;
                 window.clearInterval(keepAliveInterval);
@@ -113,7 +113,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
             if (currentFrameUrl) URL.revokeObjectURL(currentFrameUrl);
             setFrameUrl("");
         };
-    }, [onFrame, onStatusChange, stream.accessKey, stream.id, stream.playing, stream.retryCount, stream.session, stream.url]);
+    }, [onFrame, onStatusChange, stream.accessKey, stream.id, stream.playing, stream.retryCount, stream.session]);
 
     const statusLabel = {
         connecting: "Connecting",

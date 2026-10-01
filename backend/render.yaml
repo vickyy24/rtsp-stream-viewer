@@ -26,7 +26,3 @@ services:
           - key: FFMPEG_BINARY
             value: ffmpeg
           - key: RTSP_MAX_CONCURRENT_STREAMS
-            value: "4"
-databases:
-    - name: rtsp-stream-viewer-db
-      plan: free

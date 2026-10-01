@@ -9,22 +9,22 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
-    --color-app-background: #f3f2ec;
-    --color-surface: #fffefa;
-    --color-canvas-soft: #f5f4ed;
-    --color-forest-50: #edf0e5;
-    --color-forest-100: #e9eddf;
-    --color-forest-200: #dfe5d5;
-    --color-forest-600: #5b7047;
-    --color-forest-700: #40583e;
-    --color-forest-800: #344c38;
-    --color-forest-900: #263a2d;
-    --color-olive-500: #78894c;
-    --color-olive-600: #7e8e5c;
-    --color-olive-700: #627744;
-    --color-clay-50: #f5eadf;
-    --color-clay-500: #bf7545;
-    --color-clay-700: #b86e3e;
+    --color-app-background: #f2f3eb;
+    --color-surface: #fbfbf6;
+    --color-canvas-soft: #f5f6ee;
+    --color-forest-50: #f0f3e9;
+    --color-forest-100: #e7ecdc;
+    --color-forest-200: #d2ddc1;
+    --color-forest-600: #71854f;
+    --color-forest-700: #607644;
+    --color-forest-800: #52683d;
+    --color-forest-900: #3e532e;
+    --color-olive-500: #8ac226;
+    --color-olive-600: #75a81e;
+    --color-olive-700: #5c831c;
+    --color-clay-50: #f0f3e9;
+    --color-clay-500: #71854f;
+    --color-clay-700: #52683d;
 }
 
 * {
@@ -59,7 +59,5 @@ a {
 }
 
 .camera-preview {
-    background-image: radial-gradient(#d9d9cd 0.7px, transparent 0.7px);
-    background-size: 14px 14px;
-    background-color: #f5f4ed;
+    background-color: #20251e;
 }

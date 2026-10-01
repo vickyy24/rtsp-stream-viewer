@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
     <defs>
         <linearGradient id="signal-mark-gradient" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stop-color="#b84631" />
-            <stop offset="52%" stop-color="#d75b40" />
-            <stop offset="100%" stop-color="#ed8a55" />
+            <stop offset="0%" stop-color="#287f85" />
+            <stop offset="52%" stop-color="#559b75" />
+            <stop offset="100%" stop-color="#718f46" />
         </linearGradient>
     </defs>
     <path

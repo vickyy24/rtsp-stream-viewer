@@ -1,58 +1,9 @@
-import { LuActivity, LuCircleCheck, LuLayoutGrid, LuPlus, LuTriangleAlert } from "react-icons/lu";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { LuLayoutGrid, LuPlus, LuScanEye } from "react-icons/lu";
+import CameraThumbnails from "../components/CameraThumbnails.jsx";
+import DashboardStatusPanel from "../components/DashboardStatusPanel.jsx";
+import DashboardToolbar from "../components/DashboardToolbar.jsx";
 import StreamGrid from "../components/StreamGrid.jsx";
-
-function Metric({ icon: Icon, label, value, detail }) {
-    return (
-        <div className="flex items-center gap-3 rounded-xl border border-stone-200 bg-[var(--color-surface)] p-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-forest-50)] text-[var(--color-forest-700)]">
-                <Icon aria-hidden="true" className="size-[18px]" />
-            </span>
-            <div className="min-w-0 flex-1">
-                <p className="text-xs text-stone-500">{label}</p>
-                <p className="mt-0.5 truncate text-sm font-semibold text-stone-800">{value}</p>
-            </div>
-            {detail && <span className="text-xs text-stone-400">{detail}</span>}
-        </div>
-    );
-}
-
-function ActivityList({ activities }) {
-    return (
-        <section className="rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4">
-            <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-stone-800">Recent activity</h2>
-                <span className="text-[11px] text-stone-400">This session</span>
-            </div>
-            {activities.length ? (
-                <ul className="flex flex-col gap-3">
-                    {activities.slice(0, 6).map((activity) => (
-                        <li className="flex items-start gap-2.5" key={activity.id}>
-                            <span className={`mt-1.5 size-2 shrink-0 rounded-full ${activity.tone === "error"
-                                ? "bg-rose-500"
-                                : activity.tone === "success"
-                                    ? "bg-[var(--color-olive-500)]"
-                                    : "bg-amber-500"
-                                }`} />
-                            <span className="min-w-0 flex-1 text-xs leading-5 text-stone-600">
-                                {activity.message}
-                            </span>
-                            <time className="shrink-0 text-[10px] text-stone-400">
-                                {new Intl.DateTimeFormat(undefined, {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                }).format(activity.createdAt)}
-                            </time>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p className="py-3 text-xs leading-5 text-stone-400">
-                    Camera connections and status changes will appear here.
-                </p>
-            )}
-        </section>
-    );
-}
 
 export default function LiveDashboard({
     activities,
@@ -68,16 +19,96 @@ export default function LiveDashboard({
 }) {
     const liveCount = Object.values(statuses).filter((status) => status === "live").length;
     const errorCount = Object.values(statuses).filter((status) => status === "error").length;
+    const [selectedId, setSelectedId] = useState(streams[0]?.id || null);
+    const [frameUrls, setFrameUrls] = useState({});
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const frameTimes = useRef({});
+    const frameUrlsRef = useRef({});
+    const dashboardRef = useRef(null);
+    const selectedStream = streams.find((stream) => stream.id === selectedId) || streams[0];
+    const selectedStatus = selectedStream ? statuses[selectedStream.id] || "connecting" : "offline";
+
+    useEffect(() => {
+        if (streams.length && !streams.some((stream) => stream.id === selectedId)) {
+            setSelectedId(streams[0].id);
+        }
+    }, [selectedId, streams]);
+
+    useEffect(() => {
+        const removedIds = Object.keys(frameUrlsRef.current).filter(
+            (id) => !streams.some((stream) => stream.id === id),
+        );
+        if (!removedIds.length) return;
+        const nextFrames = { ...frameUrlsRef.current };
+        removedIds.forEach((id) => {
+            URL.revokeObjectURL(nextFrames[id]);
+            delete nextFrames[id];
+            delete frameTimes.current[id];
+        });
+        frameUrlsRef.current = nextFrames;
+        setFrameUrls(nextFrames);
+    }, [streams]);
+
+    useEffect(() => () => {
+        Object.values(frameUrlsRef.current).forEach((url) => URL.revokeObjectURL(url));
+    }, []);
+
+    useEffect(() => {
+        function syncFullscreen() {
+            setIsFullscreen(document.fullscreenElement === dashboardRef.current);
+        }
+        document.addEventListener("fullscreenchange", syncFullscreen);
+        return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+    }, []);
+
+    const receiveFrame = useCallback((streamId, blob) => {
+        const now = Date.now();
+        if (now - (frameTimes.current[streamId] || 0) < 1200) return;
+        frameTimes.current[streamId] = now;
+        const nextUrl = URL.createObjectURL(blob);
+        const previousUrl = frameUrlsRef.current[streamId];
+        const nextFrames = { ...frameUrlsRef.current, [streamId]: nextUrl };
+        frameUrlsRef.current = nextFrames;
+        setFrameUrls(nextFrames);
+        if (previousUrl) window.setTimeout(() => URL.revokeObjectURL(previousUrl), 1500);
+    }, []);
+
+    const pauseAll = useCallback(() => {
+        streams.forEach((stream) => {
+            if (stream.playing) onToggle(stream.id);
+        });
+    }, [onToggle, streams]);
+
+    const toggleFullscreen = useCallback(async () => {
+        if (document.fullscreenElement) {
+            await document.exitFullscreen();
+        } else if (dashboardRef.current?.requestFullscreen) {
+            await dashboardRef.current.requestFullscreen();
+        }
+    }, []);
+
+    const takeSnapshot = useCallback(async () => {
+        if (!selectedStream || !frameUrls[selectedStream.id]) return;
+        const response = await fetch(frameUrls[selectedStream.id]);
+        const image = await response.blob();
+        const objectUrl = URL.createObjectURL(image);
+        const link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = `${(selectedStream.name || "camera").replace(/[^a-z0-9-_]/gi, "-")}-snapshot.jpg`;
+        link.click();
+        URL.revokeObjectURL(objectUrl);
+    }, [frameUrls, selectedStream]);
+
     return (
-        <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
-            <div className="min-w-0">
-                <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_17.5rem]">
+            <section className="min-w-0">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 className="text-base font-semibold text-stone-900">Live dashboard</h2>
+                        <h1 className="text-base font-semibold text-stone-900">Live dashboard</h1>
                         <p className="mt-0.5 text-xs text-stone-500">Live camera feeds in this workspace</p>
                     </div>
                     <button
-                        className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-[var(--color-forest-800)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--color-forest-900)]"
+                        className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[var(--color-forest-800)] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[var(--color-forest-900)]"
                         onClick={onAddCamera}
                         type="button"
                     >
@@ -85,100 +116,98 @@ export default function LiveDashboard({
                         Add camera
                     </button>
                 </div>
-                {streams.length ? (
-                    <StreamGrid
-                        layout={layout}
-                        onRemove={onRemove}
-                        onRetry={onRetry}
-                        onStatusChange={onStatusChange}
-                        onToggle={onToggle}
-                        streams={streams}
-                    />
-                ) : (
-                    <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 bg-[var(--color-surface)] px-5 py-10 text-center">
-                        <span className="flex size-12 items-center justify-center rounded-xl bg-[var(--color-forest-50)] text-[var(--color-forest-700)]">
-                            <LuLayoutGrid aria-hidden="true" className="size-5" />
-                        </span>
-                        <h3 className="mt-4 text-sm font-semibold text-stone-800">No cameras in this view</h3>
-                        <p className="mt-1 max-w-sm text-xs leading-5 text-stone-500">
-                            Add an RTSP camera to begin monitoring its live feed.
-                        </p>
-                        <button
-                            className="mt-4 rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-xs font-semibold text-white"
-                            onClick={onAddCamera}
-                            type="button"
-                        >
-                            Add your first camera
-                        </button>
-                    </div>
-                )}
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-200 bg-[var(--color-surface)] px-3 py-2.5">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-stone-600">
-                        <LuLayoutGrid aria-hidden="true" className="size-4" />
-                        Layout
-                    </div>
-                    <div className="flex gap-1.5">
-                        {["1x1", "2x2", "3x3", "4x4"].map((value) => (
+
+                <div
+                    className={isFullscreen ? "fixed inset-0 z-50 overflow-auto bg-[var(--color-app-background)] p-4 sm:p-6" : ""}
+                    ref={dashboardRef}
+                >
+                    {streams.length ? (
+                        <StreamGrid
+                            layout={layout}
+                            onFrame={receiveFrame}
+                            onRemove={onRemove}
+                            onRetry={onRetry}
+                            onSelect={setSelectedId}
+                            onStatusChange={onStatusChange}
+                            onToggle={onToggle}
+                            selectedId={selectedStream?.id}
+                            streams={streams}
+                        />
+                    ) : (
+                        <div className="flex min-h-72 flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 bg-[var(--color-surface)] px-5 py-10 text-center">
+                            <span className="flex size-12 items-center justify-center rounded-xl bg-[var(--color-forest-50)] text-[var(--color-forest-700)]">
+                                <LuLayoutGrid aria-hidden="true" className="size-5" />
+                            </span>
+                            <h2 className="mt-4 text-sm font-semibold text-stone-900">No cameras in this view</h2>
+                            <p className="mt-1 max-w-sm text-xs leading-5 text-stone-500">
+                                Add an RTSP camera to begin monitoring its live feed.
+                            </p>
                             <button
-                                aria-pressed={layout === value}
-                                className={`rounded-md border px-2.5 py-1.5 text-[11px] font-medium ${layout === value
-                                    ? "border-[var(--color-forest-700)] bg-[var(--color-forest-50)] text-[var(--color-forest-800)]"
-                                    : "border-stone-200 text-stone-500 hover:bg-stone-50"
-                                    }`}
-                                key={value}
-                                onClick={() => onViewLayouts(value)}
+                                className="mt-4 rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[var(--color-forest-900)]"
+                                onClick={onAddCamera}
                                 type="button"
                             >
-                                {value}
+                                Add your first camera
                             </button>
-                        ))}
-                    </div>
-                    <span className="text-[11px] text-stone-400">
-                        {streams.length} {streams.length === 1 ? "camera" : "cameras"}
-                    </span>
-                </div>
-            </div>
+                        </div>
+                    )}
 
-            <aside className="flex flex-col gap-3">
-                <section className="rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4">
-                    <div className="mb-3 flex items-center justify-between">
-                        <h2 className="text-sm font-semibold text-stone-800">System status</h2>
-                        <span className="text-xs text-stone-400">Current</span>
-                    </div>
-                    <div className="flex items-center gap-3 border-b border-stone-100 pb-3">
-                        <div className="flex size-14 shrink-0 items-center justify-center rounded-full border-[6px] border-[var(--color-forest-100)] text-sm font-bold text-[var(--color-forest-800)]">
-                            {liveCount}/{streams.length}
-                        </div>
-                        <div>
-                            <p className="text-sm font-semibold text-stone-800">Cameras online</p>
-                            <p className="mt-0.5 text-xs text-stone-500">
-                                {streams.length - liveCount - errorCount} connecting or paused
-                            </p>
-                        </div>
-                    </div>
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                        <Metric
-                            detail={null}
-                            icon={LuCircleCheck}
-                            label="Online"
-                            value={liveCount}
-                        />
-                        <Metric
-                            detail={null}
-                            icon={LuTriangleAlert}
-                            label="Offline"
-                            value={errorCount}
-                        />
-                    </div>
-                </section>
-                <Metric
-                    detail="active"
-                    icon={LuActivity}
-                    label="Stream connections"
-                    value={`${liveCount} / ${streams.length}`}
+                    <DashboardToolbar
+                        frameAvailable={Boolean(selectedStream && frameUrls[selectedStream.id])}
+                        isFullscreen={isFullscreen}
+                        layout={layout}
+                        onLayoutChange={onViewLayouts}
+                        onPauseAll={pauseAll}
+                        onSnapshot={takeSnapshot}
+                        onToggleFullscreen={toggleFullscreen}
+                        streams={streams}
+                    />
+                    <CameraThumbnails
+                        frameUrls={frameUrls}
+                        onSelect={setSelectedId}
+                        selectedId={selectedStream?.id}
+                        statuses={statuses}
+                        streams={streams}
+                    />
+                </div>
+            </section>
+
+            <div className="flex min-w-0 flex-col gap-3">
+                <DashboardStatusPanel
+                    activities={activities}
+                    errorCount={errorCount}
+                    liveCount={liveCount}
+                    total={streams.length}
                 />
-                <ActivityList activities={activities} />
-            </aside>
+                <section className="rounded-xl border border-stone-200/80 bg-[var(--color-surface)] p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                        <LuScanEye aria-hidden="true" className="size-4 text-[var(--color-forest-700)]" />
+                        <h2 className="text-sm font-semibold text-stone-900">Stream details</h2>
+                        {selectedStream && (
+                            <span className={`ml-auto size-2 shrink-0 rounded-full ${selectedStatus === "live" ? "bg-[var(--color-olive-500)]" : selectedStatus === "error" ? "bg-rose-500" : "bg-stone-300"}`} />
+                        )}
+                    </div>
+                    {selectedStream ? (
+                        <dl className="divide-y divide-stone-200/70 rounded-lg border border-stone-200/80 px-3">
+                            <DetailRow label="Camera" value={selectedStream.name || "Camera"} />
+                            <DetailRow label="Location" value={selectedStream.location || "Not specified"} />
+                            <DetailRow label="Status" value={selectedStatus === "live" ? "Live" : selectedStatus === "error" ? "Connection issue" : selectedStatus} />
+                            <DetailRow label="Source host" value={selectedStream.host || "Unavailable"} />
+                        </dl>
+                    ) : (
+                        <p className="text-xs leading-5 text-stone-500">Add a camera to see its connection details.</p>
+                    )}
+                </section>
+            </div>
+        </div>
+    );
+}
+
+function DetailRow({ label, value }) {
+    return (
+        <div className="flex items-start justify-between gap-3 py-2.5 text-xs">
+            <dt className="shrink-0 text-stone-500">{label}</dt>
+            <dd className="min-w-0 break-all text-right font-medium text-stone-800">{value}</dd>
         </div>
     );
 }

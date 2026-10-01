@@ -186,7 +186,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                         ))}
                     </span>
                 </span>
-                <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5">
+                <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5">
                     {status === "error" && (
                         <button
                             aria-label={`Retry camera ${index + 1}`}
@@ -198,22 +198,22 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                         </button>
                     )}
                     <button
-                        aria-label="Toggle fullscreen for this camera"
-                        className="flex size-8 items-center justify-center rounded-md bg-black/60 text-white transition hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                        onClick={togglePreviewFullscreen}
-                        type="button"
-                    >
-                        <LuExpand aria-hidden="true" className="size-4" />
-                    </button>
-                    <button
                         aria-label={`${stream.playing ? "Pause" : "Play"} camera ${index + 1}`}
-                        className="flex size-8 items-center justify-center rounded-md bg-black/60 text-white opacity-0 transition hover:bg-black/85 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white group-hover:opacity-100"
+                        className="flex size-8 items-center justify-center rounded-md bg-black/60 text-white transition hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                         onClick={onToggle}
                         type="button"
                     >
                         {stream.playing ? <LuPause aria-hidden="true" className="size-4" /> : <LuPlay aria-hidden="true" className="size-4" />}
                     </button>
                 </div>
+                <button
+                    aria-label="Toggle fullscreen for this camera"
+                    className="absolute bottom-3 right-3 z-20 flex size-8 items-center justify-center rounded-md bg-black/60 text-white transition hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    onClick={togglePreviewFullscreen}
+                    type="button"
+                >
+                    <LuExpand aria-hidden="true" className="size-4" />
+                </button>
             </div>
         </article>
     );

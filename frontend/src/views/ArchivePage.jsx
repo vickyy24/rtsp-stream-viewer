@@ -1,5 +1,6 @@
 import { LuArchive, LuCalendarDays } from "react-icons/lu";
 import PageHeading from "../components/PageHeading.jsx";
+import SurfaceCard from "../components/ui/SurfaceCard.jsx";
 
 export default function ArchivePage({ activities, streams }) {
     return (
@@ -9,7 +10,7 @@ export default function ArchivePage({ activities, streams }) {
                 title="Archive"
             />
             <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_16rem]">
-                <div className="rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4">
+                <SurfaceCard>
                     <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 sm:flex-row sm:items-end">
                         <label className="flex min-w-0 flex-1 flex-col gap-1.5 text-xs font-medium text-stone-600">
                             Camera
@@ -34,8 +35,8 @@ export default function ArchivePage({ activities, streams }) {
                             Recording and playback storage aren’t part of the current stream service. Live feeds are sent as temporary JPEG frames and are not saved.
                         </p>
                     </div>
-                </div>
-                <aside className="rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4">
+                </SurfaceCard>
+                <SurfaceCard as="aside">
                     <div className="flex items-center justify-between gap-2">
                         <h2 className="text-sm font-semibold text-stone-800">Connection activity</h2>
                         <span className="text-[10px] text-stone-400">This session</span>
@@ -57,7 +58,7 @@ export default function ArchivePage({ activities, streams }) {
                         Motion and person-detection events require camera metadata that the current RTSP backend does not provide.
                         </p>
                     )}
-                </aside>
+                </SurfaceCard>
             </section>
         </div>
     );

@@ -1,20 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import PageHeading from "./components/PageHeading.jsx";
+import { useLocation, useMatch, useNavigate } from "react-router";
 import Sidebar from "./components/Sidebar.jsx";
 import WorkspaceHeader from "./components/WorkspaceHeader.jsx";
-import AddCameraWizard from "./views/AddCameraWizard.jsx";
-import ArchivePage from "./views/ArchivePage.jsx";
-import CamerasPage from "./views/CamerasPage.jsx";
-import ConnectionsPage from "./views/ConnectionsPage.jsx";
-import LayoutsPage from "./views/LayoutsPage.jsx";
+import AppRoutes from "./app/AppRoutes.jsx";
+import AppLayout from "./components/layout/AppLayout.jsx";
 import LiveDashboard from "./views/LiveDashboard.jsx";
-import SettingsPage from "./views/SettingsPage.jsx";
 import { deleteSavedCamera, getWorkspaceKey, listCameras, saveCamera } from "./services/streamService.js";
 
 function App() {
-    const [activePage, setActivePage] = useState("live");
-    const [cameraReturnPage, setCameraReturnPage] = useState("live");
-    const [selectedCameraId, setSelectedCameraId] = useState(null);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const singleCameraMatch = useMatch("/live/camera/:cameraId");
+    const selectedCameraId = singleCameraMatch?.params.cameraId || null;
+    const activePage = location.pathname.startsWith("/cameras") ? "cameras"
+        : location.pathname.startsWith("/layouts") ? "layouts"
+            : location.pathname.startsWith("/archive") ? "archive"
+                : location.pathname.startsWith("/connections") ? "connections"
+                    : location.pathname.startsWith("/settings") ? "settings" : "live";
+    const showLive = activePage === "live";
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [layout, setLayout] = useState("2x2");
@@ -97,7 +100,7 @@ function App() {
             setCameraLoadError(error.message);
         }
         addActivity(`${newCamera.name} added to the workspace`);
-        setActivePage(cameraReturnPage);
+        navigate(location.state?.returnTo || "/live", { replace: true });
     }
 
     async function removeCamera(streamId) {
@@ -114,7 +117,7 @@ function App() {
         statusMapRef.current = nextStatuses;
         setStatuses(nextStatuses);
         addActivity(`${camera?.name || "Camera"} removed from the workspace`);
-        if (selectedCameraId === streamId) setActivePage("cameras");
+        if (selectedCameraId === streamId) navigate("/cameras");
     }
 
     function retryCamera(streamId) {
@@ -131,25 +134,13 @@ function App() {
             : stream));
     }
 
-    function showCamera(streamId) {
-        setSelectedCameraId(streamId);
-        setActivePage("single-camera");
-    }
-
     function openCameraWizard() {
-        setCameraReturnPage(activePage === "cameras" ? "cameras" : "live");
-        setActivePage("add-camera");
-    }
-
-    function closeCameraWizard() {
-        setActivePage(cameraReturnPage);
+        navigate("/cameras/add", { state: { returnTo: location.pathname.startsWith("/cameras") ? "/cameras" : "/live" } });
     }
 
     const selectedCamera = streams.find((stream) => stream.id === selectedCameraId);
-    const visibleStreams = activePage === "single-camera" && selectedCamera
-        ? [selectedCamera]
-        : streams;
-    const filteredLiveStreams = activePage === "single-camera"
+    const visibleStreams = selectedCamera ? [selectedCamera] : streams;
+    const filteredLiveStreams = selectedCamera
         ? visibleStreams
         : visibleStreams.filter((camera) => !search.trim()
             || `${camera.name} ${camera.location} ${camera.host}`.toLowerCase().includes(search.trim().toLowerCase()));
@@ -159,98 +150,65 @@ function App() {
     ]));
 
     return (
-        <div className="flex h-dvh min-h-0 overflow-hidden bg-[var(--color-app-background)] text-stone-900">
-            <Sidebar
-                activePage={activePage === "add-camera" ? cameraReturnPage : activePage}
-                onNavigate={setActivePage}
-            />
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                <WorkspaceHeader
-                    onSearchChange={setSearch}
-                    searchValue={search}
-                />
-                <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 lg:px-8">
-                    <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4">
-                    <div hidden={activePage !== "live" && activePage !== "single-camera"}>
-                        {activePage === "single-camera" && (
-                            <div className="mb-3 flex items-center justify-between">
-                                <PageHeading
-                                    description={selectedCamera?.location || selectedCamera?.host || "Single camera view"}
-                                    title={selectedCamera?.name || "Live camera"}
-                                />
-                                <button
-                                    className="text-xs font-semibold text-[var(--color-forest-700)] hover:underline"
-                                    onClick={() => setActivePage("live")}
-                                    type="button"
-                                >
-                                    Back to dashboard
-                                </button>
+        <AppLayout
+            header={<WorkspaceHeader onSearchChange={setSearch} searchValue={search} />}
+            liveContent={(
+                <>
+                    {selectedCamera && (
+                        <div className="mb-3 flex items-center justify-between">
+                            <div>
+                                <h1 className="text-base font-semibold text-stone-900">{selectedCamera.name || "Live camera"}</h1>
+                                <p className="mt-0.5 text-xs text-stone-500">{selectedCamera.location || selectedCamera.host || "Single camera view"}</p>
                             </div>
-                        )}
-                        <LiveDashboard
-                            activities={activities}
-                            layout={activePage === "single-camera" ? "1x1" : layout}
-                            onAddCamera={openCameraWizard}
-                            onRetry={retryCamera}
-                            onStatusChange={updateStatus}
-                            onToggle={toggleCamera}
-                            onViewLayouts={setLayout}
-                            streams={filteredLiveStreams}
-                            statuses={liveStatuses}
-                        />
-                    </div>
-
-                    {activePage === "cameras" && (
-                        <CamerasPage
-                            onAddCamera={openCameraWizard}
-                            onOpenCamera={showCamera}
-                            onRemove={removeCamera}
-                            onToggle={toggleCamera}
-                            query={search}
-                            setQuery={setSearch}
-                            setStatusFilter={setStatusFilter}
-                            statusFilter={statusFilter}
-                            statuses={statuses}
-                            streams={streams}
-                        />
+                            <button
+                                className="text-xs font-semibold text-[var(--color-forest-700)] hover:underline"
+                                onClick={() => navigate("/live")}
+                                type="button"
+                            >
+                                Back to dashboard
+                            </button>
+                        </div>
                     )}
-                    {activePage === "add-camera" && (
-                        <AddCameraWizard
-                            onCancel={closeCameraWizard}
-                            onSave={addCamera}
-                        />
-                    )}
-                    {cameraLoadError && activePage !== "add-camera" && (
-                        <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700" role="status">
-                            Camera storage: {cameraLoadError} Add a camera with the workspace key to reconnect to this workspace.
-                        </p>
-                    )}
-                    {activePage === "layouts" && (
-                        <LayoutsPage
-                            layout={layout}
-                            onApply={(nextLayout) => {
-                                setLayout(nextLayout);
-                                setActivePage("live");
-                            }}
-                        />
-                    )}
-                    {activePage === "archive" && (
-                        <ArchivePage activities={activities} streams={streams} />
-                    )}
-                    {activePage === "connections" && (
-                        <ConnectionsPage
-                            onRemove={removeCamera}
-                            onRetry={retryCamera}
-                            onToggle={toggleCamera}
-                            statuses={statuses}
-                            streams={streams}
-                        />
-                    )}
-                    {activePage === "settings" && <SettingsPage />}
-                    </div>
-                </main>
-            </div>
-        </div>
+                    <LiveDashboard
+                        activities={activities}
+                        layout={selectedCamera ? "1x1" : layout}
+                        onAddCamera={openCameraWizard}
+                        onRetry={retryCamera}
+                        onStatusChange={updateStatus}
+                        onToggle={toggleCamera}
+                        onViewLayouts={setLayout}
+                        streams={filteredLiveStreams}
+                        statuses={liveStatuses}
+                    />
+                </>
+            )}
+            notice={cameraLoadError && location.pathname !== "/cameras/add" ? (
+                <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700" role="status">
+                    Camera storage: {cameraLoadError} Add a camera with the workspace key to reconnect to this workspace.
+                </p>
+            ) : null}
+            showLive={showLive}
+            sidebar={<Sidebar activePage={activePage} />}
+        >
+            <AppRoutes
+                activities={activities}
+                layout={layout}
+                navigate={navigate}
+                onAddCamera={openCameraWizard}
+                onAddCameraSave={addCamera}
+                onRemove={removeCamera}
+                onRetry={retryCamera}
+                onToggle={toggleCamera}
+                onViewCamera={(streamId) => navigate(`/live/camera/${encodeURIComponent(streamId)}`)}
+                setLayout={setLayout}
+                setSearch={setSearch}
+                setStatusFilter={setStatusFilter}
+                statusFilter={statusFilter}
+                statuses={statuses}
+                streams={streams}
+                search={search}
+            />
+        </AppLayout>
     );
 }
 

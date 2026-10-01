@@ -1,6 +1,8 @@
 import { LuPlus, LuSearch } from "react-icons/lu";
 import CameraRow from "../components/CameraRow.jsx";
 import PageHeading from "../components/PageHeading.jsx";
+import Button from "../components/ui/Button.jsx";
+import SurfaceCard from "../components/ui/SurfaceCard.jsx";
 
 const filters = [
     { id: "all", label: "All" },
@@ -37,20 +39,20 @@ export default function CamerasPage({
         <div className="flex flex-col gap-5">
             <PageHeading
                 action={(
-                    <button
-                        className="brand-gradient inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold"
+                    <Button
+                        variant="primary"
                         onClick={onAddCamera}
                         type="button"
                     >
                         <LuPlus aria-hidden="true" className="size-4" />
                         Add camera
-                    </button>
+                    </Button>
                 )}
                 description="Manage your camera sources and their current connection state."
                 title="Cameras"
             />
 
-            <section className="rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4">
+            <SurfaceCard as="section">
                 <label className="flex max-w-md items-center gap-2 rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2">
                     <LuSearch aria-hidden="true" className="size-4 text-stone-400" />
                     <span className="sr-only">Search cameras</span>
@@ -84,7 +86,7 @@ export default function CamerasPage({
                         );
                     })}
                 </div>
-            </section>
+            </SurfaceCard>
 
             {filteredStreams.length ? (
                 <div className="flex flex-col gap-2">

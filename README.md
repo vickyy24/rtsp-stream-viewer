@@ -21,10 +21,13 @@ The React workspace saves camera records through an authenticated Django API. Dj
 ```text
 frontend/
   src/
-    components/ Reusable camera, navigation, header, and grid components
+    app/        Route table and URL path constants
+    components/ Reusable sidebar, header, stream, camera, and dashboard components
+      layout/   Persistent application shell
+      ui/       Shared button and card primitives
     views/      Dashboard, camera wizard, archive, layout, settings, and connection screens
-    services/   WebSocket connection helpers
-    App.jsx     Workspace state and view composition
+    services/   API and WebSocket connection helpers
+    App.jsx     Shared workspace state and stream lifecycle
 backend/        Django and Channels application
 README.md       Project setup and operations guide
 ```
@@ -91,7 +94,7 @@ On a new deployment, connect the GitHub repository to Render as a Blueprint and 
 
 ### Frontend on Vercel
 
-Create a Vercel project connected to this repository and set the project root to `frontend`. Use `npm run build` as the build command and `dist` as the output directory. Deploy once to receive the frontend's `vercel.app` origin. After deploying the backend, enter that exact frontend origin in Render's `CORS_ALLOWED_ORIGINS`. Set Vercel `VITE_API_URL` to the backend's HTTPS origin (for example, `https://your-backend-host`) and `VITE_STREAM_WS_URL` to its secure WebSocket URL ending in `/ws/streams/` (for example, `wss://your-backend-host/ws/streams/`), then redeploy.
+Create a Vercel project connected to this repository and set the project root to `frontend`. Use `npm run build` as the build command and `dist` as the output directory. The frontend uses React Router paths (`/live`, `/cameras`, `/cameras/add`, `/layouts`, `/archive`, `/connections`, and `/settings`); `frontend/vercel.json` rewrites direct route requests to the SPA entry point so refreshing a nested URL works. Deploy once to receive the frontend's `vercel.app` origin. After deploying the backend, enter that exact frontend origin in Render's `CORS_ALLOWED_ORIGINS`. Set Vercel `VITE_API_URL` to the backend's HTTPS origin (for example, `https://your-backend-host`) and `VITE_STREAM_WS_URL` to its secure WebSocket URL ending in `/ws/streams/` (for example, `wss://your-backend-host/ws/streams/`), then redeploy.
 
 ### Backend
 

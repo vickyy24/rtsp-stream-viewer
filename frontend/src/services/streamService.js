@@ -3,6 +3,8 @@ const apiUrl = (
   `${location.protocol}//${location.hostname}:8000`
 ).replace(/\/+$/, "");
 
+console.log("apiUrl",apiUrl)
+
 const WORKSPACE_KEY_STORAGE = "rtsp-viewer-workspace-key";
 
 export function getWorkspaceKey() {

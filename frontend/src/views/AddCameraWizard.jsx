@@ -167,7 +167,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                         {error && <p className="mt-3 text-xs text-rose-600" role="alert">{error}</p>}
                         {testState !== "success" && (
                             <button
-                                className="mt-4 rounded-lg border border-stone-200 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+                                className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[var(--color-forest-800)] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[var(--color-forest-900)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none disabled:hover:bg-stone-300"
                                 disabled={testState === "testing"}
                                 onClick={handleTest}
                                 type="button"
@@ -219,7 +219,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                     </button>
                     {step < 4 ? (
                         <button
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[var(--color-forest-900)] disabled:opacity-50"
+                            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-[var(--color-forest-800)] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[var(--color-forest-900)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:hover:bg-stone-300"
                             disabled={step === 2 && testState !== "success"}
                             onClick={continueWizard}
                             type="button"

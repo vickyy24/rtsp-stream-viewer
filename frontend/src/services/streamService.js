@@ -107,6 +107,7 @@ export function testStreamConnection({ accessKey, url }) {
 
             if (message.type === "authenticated" && !authenticated) {
                 authenticated = true;
+                if (accessKey) setWorkspaceKey(accessKey);
                 socket.send(JSON.stringify({ type: "start", url }));
             } else if (message.type === "status" && message.status === "live") {
                 if (!settled) {

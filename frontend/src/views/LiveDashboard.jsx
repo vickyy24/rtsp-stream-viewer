@@ -11,6 +11,7 @@ export default function LiveDashboard({
     onAddCamera,
     onRetry,
     onStatusChange,
+    onToggle,
     onViewLayouts,
     streams,
     statuses,
@@ -110,6 +111,7 @@ export default function LiveDashboard({
                             onRetry={onRetry}
                             onSelect={setSelectedId}
                             onStatusChange={onStatusChange}
+                            onToggle={onToggle}
                             selectedId={selectedStream?.id}
                             streams={streams}
                         />

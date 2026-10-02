@@ -63,9 +63,16 @@ ROOT_URLCONF = "config.urls"
 ASGI_APPLICATION = "config.asgi.application"
 WSGI_APPLICATION = "config.wsgi.application"
 
+cors_allowed_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+if DEBUG and not cors_allowed_origins.strip():
+    cors_allowed_origins = ",".join(
+        f"http://{host}:{port}"
+        for host in ("localhost", "127.0.0.1")
+        for port in (5173, 5174)
+    )
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+    for origin in cors_allowed_origins.split(",")
     if origin.strip()
 ]
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

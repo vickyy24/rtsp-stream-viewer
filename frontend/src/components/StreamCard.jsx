@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { LuExpand } from "react-icons/lu";
+import { LuExpand, LuPause, LuPlay } from "react-icons/lu";
 import CameraIcon from "./CameraIcon.jsx";
+import { getStreamSocketUrl } from "../services/streamService.js";
 
-export default function StreamCard({ stream, index, isSelected, isFullscreen, onFrame, onSelect, onStatusChange, onRetry }) {
+export default function StreamCard({ stream, index, isSelected, isFullscreen, onFrame, onSelect, onStatusChange, onRetry, onToggle }) {
     const [status, setStatus] = useState(stream.playing ? "connecting" : "paused");
     const [frameUrl, setFrameUrl] = useState("");
     const [message, setMessage] = useState("");
@@ -29,11 +30,9 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
         let closeRequested = false;
         let errorReported = false;
         let keepAliveInterval;
-        const configuredUrl = import.meta.env.VITE_STREAM_WS_URL;
-        const socketUrl = configuredUrl || `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.hostname}:8000/ws/streams/`;
         const sessionSocket = stream.session?.take();
         const activeSession = sessionSocket ? stream.session : null;
-        const socket = sessionSocket || new WebSocket(socketUrl);
+        const socket = sessionSocket || new WebSocket(getStreamSocketUrl());
         socket.binaryType = "blob";
         setStatus(activeSession ? "live" : "connecting");
         setMessage("");
@@ -106,8 +105,10 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
             window.clearInterval(keepAliveInterval);
             if (activeSession) {
                 activeSession.release();
-            } else if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({ type: "stop" }));
+            } else if (socket.readyState < WebSocket.CLOSING) {
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ type: "stop" }));
+                }
                 socket.close();
             }
             if (currentFrameUrl) URL.revokeObjectURL(currentFrameUrl);
@@ -198,6 +199,19 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                         </button>
                     )}
                 </div>
+                <button
+                    aria-label={`${stream.playing ? "Pause" : "Play"} ${stream.name || `camera ${index + 1}`}`}
+                    className="absolute bottom-3 right-12 z-20 flex size-8 items-center justify-center rounded-md bg-black/60 text-white transition hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onToggle();
+                    }}
+                    type="button"
+                >
+                    {stream.playing
+                        ? <LuPause aria-hidden="true" className="size-4" />
+                        : <LuPlay aria-hidden="true" className="size-4" />}
+                </button>
                 <button
                     aria-label="Toggle fullscreen for this camera"
                     className="absolute bottom-3 right-3 z-20 flex size-8 items-center justify-center rounded-md bg-black/60 text-white transition hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"

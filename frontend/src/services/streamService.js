@@ -53,8 +53,15 @@ export function deleteSavedCamera(cameraId) {
 }
 
 export function getStreamSocketUrl() {
-    return import.meta.env.VITE_STREAM_WS_URL
-        || `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.hostname}:8000/ws/streams/`;
+    const configuredSocketUrl = import.meta.env.VITE_STREAM_WS_URL?.trim();
+    if (configuredSocketUrl) return configuredSocketUrl;
+
+    const backendUrl = new URL(apiUrl);
+    backendUrl.protocol = backendUrl.protocol === "https:" ? "wss:" : "ws:";
+    backendUrl.pathname = `${backendUrl.pathname.replace(/\/+$/, "")}/ws/streams/`;
+    backendUrl.search = "";
+    backendUrl.hash = "";
+    return backendUrl.toString();
 }
 
 export function testStreamConnection({ accessKey, url }) {

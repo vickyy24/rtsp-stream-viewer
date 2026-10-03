@@ -207,7 +207,7 @@ function App() {
 
     return (
         <AppLayout
-            header={<WorkspaceHeader onLogout={signOut} onSearchChange={setSearch} searchValue={search} user={user} />}
+            header={<WorkspaceHeader onLogout={signOut} onSearchChange={setSearch} searchValue={search} />}
             liveContent={(
                 <>
                     {selectedCamera && (

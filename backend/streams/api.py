@@ -51,7 +51,7 @@ def cameras(request):
     try:
         camera = Camera.create_with_url(
             camera_name=name.strip(),
-            location=location.strip(),
+            camera_location=location.strip(),
             host=parsed.hostname or "",
             url=stream_url,
         )

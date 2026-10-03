@@ -1,15 +1,13 @@
 import os
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import dj_database_url
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 local_env_file = BASE_DIR / ".env"
-if local_env_file.exists():
-    load_dotenv(local_env_file)
-elif os.environ.get("DJANGO_DEBUG", "false").lower() == "true":
-    load_dotenv(BASE_DIR / ".env.example")
+load_dotenv(local_env_file)
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
@@ -32,8 +30,6 @@ INSTALLED_APPS = [
     "daphne",
     "channels",
     "corsheaders",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
     "accounts.apps.AccountsConfig",
     "streams.apps.StreamsConfig",
 ]
@@ -48,9 +44,10 @@ PASSWORD_HASHERS = [
 ]
 
 database_url = os.environ.get("DATABASE_URL")
-if not database_url and not DEBUG:
-    raise RuntimeError("DATABASE_URL must be set when DJANGO_DEBUG is false.")
-database_url = database_url or f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+if not database_url:
+    raise RuntimeError("DATABASE_URL must be set to a PostgreSQL connection URL.")
+if urlsplit(database_url).scheme not in {"postgres", "postgresql", "postgresql+psycopg"}:
+    raise RuntimeError("Only PostgreSQL connection URLs are supported.")
 DATABASES = {
     "default": dj_database_url.parse(
         database_url,

@@ -13,7 +13,7 @@ The React workspace saves camera records through the Django API. Django encrypts
 - Media processing: FFmpeg
 - Frontend deployment target: Vercel
 - Backend deployment: a separately hosted ASGI service
-- Database: SQLite for local development, PostgreSQL for hosted deployments
+- Database: PostgreSQL only (Neon for the deployed database)
 - Camera URL encryption: AES-GCM with a separately configured key
 
 ## Repository layout
@@ -62,13 +62,13 @@ python manage.py migrate
 daphne --websocket-max-message-size 4096 -b 127.0.0.1 -p 8000 config.asgi:application
 ```
 
-When `DJANGO_DEBUG=true` and no local `.env` exists, Django loads the development values from `backend/.env.example`. Local development defaults to `backend/db.sqlite3`; this ignored SQLite file is the actual local camera database, created by `migrate`. Hosted deployments use PostgreSQL through `DATABASE_URL` and run migrations at container startup. Install FFmpeg and make it available on `PATH` (or set `FFMPEG_BINARY` to its executable path). Set unique `DJANGO_SECRET_KEY` and `CAMERA_URL_ENCRYPTION_KEY` values before exposing the service. Production reads these from hosting environment variables and does not load the development example.
+The backend reads configuration from the single `backend/.env` file outside the hosting platform. Set a PostgreSQL connection URL in `DATABASE_URL`; PostgreSQL is required in every mode. The deployed Render service reads its environment variables, including `DATABASE_URL`, from the Render service configuration. Install FFmpeg and make it available on `PATH` (or set `FFMPEG_BINARY` to its executable path). Set unique `DJANGO_SECRET_KEY` and `CAMERA_URL_ENCRYPTION_KEY` values before exposing the service. Never commit `.env` or place production credentials in the repository.
 
 On Windows, FFmpeg can be installed with `winget install --id Gyan.FFmpeg.Shared --exact --source winget`. On macOS use `brew install ffmpeg`; on Debian/Ubuntu use `sudo apt-get install ffmpeg`. Start Daphne for local development because Django's default development server does not serve this Channels WebSocket endpoint.
 
 ## Environment variables
 
-Backend configuration is read from environment variables. [`backend/.env.example`](backend/.env.example) contains local development settings. Production requires `DJANGO_SECRET_KEY`, `CAMERA_URL_ENCRYPTION_KEY`, and `DATABASE_URL`; the Render Blueprint generates the application and encryption keys and connects the Postgres database. `DJANGO_ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS` must match the deployed hosts. `DJANGO_SECURE_SSL_REDIRECT` enables app-level HTTPS redirects when the hosting proxy does not provide them. `FFMPEG_BINARY` selects the FFmpeg executable, and `RTSP_MAX_CONCURRENT_STREAMS` limits per-process FFmpeg work. Never commit production secrets or credential-bearing RTSP URLs.
+Backend configuration is read from `backend/.env` outside the hosting platform and from Render's service environment in deployment. `DJANGO_SECRET_KEY`, `CAMERA_URL_ENCRYPTION_KEY`, and PostgreSQL `DATABASE_URL` are required. `DJANGO_ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS` must match the deployed hosts. `DJANGO_SECURE_SSL_REDIRECT` enables app-level HTTPS redirects when the hosting proxy does not provide them. `FFMPEG_BINARY` selects the FFmpeg executable, and `RTSP_MAX_CONCURRENT_STREAMS` limits per-process FFmpeg work. Never commit production secrets or credential-bearing RTSP URLs.
 
 ## API and stream flow
 
@@ -84,11 +84,9 @@ HTTP camera operations are public. WebSocket clients send `{"type":"start","came
 
 ### Database responsibilities and setup
 
-The database stores camera name, optional location, host, timestamps, and an encrypted RTSP URL. It is needed so a saved camera survives browser refresh and backend redeploy. SQLite is for local development only. Render Blueprint provisions a PostgreSQL database and provides its connection string as `DATABASE_URL`; the application applies schema migrations on container start. Keep `CAMERA_URL_ENCRYPTION_KEY` backed up in the deployment's secret manager: changing it without re-encrypting the saved camera URLs makes them unreadable. User accounts and per-user camera ownership are not implemented.
+The PostgreSQL database stores camera name, optional location, host, timestamps, and an encrypted RTSP URL. It is needed so a saved camera survives browser refresh and backend redeploy. All Django ORM queries and schema migrations run against the PostgreSQL database configured by `DATABASE_URL`; the application rejects non-PostgreSQL URLs. The application applies schema migrations on container start. Keep `CAMERA_URL_ENCRYPTION_KEY` backed up in the deployment's secret manager: changing it without re-encrypting the saved camera URLs makes them unreadable. User accounts and per-user camera ownership are not implemented.
 
-On a new deployment, connect the GitHub repository to Render as a Blueprint and deploy `render.yaml`; this creates the API service and Postgres instance. On Render, open the API service's Environment page and check that `CAMERA_URL_ENCRYPTION_KEY` is set and `DATABASE_URL` is linked to the provisioned database.
-
-**Free-tier database limitation:** Render states that free Postgres expires 30 days after creation, is limited to 1 GB, and has no backups. It can be used for the initial live preview, but it is not durable client storage. Upgrade the database to a paid Render Postgres plan before the 30-day expiry (or select a different durable database host), then verify a backup/export before handing the application to the client. [Render free instance and Postgres limits](https://render.com/docs/free).
+On Render, open the API service's Environment page and set `DATABASE_URL` to the Neon PostgreSQL connection string. Keep the value private and do not commit it. Confirm `CAMERA_URL_ENCRYPTION_KEY` is also present. The Blueprint declares `DATABASE_URL` as a manually supplied secret; it does not create or automatically link an external Neon database. Container startup applies migrations to this configured Neon database.
 
 ## Deployment
 

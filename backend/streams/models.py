@@ -19,7 +19,7 @@ def _url_cipher():
 class Camera(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "accounts.User",
         null=True,
         blank=True,
         on_delete=models.CASCADE,

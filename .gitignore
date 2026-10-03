@@ -1,7 +1,6 @@
 # Environment files and secrets
 .env
 .env.*
-!.env.example
 
 # Python
 __pycache__/
@@ -23,8 +22,7 @@ dist/
 npm-debug.log*
 pnpm-debug.log*
 
-# Local databases and media
-*.sqlite3
+# Local media
 media/
 staticfiles/
 

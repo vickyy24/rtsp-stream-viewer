@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LuExpand, LuPause, LuPlay } from "react-icons/lu";
 import CameraIcon from "./CameraIcon.jsx";
-import { getStreamSocketUrl } from "../services/streamService.js";
+import { getAuthToken, getStreamSocketUrl } from "../services/streamService.js";
 
 export default function StreamCard({ stream, index, isSelected, isFullscreen, onFrame, onSelect, onStatusChange, onRetry, onToggle }) {
     const [status, setStatus] = useState(stream.playing ? "connecting" : "paused");
@@ -49,8 +49,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
 
         socket.onopen = () => {
             if (closeRequested) return;
-            socket.send(JSON.stringify({ type: "start", camera_id: stream.id }));
-            startKeepAlive();
+            if (activeSession) startKeepAlive();
         };
         if (activeSession && socket.readyState === WebSocket.OPEN) startKeepAlive();
         socket.onmessage = (event) => {
@@ -70,7 +69,12 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
             } catch {
                 return;
             }
-            if (payload.type === "status") {
+            if (payload.type === "ready") {
+                socket.send(JSON.stringify({ type: "auth", token: getAuthToken() }));
+            } else if (payload.type === "authenticated") {
+                socket.send(JSON.stringify({ type: "start", camera_id: stream.id }));
+                startKeepAlive();
+            } else if (payload.type === "status") {
                 setStatus(payload.status);
                 onStatusChange(stream.id, payload.status);
             } else if (payload.type === "error") {

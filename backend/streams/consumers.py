@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.conf import settings
+from accounts.tokens import get_user_from_access_token
 
 from .ffmpeg import (
     InvalidStreamUrl,
@@ -60,6 +61,7 @@ class StreamConsumer(AsyncWebsocketConsumer):
         self.capacity_acquired = False
         self.disconnecting = False
         self.stopping_stream = False
+        self.user = None
         await self.accept()
         await self._send_event({"type": "ready"})
 
@@ -78,7 +80,9 @@ class StreamConsumer(AsyncWebsocketConsumer):
             await self._send_error("The stream control message must be an object.")
             return
 
-        if message.get("type") == "start":
+        if message.get("type") == "auth":
+            await self._authenticate(message.get("token"))
+        elif message.get("type") == "start":
             if message.get("camera_id"):
                 await self._start_saved_camera(message.get("camera_id"))
             else:
@@ -95,6 +99,9 @@ class StreamConsumer(AsyncWebsocketConsumer):
         await self._stop_stream(notify=False)
 
     async def _start_stream(self, raw_url):
+        if self.user is None:
+            await self._send_error("Sign in before opening a camera stream.")
+            return
         if self.process is not None:
             await self._send_error("A camera is already running on this connection.")
             return
@@ -138,19 +145,33 @@ class StreamConsumer(AsyncWebsocketConsumer):
         self.frame_task = asyncio.create_task(self._forward_frames())
 
     @database_sync_to_async
-    def _load_camera_url(self, camera_id):
+    def _resolve_user(self, token):
+        return get_user_from_access_token(token) if isinstance(token, str) else None
+
+    @database_sync_to_async
+    def _load_camera_url(self, camera_id, user_id):
         try:
-            camera = Camera.objects.get(pk=camera_id)
+            camera = Camera.objects.get(pk=camera_id, owner_id=user_id)
             return camera.get_stream_url()
         except (Camera.DoesNotExist, ValueError, TypeError):
             return None
 
     async def _start_saved_camera(self, camera_id):
-        stream_url = await self._load_camera_url(camera_id)
+        stream_url = await self._load_camera_url(camera_id, self.user.pk if self.user else None)
         if stream_url is None:
             await self._send_error("This saved camera could not be found or its URL is unavailable.")
             return
         await self._start_stream(stream_url)
+
+    async def _authenticate(self, token):
+        if self.user is not None:
+            await self._send_error("This stream connection is already authenticated.")
+            return
+        self.user = await self._resolve_user(token)
+        if self.user is None:
+            await self._send_error("Sign in again to open camera streams.")
+            return
+        await self._send_event({"type": "authenticated"})
 
     async def _forward_frames(self):
         frame_reader = MjpegFrameReader(self.process.stdout)

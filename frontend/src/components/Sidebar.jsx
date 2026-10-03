@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router";
 import {
     LuHistory,
     LuLayoutGrid,
+    LuLogOut,
     LuMonitor,
     LuNetwork,
     LuSettings,
@@ -29,7 +30,7 @@ const groups = [
     },
 ];
 
-export default function Sidebar({ activePage }) {
+export default function Sidebar({ activePage, onLogout, user }) {
     return (
         <aside className="sticky top-0 flex h-dvh w-14 shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-1.5 py-3 sm:w-16 sm:px-2 lg:w-52 lg:px-4 lg:py-6">
             <Link
@@ -79,12 +80,16 @@ export default function Sidebar({ activePage }) {
 
             <div className="mt-auto hidden border-t border-stone-200 pt-4 lg:block">
                 <div className="flex items-center gap-2">
-                    <span className="brand-gradient flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">S</span>
+                    <span className="brand-gradient flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">{user?.full_name?.[0]?.toUpperCase() || "S"}</span>
                     <span className="min-w-0">
-                        <span className="block truncate text-xs font-semibold text-stone-800">Signal</span>
-                        <span className="block truncate text-xs text-stone-500">Stream workspace</span>
+                        <span className="block truncate text-xs font-semibold text-stone-800">{user?.full_name || "Signal user"}</span>
+                        <span className="block truncate text-xs text-stone-500">{user?.email}</span>
                     </span>
                 </div>
+                <button className="mt-3 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900" onClick={onLogout} type="button">
+                    <LuLogOut aria-hidden="true" className="size-4" />
+                    Sign out
+                </button>
             </div>
         </aside>
     );

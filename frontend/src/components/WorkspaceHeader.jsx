@@ -12,7 +12,7 @@ function useClock() {
     return now;
 }
 
-export default function WorkspaceHeader({ onSearchChange, searchValue }) {
+export default function WorkspaceHeader({ onLogout, onSearchChange, searchValue, user }) {
     const now = useClock();
 
     async function toggleFullscreen() {
@@ -70,12 +70,15 @@ export default function WorkspaceHeader({ onSearchChange, searchValue }) {
                 >
                     <LuMaximize aria-hidden="true" className="size-[18px]" />
                 </button>
-                <span
-                    aria-label="Signal workspace"
+                <button
+                    aria-label={`Sign out ${user?.email || "account"}`}
                     className="brand-gradient flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                    onClick={onLogout}
+                    title={`Sign out ${user?.email || "account"}`}
+                    type="button"
                 >
-                    S
-                </span>
+                    {user?.full_name?.[0]?.toUpperCase() || "S"}
+                </button>
             </div>
         </header>
     );

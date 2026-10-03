@@ -26,3 +26,17 @@ services:
         value: ffmpeg
       - key: RTSP_MAX_CONCURRENT_STREAMS
         value: "4"
+      - key: FRONTEND_URL
+        value: https://rtsp-stream-viewer-roan.vercel.app
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: EMAIL_USE_TLS
+        value: "true"
+      - key: DEFAULT_FROM_EMAIL
+        sync: false

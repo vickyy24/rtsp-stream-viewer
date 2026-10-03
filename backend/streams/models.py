@@ -18,14 +18,17 @@ def _url_cipher():
 
 class Camera(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(
+        "accounts.User", on_delete=models.CASCADE, related_name="cameras", null=True, blank=True
+    )
     camera_name = models.CharField(max_length=120)
     camera_location = models.CharField(max_length=160, blank=True)
     encrypted_url = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     @classmethod
-    def create_with_url(cls, *, camera_name, camera_location, url):
-        camera = cls(camera_name=camera_name, camera_location=camera_location)
+    def create_with_url(cls, *, owner, camera_name, camera_location, url):
+        camera = cls(owner=owner, camera_name=camera_name, camera_location=camera_location)
         camera.set_stream_url(url)
         camera.save()
         return camera

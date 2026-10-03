@@ -6,6 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from accounts.api import require_user
 from .consumers import validate_stream_url
 from .ffmpeg import InvalidStreamUrl
 from .models import Camera
@@ -26,9 +27,10 @@ def _read_payload(request):
 
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
+@require_user
 def cameras(request):
     if request.method == "GET":
-        return JsonResponse({"cameras": [camera.public_data() for camera in Camera.objects.order_by("created_at")]})
+        return JsonResponse({"cameras": [camera.public_data() for camera in Camera.objects.filter(owner=request.user).order_by("created_at")]})
 
     payload = _read_payload(request)
     if payload is None:
@@ -46,6 +48,7 @@ def cameras(request):
         return JsonResponse({"error": "Enter a valid RTSP or RTSPS camera address."}, status=400)
     try:
         camera = Camera.create_with_url(
+            owner=request.user,
             camera_name=name.strip(),
             camera_location=location.strip(),
             url=stream_url,
@@ -58,9 +61,10 @@ def cameras(request):
 
 @csrf_exempt
 @require_http_methods(["DELETE"])
+@require_user
 def camera_detail(request, camera_id):
     try:
-        camera = Camera.objects.get(id=camera_id)
+        camera = Camera.objects.get(id=camera_id, owner=request.user)
     except (Camera.DoesNotExist, ValueError):
         return JsonResponse({"error": "Camera was not found."}, status=404)
     camera.delete()

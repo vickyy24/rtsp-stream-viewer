@@ -8,11 +8,27 @@ const apiUrl = (
 
 console.log("apiUrl:", apiUrl);
 
+const AUTH_TOKEN_KEY = "signal_access_token";
+
+export function getAuthToken() {
+    return window.localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+export function saveAuthToken(token) {
+    window.localStorage.setItem(AUTH_TOKEN_KEY, token);
+}
+
+export function clearAuthToken() {
+    window.localStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
 async function apiRequest(path, options = {}) {
+    const token = getAuthToken();
     const response = await fetch(`${apiUrl}${path}`, {
         ...options,
         headers: {
             ...(options.body ? { "Content-Type": "application/json" } : {}),
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...options.headers,
         },
     });
@@ -21,6 +37,33 @@ async function apiRequest(path, options = {}) {
         throw new Error(payload.error || `Camera service returned ${response.status}.`);
     }
     return response.status === 204 ? null : response.json();
+}
+
+export function signUpAccount({ full_name, email, password }) {
+    return apiRequest("/api/auth/signup/", {
+        method: "POST",
+        body: JSON.stringify({ full_name, email, password }),
+    });
+}
+
+export async function signInAccount({ email, password }) {
+    const result = await apiRequest("/api/auth/signin/", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+    });
+    saveAuthToken(result.token);
+    return result.user;
+}
+
+export function getCurrentAccount() {
+    return apiRequest("/api/auth/me/");
+}
+
+export function verifyAccountEmail(token) {
+    return apiRequest("/api/auth/verify-email/", {
+        method: "POST",
+        body: JSON.stringify({ token }),
+    });
 }
 
 export function listCameras() {
@@ -79,9 +122,7 @@ export function testStreamConnection({ url }) {
             reject(error);
         }
 
-        socket.onopen = () => {
-            socket.send(JSON.stringify({ type: "start", url }));
-        };
+        socket.onopen = () => {};
         socket.onmessage = (event) => {
             if (typeof event.data !== "string") return;
             let message;
@@ -91,7 +132,11 @@ export function testStreamConnection({ url }) {
                 return;
             }
 
-            if (message.type === "status" && message.status === "live") {
+            if (message.type === "ready") {
+                socket.send(JSON.stringify({ type: "auth", token: getAuthToken() }));
+            } else if (message.type === "authenticated") {
+                socket.send(JSON.stringify({ type: "start", url }));
+            } else if (message.type === "status" && message.status === "live") {
                 if (!settled) {
                     settled = true;
                     window.clearTimeout(timeout);

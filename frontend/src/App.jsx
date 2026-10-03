@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation, useMatch, useNavigate } from "react-router";
+import { Navigate, useLocation, useMatch, useNavigate } from "react-router";
 import Sidebar from "./components/Sidebar.jsx";
 import WorkspaceHeader from "./components/WorkspaceHeader.jsx";
 import AppRoutes from "./app/AppRoutes.jsx";
 import AppLayout from "./components/layout/AppLayout.jsx";
 import LiveDashboard from "./views/LiveDashboard.jsx";
+import AuthPage from "./views/AuthPage.jsx";
 import { paths } from "./app/paths.js";
-import { deleteSavedCamera, listCameras, saveCamera } from "./services/streamService.js";
+import {
+    clearAuthToken,
+    deleteSavedCamera,
+    getCurrentAccount,
+    getAuthToken,
+    listCameras,
+    saveCamera,
+} from "./services/streamService.js";
 
 function App() {
     const navigate = useNavigate();
@@ -26,6 +34,8 @@ function App() {
     const [statusFilter, setStatusFilter] = useState("all");
     const [layout, setLayout] = useState("2x2");
     const [streams, setStreams] = useState([]);
+    const [user, setUser] = useState(null);
+    const [authReady, setAuthReady] = useState(false);
     const [statuses, setStatuses] = useState({});
     const [activities, setActivities] = useState([]);
     const streamListRef = useRef(streams);
@@ -35,6 +45,29 @@ function App() {
 
     useEffect(() => {
         let active = true;
+        if (!getAuthToken()) {
+            setAuthReady(true);
+            return undefined;
+        }
+        getCurrentAccount()
+            .then(({ user: account }) => {
+                if (active) setUser(account);
+            })
+            .catch(() => {
+                clearAuthToken();
+            })
+            .finally(() => {
+                if (active) setAuthReady(true);
+            });
+        return () => { active = false; };
+    }, []);
+
+    useEffect(() => {
+        let active = true;
+        if (!user) {
+            setStreams([]);
+            return undefined;
+        }
         listCameras().then(({ cameras }) => {
             if (!active) return;
             setStreams(cameras.map((camera) => ({
@@ -44,7 +77,16 @@ function App() {
             })));
         }).catch(() => {});
         return () => { active = false; };
-    }, []);
+    }, [user]);
+
+    function signOut() {
+        clearAuthToken();
+        setUser(null);
+        setStreams([]);
+        navigate("/signin", { replace: true });
+    }
+
+    const isAuthPath = ["/signin", "/signup", "/verify-email"].includes(location.pathname);
 
     const addActivity = useCallback((message, tone = "info") => {
         setActivities((current) => [
@@ -143,9 +185,19 @@ function App() {
         statuses[camera.id],
     ]));
 
+    if (!authReady) {
+        return <main className="flex min-h-dvh items-center justify-center text-sm text-stone-500">Loading your workspace…</main>;
+    }
+    if (!user) {
+        return <AuthPage onLogin={setUser} />;
+    }
+    if (isAuthPath) {
+        return <Navigate replace to={paths.live} />;
+    }
+
     return (
         <AppLayout
-            header={<WorkspaceHeader onSearchChange={setSearch} searchValue={search} />}
+            header={<WorkspaceHeader onLogout={signOut} onSearchChange={setSearch} searchValue={search} user={user} />}
             liveContent={(
                 <>
                     {selectedCamera && (
@@ -177,7 +229,7 @@ function App() {
                 </>
             )}
             showLive={showLive}
-            sidebar={<Sidebar activePage={activePage} />}
+            sidebar={<Sidebar activePage={activePage} onLogout={signOut} user={user} />}
         >
             <AppRoutes
                 activities={activities}

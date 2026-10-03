@@ -180,31 +180,31 @@ export default function AuthPage({ onLogin }) {
     const passwordResetComplete = new URLSearchParams(location.search).get("passwordReset") === "success";
 
     return (
-        <main className="auth-shell">
-            <aside className="auth-story">
+        <main className="auth-shell max-[900px]:grid-cols-[minmax(300px,0.85fr)_minmax(0,1.15fr)] max-[680px]:h-auto max-[680px]:min-h-dvh max-[680px]:overflow-visible max-[680px]:grid-cols-[minmax(0,1fr)]">
+            <aside className="auth-story max-[680px]:min-h-[300px] max-[380px]:min-h-[270px] before:max-[680px]:bg-[linear-gradient(90deg,rgba(251,251,246,0.97)_0%,rgba(251,251,246,0.90)_54%,rgba(251,251,246,0.25)_100%)]">
                 <img alt="" aria-hidden="true" className="auth-story-image" src="/camera-auth.webp" />
-                <div className="auth-story-content">
-                    <div className="auth-brand">
-                        <SignalLogo className="size-14 shrink-0" />
+                <div className="auth-story-content max-[900px]:pr-[28px] max-[900px]:pl-[36px] max-[680px]:p-[28px_28px_30px] [@media(max-height:760px)_and_(min-width:681px)]:py-[18px] max-[380px]:px-[20px]">
+                    <div className="auth-brand max-[680px]:gap-[10px] max-[680px]:mb-[24px] [@media(max-height:760px)_and_(min-width:681px)]:mb-[16px]">
+                        <SignalLogo className="size-14 shrink-0 max-[680px]:w-[42px] max-[680px]:h-[42px]" />
                         <div>
                             <p className="text-base font-bold tracking-[0.24em] text-stone-900">SIGNAL</p>
                             <p className="text-xs font-medium tracking-[0.12em] text-stone-500">RTSP STREAM VIEWER</p>
                         </div>
                     </div>
                     <div className="auth-pitch">
-                        <h2>Monitor Your<br />Cameras in<br /><span>Real Time</span></h2>
-                        <p className="auth-story-copy">Add RTSP stream URLs and view live video streams from your cameras, all in one place.</p>
+                        <h2 className="max-[900px]:text-[clamp(34px,5vw,48px)] max-[680px]:text-[34px] [@media(max-height:760px)_and_(min-width:681px)]:text-[clamp(30px,3vw,42px)]">Monitor Your<br />Cameras in<br /><span>Real Time</span></h2>
+                        <p className="auth-story-copy max-[680px]:max-w-[310px] max-[680px]:mt-[10px] max-[680px]:text-[14px]">Add RTSP stream URLs and view live video streams from your cameras, all in one place.</p>
                     </div>
-                    <ul className="auth-benefits">
-                        <li><span className="auth-benefit-icon"><FiCamera aria-hidden="true" /></span><span><strong>Live Streaming</strong><small>Watch your RTSP streams in real time</small></span></li>
-                        <li><span className="auth-benefit-icon"><FiGrid aria-hidden="true" /></span><span><strong>Multiple Streams</strong><small>View multiple cameras in a grid layout</small></span></li>
-                        <li><span className="auth-benefit-icon"><FiPlayCircle aria-hidden="true" /></span><span><strong>Simple Controls</strong><small>Play, pause and manage your streams</small></span></li>
-                        <li><span className="auth-benefit-icon"><FiShield aria-hidden="true" /></span><span><strong>Secure &amp; Private</strong><small>Your streams, your control</small></span></li>
+                    <ul className="auth-benefits max-[680px]:hidden [@media(max-height:760px)_and_(min-width:681px)]:gap-[7px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[13px]">
+                        <li><span className="auth-benefit-icon max-[900px]:w-[48px] max-[900px]:h-[48px] max-[900px]:text-[22px] [@media(max-height:760px)_and_(min-width:681px)]:w-[42px] [@media(max-height:760px)_and_(min-width:681px)]:h-[42px] [@media(max-height:760px)_and_(min-width:681px)]:text-[19px]"><FiCamera aria-hidden="true" /></span><span><strong>Live Streaming</strong><small className="max-[900px]:text-[12px]">Watch your RTSP streams in real time</small></span></li>
+                        <li><span className="auth-benefit-icon max-[900px]:w-[48px] max-[900px]:h-[48px] max-[900px]:text-[22px] [@media(max-height:760px)_and_(min-width:681px)]:w-[42px] [@media(max-height:760px)_and_(min-width:681px)]:h-[42px] [@media(max-height:760px)_and_(min-width:681px)]:text-[19px]"><FiGrid aria-hidden="true" /></span><span><strong>Multiple Streams</strong><small className="max-[900px]:text-[12px]">View multiple cameras in a grid layout</small></span></li>
+                        <li><span className="auth-benefit-icon max-[900px]:w-[48px] max-[900px]:h-[48px] max-[900px]:text-[22px] [@media(max-height:760px)_and_(min-width:681px)]:w-[42px] [@media(max-height:760px)_and_(min-width:681px)]:h-[42px] [@media(max-height:760px)_and_(min-width:681px)]:text-[19px]"><FiPlayCircle aria-hidden="true" /></span><span><strong>Simple Controls</strong><small className="max-[900px]:text-[12px]">Play, pause and manage your streams</small></span></li>
+                        <li><span className="auth-benefit-icon max-[900px]:w-[48px] max-[900px]:h-[48px] max-[900px]:text-[22px] [@media(max-height:760px)_and_(min-width:681px)]:w-[42px] [@media(max-height:760px)_and_(min-width:681px)]:h-[42px] [@media(max-height:760px)_and_(min-width:681px)]:text-[19px]"><FiShield aria-hidden="true" /></span><span><strong>Secure &amp; Private</strong><small className="max-[900px]:text-[12px]">Your streams, your control</small></span></li>
                     </ul>
                 </div>
             </aside>
 
-            <section className="auth-form-panel">
+            <section className="auth-form-panel max-[900px]:px-[32px] max-[680px]:min-h-[auto] max-[680px]:items-start max-[680px]:p-[24px_24px_40px] [@media(max-height:760px)_and_(min-width:681px)]:py-[12px] max-[380px]:px-[18px]">
                 <div className="auth-card">
                     {!isVerify && !isReset && !isForgot && (
                         <div aria-label="Account access" className="auth-tabs" role="group">
@@ -213,8 +213,8 @@ export default function AuthPage({ onLogin }) {
                         </div>
                     )}
 
-                    <header className="auth-heading">
-                        <h1>
+                    <header className="auth-heading max-[680px]:mt-[28px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[15px]">
+                        <h1 className="max-[680px]:text-[30px]">
                             {isVerify ? "Verify your email"
                                 : isReset ? "Choose a new password"
                                     : isForgot ? "Forgot your password?"
@@ -238,7 +238,7 @@ export default function AuthPage({ onLogin }) {
                     )}
 
                     {isVerify || isReset ? (
-                        <form className="auth-form" noValidate onSubmit={submit}>
+                        <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:gap-[8px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
                             <p className="auth-instructions">
                                 Enter the six-digit code sent to <span className="font-medium text-stone-800">{verificationEmail || "your email"}</span>. The code expires in 10 minutes.
                             </p>
@@ -268,7 +268,7 @@ export default function AuthPage({ onLogin }) {
                             </Link>
                         </form>
                     ) : isForgot ? (
-                        <form className="auth-form" noValidate onSubmit={submit}>
+                        <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:gap-[8px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
                             <FormAlert>{error}</FormAlert>
                             <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} placeholder="Enter your email" type="email" value={email} />
                             <button className="auth-submit brand-gradient" disabled={busy} type="submit">
@@ -280,7 +280,7 @@ export default function AuthPage({ onLogin }) {
                         </form>
                     ) : (
                         <>
-                            <form className="auth-form" noValidate onSubmit={submit}>
+                            <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:gap-[8px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
                                 <FormAlert>{error}</FormAlert>
                                 {isSignup ? (
                                     <>
@@ -409,7 +409,7 @@ export default function AuthPage({ onLogin }) {
                                 Continue with Google
                             </button>
 
-                            <p className="auth-switch-prompt">
+                            <p className="auth-switch-prompt [@media(max-height:760px)_and_(min-width:681px)]:mt-[12px]">
                                 {isSignup ? "Already have an account? " : "Don't have an account? "}
                                 <button onClick={() => switchMode(isSignup ? "signin" : "signup")} type="button">
                                     {isSignup ? "Sign In" : "Sign Up"}

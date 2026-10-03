@@ -25,6 +25,15 @@ function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onCha
     );
 }
 
+function FormAlert({ children }) {
+    if (!children) return null;
+    return (
+        <div aria-live="polite" className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm leading-5 text-rose-800" role="alert">
+            {children}
+        </div>
+    );
+}
+
 export default function AuthPage({ onLogin }) {
     const location = useLocation();
     const navigate = useNavigate();
@@ -134,6 +143,7 @@ export default function AuthPage({ onLogin }) {
                         <p className="text-sm leading-6 text-stone-600">
                             Enter the six-digit code sent to <span className="font-medium text-stone-800">{verificationEmail || "your email"}</span>. The code expires in 10 minutes.
                         </p>
+                        <FormAlert>{error}</FormAlert>
                         <AuthInput
                             autoComplete="one-time-code"
                             error={fieldErrors.code}
@@ -145,7 +155,6 @@ export default function AuthPage({ onLogin }) {
                             type="text"
                             value={verificationCode}
                         />
-                        {error && <p aria-live="polite" className="text-sm text-rose-700" role="alert">{error}</p>}
                         <button className="brand-gradient mt-1 h-11 rounded-lg text-sm font-semibold disabled:cursor-wait disabled:opacity-60" disabled={busy} type="submit">
                             {busy ? "Verifying…" : "Verify email and continue"}
                         </button>
@@ -155,6 +164,7 @@ export default function AuthPage({ onLogin }) {
                     </form>
                 ) : (
                     <form className="mt-6 flex flex-col gap-4" noValidate onSubmit={submit}>
+                        <FormAlert>{error}</FormAlert>
                         {isSignup && (
                             <AuthInput autoComplete="name" error={fieldErrors.fullName} id="full-name" label="Full name" maxLength={150} onChange={(value) => updateField("fullName", setFullName, value)} value={fullName} />
                         )}
@@ -163,7 +173,6 @@ export default function AuthPage({ onLogin }) {
                         {isSignup && (
                             <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
                         )}
-                        {error && <p aria-live="polite" className="text-sm text-rose-700">{error}</p>}
                         <button className="brand-gradient mt-1 h-11 rounded-lg text-sm font-semibold disabled:cursor-wait disabled:opacity-60" disabled={busy} type="submit">
                             {busy ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
                         </button>

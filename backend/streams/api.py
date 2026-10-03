@@ -50,7 +50,7 @@ def cameras(request):
         return JsonResponse({"error": "The RTSP host name is too long."}, status=400)
     try:
         camera = Camera.create_with_url(
-            name=name.strip(),
+            camera_name=name.strip(),
             location=location.strip(),
             host=parsed.hostname or "",
             url=stream_url,

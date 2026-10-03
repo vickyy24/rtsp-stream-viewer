@@ -11,7 +11,7 @@ function AuthInput({ autoComplete, error, id, label, maxLength, onChange, type =
                 aria-describedby={error ? `${id}-error` : undefined}
                 aria-invalid={Boolean(error)}
                 autoComplete={autoComplete}
-                className={`auth-input h-11 rounded-lg border bg-white px-3 text-sm text-stone-900 outline-none transition focus:ring-2 focus:ring-[var(--color-forest-100)] ${error ? "border-rose-500 focus:border-rose-600" : "border-stone-200 focus:border-[var(--color-forest-700)]"}`}
+                className={`auth-input h-11 rounded-lg border bg-white px-3 text-sm font-normal text-stone-900 outline-none transition focus:ring-2 focus:ring-[var(--color-forest-100)] ${error ? "border-rose-500 focus:border-rose-600" : "border-stone-200 focus:border-[var(--color-forest-700)]"}`}
                 id={id}
                 maxLength={maxLength}
                 onChange={(event) => onChange(event.target.value)}

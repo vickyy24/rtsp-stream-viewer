@@ -28,17 +28,7 @@ services:
         value: "4"
       - key: FRONTEND_URL
         value: https://rtsp-stream-viewer-roan.vercel.app
-      - key: EMAIL_HOST
-        sync: false
-      - key: EMAIL_PORT
-        value: "587"
       - key: EMAIL_HOST_USER
-        sync: false
+        value: vikassontakke2002@gmail.com
       - key: EMAIL_HOST_PASSWORD
-        sync: false
-      - key: EMAIL_USE_TLS
-        value: "true"
-      - key: EMAIL_USE_SSL
-        value: "false"
-      - key: DEFAULT_FROM_EMAIL
         sync: false

@@ -91,7 +91,7 @@ def signup(request):
         return JsonResponse({"error": "Enter a valid email address."}, status=400)
     if not isinstance(password, str) or len(password) < 10 or len(password) > 128:
         return JsonResponse({"error": "Password must be between 10 and 128 characters."}, status=400)
-    if not all((settings.EMAIL_HOST, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD, settings.DEFAULT_FROM_EMAIL)):
+    if not all((settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)):
         logger.error("Signup is unavailable because email delivery is not configured")
         return JsonResponse(
             {"error": "Sign up is temporarily unavailable. Please try again later."}, status=503

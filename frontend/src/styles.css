@@ -52,6 +52,10 @@ input {
     font: inherit;
 }
 
+.auth-input {
+    font-weight: 400 !important;
+}
+
 .auth-input:-webkit-autofill,
 .auth-input:-webkit-autofill:hover,
 .auth-input:-webkit-autofill:focus,

@@ -8,7 +8,11 @@ const apiUrl = (
 
 console.log("apiUrl:", apiUrl);
 
-const AUTH_TOKEN_KEY = "signal_access_token";
+const AUTH_TOKEN_KEY = "signal_access_token_v2";
+const LEGACY_AUTH_TOKEN_KEY = "signal_access_token";
+
+// Tokens from the pre-authentication workspace must not silently sign visitors in.
+window.localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
 
 export function getAuthToken() {
     return window.localStorage.getItem(AUTH_TOKEN_KEY);

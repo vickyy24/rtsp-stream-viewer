@@ -198,6 +198,9 @@ function App() {
     if (!authReady) {
         return <main className="flex min-h-dvh items-center justify-center text-sm text-stone-500">Loading your workspace…</main>;
     }
+    if (!user && !isAuthPath) {
+        return <Navigate replace to="/signin" state={{ from: location.pathname }} />;
+    }
     if (!user) {
         return <AuthPage onLogin={setUser} />;
     }

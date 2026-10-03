@@ -76,9 +76,9 @@ export default function SettingsPage() {
                         </div>
                     </section>
                     <section className="scroll-mt-4 rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4" id="access-settings">
-                        <h2 className="text-base font-semibold text-stone-800">Access and unavailable features</h2>
+                        <h2 className="text-base font-semibold text-stone-800">Account access</h2>
                         <p className="mt-2 text-xs leading-5 text-stone-500">
-                            Camera management and streams are available to visitors of this deployment. Individual user accounts, recording, notifications, and saved workspace preferences are not implemented.
+                            Sign in is required to access cameras and live streams. Your account uses email verification and a signed access token.
                         </p>
                     </section>
                 </div>

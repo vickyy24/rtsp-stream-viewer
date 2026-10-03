@@ -18,7 +18,7 @@ function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onCha
     const isPassword = type === "password";
     return (
         <div className="auth-field">
-            <label className="auth-label" htmlFor={id}>{label}</label>
+            <label className="auth-label sr-only" htmlFor={id}>{label}</label>
             <div className={`auth-control ${error ? "has-error" : ""}`}>
                 <FieldIcon aria-hidden="true" className="auth-control-icon" />
                 <input
@@ -204,14 +204,15 @@ export default function AuthPage({ onLogin }) {
                 </div>
             </aside>
 
-            <section className="auth-form-panel max-[900px]:px-[32px] max-[680px]:min-h-[auto] max-[680px]:items-start max-[680px]:p-[24px_24px_40px] [@media(max-height:760px)_and_(min-width:681px)]:py-[12px] max-[380px]:px-[18px]">
+            <section className="auth-form-panel">
+                {!isVerify && !isReset && !isForgot && (
+                    <div aria-label="Account access" className="auth-tabs-bar" role="group">
+                        <button aria-pressed={!isSignup} className={!isSignup ? "active" : ""} onClick={() => switchMode("signin")} type="button">Sign In</button>
+                        <button aria-pressed={isSignup} className={isSignup ? "active" : ""} onClick={() => switchMode("signup")} type="button">Sign Up</button>
+                    </div>
+                )}
+                <div className="auth-card-wrap">
                 <div className="auth-card">
-                    {!isVerify && !isReset && !isForgot && (
-                        <div aria-label="Account access" className="auth-tabs" role="group">
-                            <button aria-pressed={!isSignup} className={!isSignup ? "active" : ""} onClick={() => switchMode("signin")} type="button">Sign In</button>
-                            <button aria-pressed={isSignup} className={isSignup ? "active" : ""} onClick={() => switchMode("signup")} type="button">Sign Up</button>
-                        </div>
-                    )}
 
                     <header className="auth-heading max-[680px]:mt-[28px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[15px]">
                         <h1 className="max-[680px]:text-[30px]">
@@ -417,6 +418,7 @@ export default function AuthPage({ onLogin }) {
                             </p>
                         </>
                     )}
+                </div>
                 </div>
             </section>
         </main>

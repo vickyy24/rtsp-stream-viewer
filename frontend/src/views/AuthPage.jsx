@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
+import { FiCamera, FiEye, FiEyeOff, FiGrid, FiKey, FiLock, FiMail, FiPlayCircle, FiShield, FiUser } from "react-icons/fi";
 import SignalLogo from "../components/SignalLogo.jsx";
 import {
     requestPasswordReset,
@@ -10,22 +11,41 @@ import {
 } from "../services/streamService.js";
 
 function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onChange, type = "text", value }) {
+    const [showPassword, setShowPassword] = useState(false);
+    const FieldIcon = type === "email" ? FiMail
+        : id.includes("password") ? FiLock
+            : id.includes("name") ? FiUser : FiKey;
+    const isPassword = type === "password";
     return (
-        <div className="flex flex-col gap-1.5 text-sm font-medium text-stone-700">
-            <label htmlFor={id}>{label}</label>
-            <input
-                aria-describedby={error ? `${id}-error` : undefined}
-                aria-invalid={Boolean(error)}
-                autoComplete={autoComplete}
-                className={`auth-input h-11 rounded-lg border bg-white px-3 text-sm font-normal text-stone-900 outline-none transition focus:ring-2 focus:ring-[var(--color-forest-100)] ${error ? "border-rose-500 focus:border-rose-600" : "border-stone-200 focus:border-[var(--color-forest-700)]"}`}
-                id={id}
-                inputMode={inputMode}
-                maxLength={maxLength}
-                onChange={(event) => onChange(event.target.value)}
-                required
-                type={type}
-                value={value}
-            />
+        <div className="auth-field">
+            <label className="auth-label" htmlFor={id}>{label}</label>
+            <div className={`auth-control ${error ? "has-error" : ""}`}>
+                <FieldIcon aria-hidden="true" className="auth-control-icon" />
+                <input
+                    aria-describedby={error ? `${id}-error` : undefined}
+                    aria-invalid={Boolean(error)}
+                    autoComplete={autoComplete}
+                    className="auth-input"
+                    id={id}
+                    inputMode={inputMode}
+                    maxLength={maxLength}
+                    onChange={(event) => onChange(event.target.value)}
+                    placeholder={label}
+                    required
+                    type={isPassword && showPassword ? "text" : type}
+                    value={value}
+                />
+                {isPassword && (
+                    <button
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        className="auth-password-toggle"
+                        onClick={() => setShowPassword((shown) => !shown)}
+                        type="button"
+                    >
+                        {showPassword ? <FiEyeOff aria-hidden="true" /> : <FiEye aria-hidden="true" />}
+                    </button>
+                )}
+            </div>
             {error && <p className="text-xs font-normal text-rose-700" id={`${id}-error`}>{error}</p>}
         </div>
     );
@@ -157,41 +177,66 @@ export default function AuthPage({ onLogin }) {
     const passwordResetComplete = new URLSearchParams(location.search).get("passwordReset") === "success";
 
     return (
-        <main className="flex min-h-dvh items-center justify-center bg-[var(--color-app-background)] px-4 py-10">
-            <section className="w-full max-w-md rounded-2xl border border-stone-200 bg-[var(--color-surface)] p-6 shadow-sm sm:p-8">
-                <div className="mb-7 flex items-center gap-3">
-                    <SignalLogo className="size-11 shrink-0" />
-                    <div>
-                        <p className="text-sm font-bold tracking-[0.24em] text-stone-900">SIGNAL</p>
-                        <p className="text-xs text-stone-500">RTSP STREAM VIEWER</p>
+        <main className="auth-shell">
+            <aside className="auth-story">
+                <img alt="" aria-hidden="true" className="auth-story-image" src="/camera-auth.webp" />
+                <div className="auth-story-content">
+                    <div className="auth-brand">
+                        <SignalLogo className="size-14 shrink-0" />
+                        <div>
+                            <p className="text-base font-bold tracking-[0.24em] text-stone-900">SIGNAL</p>
+                            <p className="text-xs font-medium tracking-[0.12em] text-stone-500">RTSP STREAM VIEWER</p>
+                        </div>
                     </div>
+                    <div className="auth-pitch">
+                        <h2>Monitor Your<br />Cameras in<br /><span>Real Time</span></h2>
+                        <p className="auth-story-copy">Add RTSP stream URLs and view live video streams from your cameras, all in one place.</p>
+                    </div>
+                    <ul className="auth-benefits">
+                        <li><span className="auth-benefit-icon"><FiCamera aria-hidden="true" /></span><span><strong>Live Streaming</strong><small>Watch your RTSP streams in real time</small></span></li>
+                        <li><span className="auth-benefit-icon"><FiGrid aria-hidden="true" /></span><span><strong>Multiple Streams</strong><small>View multiple cameras in a grid layout</small></span></li>
+                        <li><span className="auth-benefit-icon"><FiPlayCircle aria-hidden="true" /></span><span><strong>Simple Controls</strong><small>Play, pause and manage your streams</small></span></li>
+                        <li><span className="auth-benefit-icon"><FiShield aria-hidden="true" /></span><span><strong>Secure &amp; Private</strong><small>Your streams, your control</small></span></li>
+                    </ul>
                 </div>
+            </aside>
 
-                <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
+            <section className="auth-form-panel">
+                <div className="auth-form-content">
+                    {!isVerify && !isReset && !isForgot && (
+                        <div aria-label="Account access" className="auth-tabs" role="group">
+                            <button aria-pressed={!isSignup} className={!isSignup ? "active" : ""} onClick={() => switchMode("signin")} type="button">Sign In</button>
+                            <button aria-pressed={isSignup} className={isSignup ? "active" : ""} onClick={() => switchMode("signup")} type="button">Sign Up</button>
+                        </div>
+                    )}
+
+                    <header className="auth-heading">
+                        <h1>
                     {isVerify ? "Verify your email"
                         : isReset ? "Choose a new password"
                             : isForgot ? "Forgot your password?"
-                                : isSignup ? "Create your account" : "Welcome back"}
-                </h1>
-                <p className="mt-1.5 text-sm leading-6 text-stone-500">
+                                : isSignup ? "Create Your Account" : "Welcome Back"}
+                        </h1>
+                        <p>
                     {isVerify
                         ? "Your account will be created after your email code is confirmed."
                         : isReset ? "Verify the email code to reset your password."
                             : isForgot ? "Enter your account email and we’ll send a reset code if it matches an account."
                                 : isSignup
-                                    ? "Sign up with your name and email to manage your cameras."
-                                    : "Sign in to access your cameras and live streams."}
-                </p>
+                                    ? "Sign up to manage your cameras and live streams."
+                                    : "Sign in to your account to continue."}
+                        </p>
+                    </header>
 
                 {passwordResetComplete && !isForgot && !isReset && !isVerify && (
-                    <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm leading-5 text-emerald-800" role="status">
+                    <p className="auth-success" role="status">
                         Password reset complete. Sign in with your new password.
                     </p>
                 )}
 
                 {isVerify || isReset ? (
-                    <form className="mt-6 flex flex-col gap-4" noValidate onSubmit={submit}>
-                        <p className="text-sm leading-6 text-stone-600">
+                    <form className="auth-form" noValidate onSubmit={submit}>
+                        <p className="auth-instructions">
                             Enter the six-digit code sent to <span className="font-medium text-stone-800">{verificationEmail || "your email"}</span>. The code expires in 10 minutes.
                         </p>
                         <FormAlert>{error}</FormAlert>
@@ -212,45 +257,27 @@ export default function AuthPage({ onLogin }) {
                                 <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm new password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
                             </>
                         )}
-                        <button className="brand-gradient mt-1 h-11 rounded-lg text-sm font-semibold disabled:cursor-wait disabled:opacity-60" disabled={busy} type="submit">
+                        <button className="auth-submit brand-gradient" disabled={busy} type="submit">
                             {busy ? "Please wait…" : isReset ? "Reset password" : "Verify email and continue"}
                         </button>
-                        <Link className="text-center text-sm font-semibold text-[var(--color-forest-800)] hover:underline" to={isReset ? "/forgot-password" : "/signup"}>
+                        <Link className="auth-secondary-link" to={isReset ? "/forgot-password" : "/signup"}>
                             {isReset ? "Request a new reset code" : "Back to sign up to request a new code"}
                         </Link>
                     </form>
                 ) : isForgot ? (
-                    <form className="mt-6 flex flex-col gap-4" noValidate onSubmit={submit}>
+                    <form className="auth-form" noValidate onSubmit={submit}>
                         <FormAlert>{error}</FormAlert>
                         <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} type="email" value={email} />
-                        <button className="brand-gradient mt-1 h-11 rounded-lg text-sm font-semibold disabled:cursor-wait disabled:opacity-60" disabled={busy} type="submit">
+                        <button className="auth-submit brand-gradient" disabled={busy} type="submit">
                             {busy ? "Sending code…" : "Send reset code"}
                         </button>
-                        <Link className="text-center text-sm font-semibold text-[var(--color-forest-800)] hover:underline" to="/signin">
+                        <Link className="auth-secondary-link" to="/signin">
                             Back to sign in
                         </Link>
                     </form>
                 ) : (
                     <>
-                    <div aria-label="Account access" className="mt-6 grid grid-cols-2 rounded-lg bg-stone-100 p-1" role="group">
-                        <button
-                            aria-pressed={!isSignup}
-                            className={`h-10 rounded-md text-sm font-semibold transition ${!isSignup ? "bg-white text-stone-900 shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
-                            onClick={() => switchMode("signin")}
-                            type="button"
-                        >
-                            Sign in
-                        </button>
-                        <button
-                            aria-pressed={isSignup}
-                            className={`h-10 rounded-md text-sm font-semibold transition ${isSignup ? "bg-white text-stone-900 shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
-                            onClick={() => switchMode("signup")}
-                            type="button"
-                        >
-                            Create account
-                        </button>
-                    </div>
-                    <form className="mt-5 flex flex-col gap-4" noValidate onSubmit={submit}>
+                    <form className="auth-form" noValidate onSubmit={submit}>
                         <FormAlert>{error}</FormAlert>
                         {isSignup && (
                             <AuthInput autoComplete="name" error={fieldErrors.fullName} id="full-name" label="Full name" maxLength={150} onChange={(value) => updateField("fullName", setFullName, value)} value={fullName} />
@@ -258,19 +285,26 @@ export default function AuthPage({ onLogin }) {
                         <AuthInput autoComplete="off" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} type="email" value={email} />
                         <AuthInput autoComplete={isSignup ? "new-password" : "current-password"} error={fieldErrors.password} id="password" label="Password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} type="password" value={password} />
                         {!isSignup && (
-                            <Link className="-mt-2 self-end text-sm font-semibold text-[var(--color-forest-800)] hover:underline" to="/forgot-password">
+                            <Link className="auth-forgot-link" to="/forgot-password">
                                 Forgot password?
                             </Link>
                         )}
                         {isSignup && (
                             <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
                         )}
-                        <button className="brand-gradient mt-1 h-11 rounded-lg text-sm font-semibold disabled:cursor-wait disabled:opacity-60" disabled={busy} type="submit">
+                        <button className="auth-submit brand-gradient" disabled={busy} type="submit">
                             {busy ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
                         </button>
                     </form>
+                    <p className="auth-switch-prompt">
+                        {isSignup ? "Already have an account? " : "Don’t have an account? "}
+                        <button onClick={() => switchMode(isSignup ? "signin" : "signup")} type="button">
+                            {isSignup ? "Sign In" : "Sign Up"}
+                        </button>
+                    </p>
                     </>
                 )}
+                </div>
             </section>
         </main>
     );

@@ -63,6 +63,16 @@ function App() {
     }, []);
 
     useEffect(() => {
+        function expireSession() {
+            setUser(null);
+            setStreams([]);
+            navigate("/signin", { replace: true });
+        }
+        window.addEventListener("signal:auth-expired", expireSession);
+        return () => window.removeEventListener("signal:auth-expired", expireSession);
+    }, [navigate]);
+
+    useEffect(() => {
         let active = true;
         if (!user) {
             setStreams([]);

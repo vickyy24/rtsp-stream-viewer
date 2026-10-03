@@ -33,6 +33,10 @@ async function apiRequest(path, options = {}) {
         },
     });
     if (!response.ok) {
+        if (response.status === 401) {
+            clearAuthToken();
+            window.dispatchEvent(new Event("signal:auth-expired"));
+        }
         const payload = await response.json().catch(() => ({}));
         throw new Error(payload.error || `Camera service returned ${response.status}.`);
     }
@@ -122,7 +126,6 @@ export function testStreamConnection({ url }) {
             reject(error);
         }
 
-        socket.onopen = () => {};
         socket.onmessage = (event) => {
             if (typeof event.data !== "string") return;
             let message;

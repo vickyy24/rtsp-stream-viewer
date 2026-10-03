@@ -157,6 +157,9 @@ class StreamConsumer(AsyncWebsocketConsumer):
             return None
 
     async def _start_saved_camera(self, camera_id):
+        if self.user is None:
+            await self._send_error("Sign in before opening a camera stream.")
+            return
         stream_url = await self._load_camera_url(camera_id, self.user.pk if self.user else None)
         if stream_url is None:
             await self._send_error("This saved camera could not be found or its URL is unavailable.")

@@ -52,6 +52,15 @@ input {
     font: inherit;
 }
 
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus,
+.auth-input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #fff inset;
+    -webkit-text-fill-color: #1c1917;
+    caret-color: #1c1917;
+}
+
 button,
 a {
     -webkit-tap-highlight-color: transparent;

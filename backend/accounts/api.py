@@ -245,7 +245,7 @@ def request_password_reset(request):
         return JsonResponse({"error": "Enter a valid email address."}, status=400)
 
     response_message = "If an account exists for this email, a password reset code has been sent."
-    send_key = _signup_cache_key(f"password-reset-send:{email}", email)
+    send_key = _signup_cache_key("password-reset-send", email)
     if not cache.add(send_key, True, timeout=30):
         return JsonResponse(
             {"error": "Wait 30 seconds before requesting another reset code."},

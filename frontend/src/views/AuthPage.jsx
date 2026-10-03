@@ -18,7 +18,7 @@ function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onCha
     const isPassword = type === "password";
     return (
         <div className="auth-field">
-            <label className="auth-label" htmlFor={id}>{label}</label>
+            <label className="auth-label sr-only" htmlFor={id}>{label}</label>
             <div className={`auth-control ${error ? "has-error" : ""}`}>
                 <FieldIcon aria-hidden="true" className="auth-control-icon" />
                 <input
@@ -71,7 +71,8 @@ export default function AuthPage({ onLogin }) {
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState(verificationEmail);
     const [password, setPassword] = useState("");
-    const [rememberMe, setRememberMe] = useState(true);
+    const [rememberMe, setRememberMe] = useState(false);
+    const [agreeToTerms, setAgreeToTerms] = useState(false);
     const [confirmation, setConfirmation] = useState("");
     const [verificationCode, setVerificationCode] = useState("");
     const [busy, setBusy] = useState(false);
@@ -143,6 +144,7 @@ export default function AuthPage({ onLogin }) {
                 if (password.length > 128) nextFieldErrors.password = "Use 128 characters or fewer.";
                 if (!confirmation) nextFieldErrors.confirmation = "Confirm your password.";
                 else if (password !== confirmation) nextFieldErrors.confirmation = "Passwords do not match.";
+                if (!agreeToTerms) nextFieldErrors.terms = "You must agree to the Terms of Service and Privacy Policy.";
             }
             if (Object.keys(nextFieldErrors).length) {
                 setFieldErrors(nextFieldErrors);
@@ -203,7 +205,7 @@ export default function AuthPage({ onLogin }) {
             </aside>
 
             <section className="auth-form-panel">
-                <div className="auth-form-content">
+                <div className="auth-card">
                     {!isVerify && !isReset && !isForgot && (
                         <div aria-label="Account access" className="auth-tabs" role="group">
                             <button aria-pressed={!isSignup} className={!isSignup ? "active" : ""} onClick={() => switchMode("signin")} type="button">Sign In</button>
@@ -213,104 +215,195 @@ export default function AuthPage({ onLogin }) {
 
                     <header className="auth-heading">
                         <h1>
-                    {isVerify ? "Verify your email"
-                        : isReset ? "Choose a new password"
-                            : isForgot ? "Forgot your password?"
-                                : isSignup ? "Create Your Account" : "Welcome Back"}
+                            {isVerify ? "Verify your email"
+                                : isReset ? "Choose a new password"
+                                    : isForgot ? "Forgot your password?"
+                                        : isSignup ? "Create Your Account" : "Welcome Back"}
                         </h1>
                         <p>
-                    {isVerify
-                        ? "Your account will be created after your email code is confirmed."
-                        : isReset ? "Verify the email code to reset your password."
-                            : isForgot ? "Enter your account email and we’ll send a reset code if it matches an account."
-                                : isSignup
-                                    ? "Sign up to manage your cameras and live streams."
-                                    : "Sign in to your account to continue."}
+                            {isVerify
+                                ? "Your account will be created after your email code is confirmed."
+                                : isReset ? "Verify the email code to reset your password."
+                                    : isForgot ? "Enter your account email and we’ll send a reset code if it matches an account."
+                                        : isSignup
+                                            ? "Sign up to get started with Signal"
+                                            : "Sign in to your account to continue"}
                         </p>
                     </header>
 
-                {passwordResetComplete && !isForgot && !isReset && !isVerify && (
-                    <p className="auth-success" role="status">
-                        Password reset complete. Sign in with your new password.
-                    </p>
-                )}
-
-                {isVerify || isReset ? (
-                    <form className="auth-form" noValidate onSubmit={submit}>
-                        <p className="auth-instructions">
-                            Enter the six-digit code sent to <span className="font-medium text-stone-800">{verificationEmail || "your email"}</span>. The code expires in 10 minutes.
+                    {passwordResetComplete && !isForgot && !isReset && !isVerify && (
+                        <p className="auth-success" role="status">
+                            Password reset complete. Sign in with your new password.
                         </p>
-                        <FormAlert>{error}</FormAlert>
-                        <AuthInput
-                            autoComplete="one-time-code"
-                            error={fieldErrors.code}
-                            id="verification-code"
-                            inputMode="numeric"
-                            label={isReset ? "Password reset code" : "Email verification code"}
-                            maxLength={6}
-                            onChange={(value) => updateField("code", setVerificationCode, value.replace(/\D/g, "").slice(0, 6))}
-                            type="text"
-                            value={verificationCode}
-                        />
-                        {isReset && (
-                            <>
-                                <AuthInput autoComplete="new-password" error={fieldErrors.password} id="password" label="New password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} type="password" value={password} />
-                                <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm new password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
-                            </>
-                        )}
-                        <button className="auth-submit brand-gradient" disabled={busy} type="submit">
-                            {busy ? "Please wait…" : isReset ? "Reset password" : "Verify email and continue"}
-                        </button>
-                        <Link className="auth-secondary-link" to={isReset ? "/forgot-password" : "/signup"}>
-                            {isReset ? "Request a new reset code" : "Back to sign up to request a new code"}
-                        </Link>
-                    </form>
-                ) : isForgot ? (
-                    <form className="auth-form" noValidate onSubmit={submit}>
-                        <FormAlert>{error}</FormAlert>
-                        <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} placeholder="Enter your email" type="email" value={email} />
-                        <button className="auth-submit brand-gradient" disabled={busy} type="submit">
-                            {busy ? "Sending code…" : "Send reset code"}
-                        </button>
-                        <Link className="auth-secondary-link" to="/signin">
-                            Back to sign in
-                        </Link>
-                    </form>
-                ) : (
-                    <>
-                    <form className="auth-form" noValidate onSubmit={submit}>
-                        <FormAlert>{error}</FormAlert>
-                        {isSignup && (
-                            <AuthInput autoComplete="name" error={fieldErrors.fullName} id="full-name" label="Full name" maxLength={150} onChange={(value) => updateField("fullName", setFullName, value)} placeholder="Enter your full name" value={fullName} />
-                        )}
-                        <AuthInput autoComplete={isSignup ? "email" : "username"} error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} placeholder="Enter your email" type="email" value={email} />
-                        <AuthInput autoComplete={isSignup ? "new-password" : "current-password"} error={fieldErrors.password} id="password" label="Password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} placeholder="Enter your password" type="password" value={password} />
-                        {!isSignup && (
-                            <div className="auth-options-row">
-                                <label className="auth-remember">
-                                    <input checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} type="checkbox" />
-                                    <span>Remember me</span>
-                                </label>
-                                <Link className="auth-forgot-link" to="/forgot-password">Forgot password?</Link>
-                            </div>
-                        )}
-                        {isSignup && (
-                            <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} placeholder="Confirm your password" type="password" value={confirmation} />
-                        )}
-                        <button className="auth-submit brand-gradient" disabled={busy} type="submit">
-                            {busy ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
-                        </button>
-                    </form>
-                    <p className="auth-switch-prompt">
-                        {isSignup ? "Already have an account? " : "Don’t have an account? "}
-                        <button onClick={() => switchMode(isSignup ? "signin" : "signup")} type="button">
-                            {isSignup ? "Sign In" : "Sign Up"}
-                        </button>
-                    </p>
-                    </>
-                )}
+                    )}
+
+                    {isVerify || isReset ? (
+                        <form className="auth-form" noValidate onSubmit={submit}>
+                            <p className="auth-instructions">
+                                Enter the six-digit code sent to <span className="font-medium text-stone-800">{verificationEmail || "your email"}</span>. The code expires in 10 minutes.
+                            </p>
+                            <FormAlert>{error}</FormAlert>
+                            <AuthInput
+                                autoComplete="one-time-code"
+                                error={fieldErrors.code}
+                                id="verification-code"
+                                inputMode="numeric"
+                                label={isReset ? "Password reset code" : "Email verification code"}
+                                maxLength={6}
+                                onChange={(value) => updateField("code", setVerificationCode, value.replace(/\D/g, "").slice(0, 6))}
+                                type="text"
+                                value={verificationCode}
+                            />
+                            {isReset && (
+                                <>
+                                    <AuthInput autoComplete="new-password" error={fieldErrors.password} id="password" label="New password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} type="password" value={password} />
+                                    <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm new password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
+                                </>
+                            )}
+                            <button className="auth-submit brand-gradient" disabled={busy} type="submit">
+                                {busy ? "Please wait…" : isReset ? "Reset password" : "Verify email and continue"}
+                            </button>
+                            <Link className="auth-secondary-link" to={isReset ? "/forgot-password" : "/signup"}>
+                                {isReset ? "Request a new reset code" : "Back to sign up to request a new code"}
+                            </Link>
+                        </form>
+                    ) : isForgot ? (
+                        <form className="auth-form" noValidate onSubmit={submit}>
+                            <FormAlert>{error}</FormAlert>
+                            <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} placeholder="Enter your email" type="email" value={email} />
+                            <button className="auth-submit brand-gradient" disabled={busy} type="submit">
+                                {busy ? "Sending code…" : "Send reset code"}
+                            </button>
+                            <Link className="auth-secondary-link" to="/signin">
+                                Back to sign in
+                            </Link>
+                        </form>
+                    ) : (
+                        <>
+                            <form className="auth-form" noValidate onSubmit={submit}>
+                                <FormAlert>{error}</FormAlert>
+                                {isSignup ? (
+                                    <>
+                                        <AuthInput
+                                            autoComplete="name"
+                                            error={fieldErrors.fullName}
+                                            id="full-name"
+                                            label="Full name"
+                                            maxLength={150}
+                                            onChange={(value) => updateField("fullName", setFullName, value)}
+                                            placeholder="Full name"
+                                            value={fullName}
+                                        />
+                                        <AuthInput
+                                            autoComplete="email"
+                                            error={fieldErrors.email}
+                                            id="email"
+                                            label="Email address"
+                                            maxLength={254}
+                                            onChange={(value) => updateField("email", setEmail, value)}
+                                            placeholder="Email address"
+                                            type="email"
+                                            value={email}
+                                        />
+                                        <AuthInput
+                                            autoComplete="new-password"
+                                            error={fieldErrors.password}
+                                            id="password"
+                                            label="Password"
+                                            maxLength={128}
+                                            onChange={(value) => updateField("password", setPassword, value)}
+                                            placeholder="Password"
+                                            type="password"
+                                            value={password}
+                                        />
+                                        <AuthInput
+                                            autoComplete="new-password"
+                                            error={fieldErrors.confirmation}
+                                            id="confirm-password"
+                                            label="Confirm password"
+                                            maxLength={128}
+                                            onChange={(value) => updateField("confirmation", setConfirmation, value)}
+                                            placeholder="Confirm password"
+                                            type="password"
+                                            value={confirmation}
+                                        />
+                                        <div className="auth-terms-field">
+                                            <label className="auth-remember">
+                                                <input
+                                                    checked={agreeToTerms}
+                                                    onChange={(event) => updateField("terms", setAgreeToTerms, event.target.checked)}
+                                                    type="checkbox"
+                                                />
+                                                <span className="auth-terms-text">
+                                                    I agree to the{" "}
+                                                    <a className="auth-terms-link" href="#" onClick={(e) => e.preventDefault()}>
+                                                        Terms of Service
+                                                    </a>{" "}
+                                                    and{" "}
+                                                    <a className="auth-terms-link" href="#" onClick={(e) => e.preventDefault()}>
+                                                        Privacy Policy
+                                                    </a>
+                                                </span>
+                                            </label>
+                                            {fieldErrors.terms && (
+                                                <p className="text-xs font-normal text-rose-700">{fieldErrors.terms}</p>
+                                            )}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <AuthInput
+                                            autoComplete="username"
+                                            error={fieldErrors.email}
+                                            id="email"
+                                            label="Email address"
+                                            maxLength={254}
+                                            onChange={(value) => updateField("email", setEmail, value)}
+                                            placeholder="Enter your email"
+                                            type="email"
+                                            value={email}
+                                        />
+                                        <AuthInput
+                                            autoComplete="current-password"
+                                            error={fieldErrors.password}
+                                            id="password"
+                                            label="Password"
+                                            maxLength={128}
+                                            onChange={(value) => updateField("password", setPassword, value)}
+                                            placeholder="Enter your password"
+                                            type="password"
+                                            value={password}
+                                        />
+                                        <div className="auth-options-row">
+                                            <label className="auth-remember">
+                                                <input
+                                                    checked={rememberMe}
+                                                    onChange={(event) => setRememberMe(event.target.checked)}
+                                                    type="checkbox"
+                                                />
+                                                <span>Remember me</span>
+                                            </label>
+                                            <Link className="auth-forgot-link" to="/forgot-password">
+                                                Forgot password?
+                                            </Link>
+                                        </div>
+                                    </>
+                                )}
+                                <button className="auth-submit brand-gradient" disabled={busy} type="submit">
+                                    {busy ? "Please wait…" : isSignup ? "Sign Up" : "Sign In"}
+                                </button>
+                            </form>
+                            <p className="auth-switch-prompt">
+                                {isSignup ? "Already have an account? " : "Don't have an account? "}
+                                <button onClick={() => switchMode(isSignup ? "signin" : "signup")} type="button">
+                                    {isSignup ? "Sign In" : "Sign Up"}
+                                </button>
+                            </p>
+                        </>
+                    )}
                 </div>
             </section>
         </main>
     );
 }
+

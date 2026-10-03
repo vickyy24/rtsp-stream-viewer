@@ -112,5 +112,4 @@ RTSP_MAX_CONCURRENT_STREAMS = max(
     1,
     int(os.environ.get("RTSP_MAX_CONCURRENT_STREAMS", "4")),
 )
-GOOGLE_OAUTH_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID", "")
 

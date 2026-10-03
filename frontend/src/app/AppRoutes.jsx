@@ -3,7 +3,7 @@ import { Outlet, useLocation, useMatch, useNavigate } from "react-router";
 import Sidebar from "../components/Sidebar.jsx";
 import WorkspaceHeader from "../components/WorkspaceHeader.jsx";
 import AppLayout from "../components/layout/AppLayout.jsx";
-import LiveDashboard from "../views/LiveDashboard.jsx";
+import LiveDashboard from "../pages/LiveDashboard.jsx";
 import {
     clearAuthToken,
     deleteSavedCamera,

@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useOutletContext } from "react-router";
 import AppRoutes from "./app/AppRoutes.jsx";
-import AuthPage from "./views/AuthPage.jsx";
-import ArchivePage from "./views/ArchivePage.jsx";
-import AddCameraWizard from "./views/AddCameraWizard.jsx";
-import CamerasPage from "./views/CamerasPage.jsx";
-import ConnectionsPage from "./views/ConnectionsPage.jsx";
-import LayoutsPage from "./views/LayoutsPage.jsx";
-import SettingsPage from "./views/SettingsPage.jsx";
+import AuthPage from "./pages/AuthPage.jsx";
+import ArchivePage from "./pages/ArchivePage.jsx";
+import AddCameraWizard from "./pages/AddCameraWizard.jsx";
+import CamerasPage from "./pages/CamerasPage.jsx";
+import ConnectionsPage from "./pages/ConnectionsPage.jsx";
+import LayoutsPage from "./pages/LayoutsPage.jsx";
+import SettingsPage from "./pages/SettingsPage.jsx";
 import { clearAuthToken, getCurrentAccount, getAuthToken } from "./services/streamService.js";
 
 // ── Route element wrappers — pull handlers from AppRoutes via Outlet context ──

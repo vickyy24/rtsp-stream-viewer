@@ -55,6 +55,12 @@ DATABASES = {
         conn_health_checks=True,
     )
 }
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "signal-signup-verification",
+    }
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

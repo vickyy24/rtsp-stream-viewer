@@ -10,6 +10,7 @@ console.log("apiUrl:", apiUrl);
 
 const AUTH_TOKEN_KEY = "signal_access_token_v2";
 const LEGACY_AUTH_TOKEN_KEY = "signal_access_token";
+const SIGNUP_CHALLENGE_KEY = "signal_pending_signup_challenge";
 
 // Tokens from the pre-authentication workspace must not silently sign visitors in.
 window.localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
@@ -51,6 +52,9 @@ export function signUpAccount({ full_name, email, password }) {
     return apiRequest("/api/auth/signup/", {
         method: "POST",
         body: JSON.stringify({ full_name, email, password }),
+    }).then((result) => {
+        window.sessionStorage.setItem(SIGNUP_CHALLENGE_KEY, result.challenge_token);
+        return result;
     });
 }
 
@@ -68,10 +72,15 @@ export function getCurrentAccount() {
 }
 
 export async function verifyAccountEmail(email, code) {
+    const challengeToken = window.sessionStorage.getItem(SIGNUP_CHALLENGE_KEY);
+    if (!challengeToken) {
+        throw new Error("Your verification session expired. Please sign up again to request a new code.");
+    }
     const result = await apiRequest("/api/auth/verify-email/", {
         method: "POST",
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email, code, challenge_token: challengeToken }),
     });
+    window.sessionStorage.removeItem(SIGNUP_CHALLENGE_KEY);
     saveAuthToken(result.token);
     return result.user;
 }

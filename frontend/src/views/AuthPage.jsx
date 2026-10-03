@@ -3,19 +3,24 @@ import { Link, useLocation, useNavigate } from "react-router";
 import SignalLogo from "../components/SignalLogo.jsx";
 import { signInAccount, signUpAccount, verifyAccountEmail } from "../services/streamService.js";
 
-function AuthInput({ autoComplete, label, onChange, type = "text", value }) {
+function AuthInput({ autoComplete, error, id, label, maxLength, onChange, type = "text", value }) {
     return (
-        <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-700">
-            {label}
+        <div className="flex flex-col gap-1.5 text-sm font-medium text-stone-700">
+            <label htmlFor={id}>{label}</label>
             <input
+                aria-describedby={error ? `${id}-error` : undefined}
+                aria-invalid={Boolean(error)}
                 autoComplete={autoComplete}
-                className="h-11 rounded-lg border border-stone-200 bg-white px-3 text-sm text-stone-900 outline-none transition focus:border-[var(--color-forest-700)] focus:ring-2 focus:ring-[var(--color-forest-100)]"
+                className={`h-11 rounded-lg border bg-white px-3 text-sm text-stone-900 outline-none transition focus:ring-2 focus:ring-[var(--color-forest-100)] ${error ? "border-rose-500 focus:border-rose-600" : "border-stone-200 focus:border-[var(--color-forest-700)]"}`}
+                id={id}
+                maxLength={maxLength}
                 onChange={(event) => onChange(event.target.value)}
                 required
                 type={type}
                 value={value}
             />
-        </label>
+            {error && <p className="text-xs font-normal text-rose-700" id={`${id}-error`}>{error}</p>}
+        </div>
     );
 }
 
@@ -29,7 +34,13 @@ export default function AuthPage({ onLogin }) {
     const [confirmation, setConfirmation] = useState("");
     const [busy, setBusy] = useState(mode === "verify");
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
     const [notice, setNotice] = useState("");
+
+    function updateField(field, setter, value) {
+        setter(value);
+        setFieldErrors((current) => ({ ...current, [field]: "" }));
+    }
 
     useEffect(() => {
         if (mode !== "verify") return;
@@ -61,9 +72,19 @@ export default function AuthPage({ onLogin }) {
         setBusy(true);
         setError("");
         setNotice("");
+        setFieldErrors({});
         try {
             if (mode === "signup") {
-                if (password !== confirmation) throw new Error("Passwords do not match.");
+                const nextFieldErrors = {};
+                if (!fullName.trim()) nextFieldErrors.fullName = "Enter your full name.";
+                if (fullName.trim().length > 150) nextFieldErrors.fullName = "Use 150 characters or fewer.";
+                if (password.length < 10) nextFieldErrors.password = "Use at least 10 characters.";
+                if (password.length > 128) nextFieldErrors.password = "Use 128 characters or fewer.";
+                if (password !== confirmation) nextFieldErrors.confirmation = "Passwords do not match.";
+                if (Object.keys(nextFieldErrors).length) {
+                    setFieldErrors(nextFieldErrors);
+                    return;
+                }
                 const result = await signUpAccount({
                     full_name: fullName.trim(),
                     email: email.trim(),
@@ -121,12 +142,12 @@ export default function AuthPage({ onLogin }) {
                 ) : (
                     <form className="mt-6 flex flex-col gap-4" onSubmit={submit}>
                         {isSignup && (
-                            <AuthInput autoComplete="name" label="Full name" onChange={setFullName} value={fullName} />
+                            <AuthInput autoComplete="name" error={fieldErrors.fullName} id="full-name" label="Full name" maxLength={150} onChange={(value) => updateField("fullName", setFullName, value)} value={fullName} />
                         )}
-                        <AuthInput autoComplete="email" label="Email address" onChange={setEmail} type="email" value={email} />
-                        <AuthInput autoComplete={isSignup ? "new-password" : "current-password"} label="Password" onChange={setPassword} type="password" value={password} />
+                        <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} type="email" value={email} />
+                        <AuthInput autoComplete={isSignup ? "new-password" : "current-password"} error={fieldErrors.password} id="password" label="Password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} type="password" value={password} />
                         {isSignup && (
-                            <AuthInput autoComplete="new-password" label="Confirm password" onChange={setConfirmation} type="password" value={confirmation} />
+                            <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
                         )}
                         {error && <p aria-live="polite" className="text-sm text-rose-700">{error}</p>}
                         {notice && (

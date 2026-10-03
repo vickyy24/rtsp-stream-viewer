@@ -37,6 +37,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
     const [url, setUrl] = useState("");
     const [testState, setTestState] = useState("idle");
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
     const [saving, setSaving] = useState(false);
     const [testSession, setTestSession] = useState(null);
     const testSessionRef = useRef(null);
@@ -70,18 +71,31 @@ export default function AddCameraWizard({ onCancel, onSave }) {
 
     function continueWizard() {
         if (step === 1) {
+            const nextFieldErrors = {};
+            const trimmedName = name.trim();
+            const trimmedLocation = locationName.trim();
             const trimmedUrl = url.trim();
+            if (!trimmedName) nextFieldErrors.name = "Enter a camera name.";
+            else if (trimmedName.length > 120) nextFieldErrors.name = "Use 120 characters or fewer.";
+            if (trimmedLocation.length > 160) nextFieldErrors.location = "Use 160 characters or fewer.";
+            if (!trimmedUrl) {
+                nextFieldErrors.url = "Enter an RTSP or RTSPS address.";
+            } else if (trimmedUrl.length > 2048) {
+                nextFieldErrors.url = "The address must be 2,048 characters or fewer.";
+            }
             try {
-                const parsedUrl = new URL(trimmedUrl);
-                if (!["rtsp:", "rtsps:"].includes(parsedUrl.protocol)) {
-                    throw new Error();
+                if (trimmedUrl) {
+                    const parsedUrl = new URL(trimmedUrl);
+                    if (!["rtsp:", "rtsps:"].includes(parsedUrl.protocol) || !parsedUrl.hostname) {
+                        nextFieldErrors.url = "Enter a complete RTSP or RTSPS address.";
+                    }
                 }
             } catch {
-                setError("Enter a valid RTSP or RTSPS camera address.");
-                return;
+                if (trimmedUrl) nextFieldErrors.url = "Enter a complete RTSP or RTSPS address.";
             }
-            if (!name.trim()) {
-                setError("Enter a name for this camera.");
+            setFieldErrors(nextFieldErrors);
+            if (Object.keys(nextFieldErrors).length) {
+                setError("");
                 return;
             }
             setError("");
@@ -138,37 +152,62 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                     <div className="grid gap-5 py-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
                         <div className="flex flex-col gap-4">
                             <h2 className="text-base font-semibold text-stone-800">Camera details</h2>
-                            <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600">
+                            <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600" htmlFor="camera-name">
                                 Camera name
                                 <input
-                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)]"
-                                    onChange={(event) => setName(event.target.value)}
+                                    aria-invalid={Boolean(fieldErrors.name)}
+                                    aria-describedby={fieldErrors.name ? "camera-name-error" : undefined}
+                                    className={`rounded-lg border bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)] ${fieldErrors.name ? "border-rose-500" : "border-stone-200"}`}
+                                    id="camera-name"
+                                    maxLength={120}
+                                    onChange={(event) => {
+                                        setName(event.target.value);
+                                        setFieldErrors((current) => ({ ...current, name: "" }));
+                                    }}
                                     placeholder="e.g. Main entrance"
+                                    required
                                     value={name}
                                 />
+                                {fieldErrors.name && <span className="text-xs font-normal text-rose-700" id="camera-name-error">{fieldErrors.name}</span>}
                             </label>
-                            <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600">
+                            <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600" htmlFor="camera-location">
                                 Location (optional)
                                 <input
-                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)]"
-                                    onChange={(event) => setLocationName(event.target.value)}
+                                    aria-invalid={Boolean(fieldErrors.location)}
+                                    aria-describedby={fieldErrors.location ? "camera-location-error" : undefined}
+                                    className={`rounded-lg border bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)] ${fieldErrors.location ? "border-rose-500" : "border-stone-200"}`}
+                                    id="camera-location"
+                                    maxLength={160}
+                                    onChange={(event) => {
+                                        setLocationName(event.target.value);
+                                        setFieldErrors((current) => ({ ...current, location: "" }));
+                                    }}
                                     placeholder="e.g. Office, parking lot"
                                     value={locationName}
                                 />
+                                {fieldErrors.location && <span className="text-xs font-normal text-rose-700" id="camera-location-error">{fieldErrors.location}</span>}
                             </label>
-                            <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600">
+                            <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600" htmlFor="camera-url">
                                 RTSP address
                                 <input
+                                    aria-invalid={Boolean(fieldErrors.url)}
+                                    aria-describedby={fieldErrors.url ? "camera-url-error" : undefined}
                                     autoComplete="off"
-                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)]"
+                                    className={`rounded-lg border bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)] ${fieldErrors.url ? "border-rose-500" : "border-stone-200"}`}
+                                    id="camera-url"
+                                    inputMode="url"
+                                    maxLength={2048}
                                     onChange={(event) => {
                                         setUrl(event.target.value);
+                                        setFieldErrors((current) => ({ ...current, url: "" }));
                                         clearTestSession();
                                     }}
                                     placeholder="rtsp://camera-address:554/stream"
-                                    type="url"
+                                    required
+                                    type="text"
                                     value={url}
                                 />
+                                {fieldErrors.url && <span className="text-xs font-normal text-rose-700" id="camera-url-error">{fieldErrors.url}</span>}
                             </label>
                         </div>
                         <aside className="rounded-lg border border-stone-200 bg-stone-50 p-4">

@@ -4,7 +4,6 @@ import Sidebar from "../components/Sidebar.jsx";
 import WorkspaceHeader from "../components/WorkspaceHeader.jsx";
 import AppLayout from "../components/layout/AppLayout.jsx";
 import LiveDashboard from "../views/LiveDashboard.jsx";
-import { paths } from "./paths.js";
 import {
     clearAuthToken,
     deleteSavedCamera,
@@ -18,16 +17,16 @@ export default function AppRoutes({ user, onLogout }) {
     const singleCameraMatch = useMatch("/live/camera/:cameraId");
     const selectedCameraId = singleCameraMatch?.params.cameraId || null;
 
-    const activePage = location.pathname === paths.addCamera
-        ? (location.state?.returnTo === paths.cameras ? "cameras" : "live")
+    const activePage = location.pathname === "/add-camera"
+        ? (location.state?.returnTo === "/cameras" ? "cameras" : "live")
         : location.pathname.startsWith("/cameras") ? "cameras"
         : location.pathname.startsWith("/layouts") ? "layouts"
             : location.pathname.startsWith("/archive") ? "archive"
                 : location.pathname.startsWith("/connections") ? "connections"
                     : location.pathname.startsWith("/settings") ? "settings" : "live";
 
-    const showLive = location.pathname === paths.live
-        || location.pathname.startsWith(`${paths.live}/camera/`);
+    const showLive = location.pathname === "/live"
+        || location.pathname.startsWith("/live/camera/");
 
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
@@ -127,8 +126,8 @@ export default function AppRoutes({ user, onLogout }) {
     }
 
     function openCameraWizard() {
-        navigate(paths.addCamera, {
-            state: { returnTo: location.pathname.startsWith(paths.cameras) ? paths.cameras : paths.live },
+        navigate("/add-camera", {
+            state: { returnTo: location.pathname.startsWith("/cameras") ? "/cameras" : "/live" },
         });
     }
 

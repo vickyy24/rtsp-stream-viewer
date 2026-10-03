@@ -9,23 +9,22 @@ import {
     LuVideo,
 } from "react-icons/lu";
 import SignalLogo from "./SignalLogo.jsx";
-import { paths } from "../app/paths.js";
 
 const groups = [
     {
         label: "Workspace",
         items: [
-            { id: "live", label: "Live", to: paths.live, Icon: LuVideo },
-            { id: "cameras", label: "Cameras", to: paths.cameras, Icon: LuMonitor },
-            { id: "layouts", label: "Layouts", to: paths.layouts, Icon: LuLayoutGrid },
-            { id: "archive", label: "Archive", to: paths.archive, Icon: LuHistory },
+            { id: "live", label: "Live", to: "/live", Icon: LuVideo },
+            { id: "cameras", label: "Cameras", to: "/cameras", Icon: LuMonitor },
+            { id: "layouts", label: "Layouts", to: "/layouts", Icon: LuLayoutGrid },
+            { id: "archive", label: "Archive", to: "/archive", Icon: LuHistory },
         ],
     },
     {
         label: "System",
         items: [
-            { id: "connections", label: "Connections", to: paths.connections, Icon: LuNetwork },
-            { id: "settings", label: "Settings", to: paths.settings, Icon: LuSettings },
+            { id: "connections", label: "Connections", to: "/connections", Icon: LuNetwork },
+            { id: "settings", label: "Settings", to: "/settings", Icon: LuSettings },
         ],
     },
 ];
@@ -37,7 +36,7 @@ export default function Sidebar({ activePage, onLogout, user }) {
                 aria-label="Signal live dashboard"
                 className="mb-5 flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)] lg:-translate-y-1 lg:mb-8 lg:ml-1 lg:justify-start"
                 title="Signal live dashboard"
-                to={paths.live}
+                to="/live"
             >
                 <SignalLogo className="size-9 shrink-0" />
                 <span className="hidden min-w-0 text-left lg:block">

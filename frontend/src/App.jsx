@@ -8,7 +8,6 @@ import CamerasPage from "./views/CamerasPage.jsx";
 import ConnectionsPage from "./views/ConnectionsPage.jsx";
 import LayoutsPage from "./views/LayoutsPage.jsx";
 import SettingsPage from "./views/SettingsPage.jsx";
-import { paths } from "./app/paths.js";
 import { clearAuthToken, getCurrentAccount, getAuthToken } from "./services/streamService.js";
 
 // ── Route element wrappers — pull handlers from AppRoutes via Outlet context ──
@@ -35,7 +34,7 @@ function AddCameraRoute() {
     const { addCamera, navigate, location } = useOutletContext();
     return (
         <AddCameraWizard
-            onCancel={() => navigate(location.state?.returnTo || paths.live, { replace: true })}
+            onCancel={() => navigate(location.state?.returnTo || "/live", { replace: true })}
             onSave={addCamera}
         />
     );
@@ -46,7 +45,7 @@ function LayoutsRoute() {
     return (
         <LayoutsPage
             layout={layout}
-            onApply={(nextLayout) => { setLayout(nextLayout); navigate(paths.live); }}
+            onApply={(nextLayout) => { setLayout(nextLayout); navigate("/live"); }}
         />
     );
 }
@@ -89,24 +88,24 @@ export default function App() {
         <BrowserRouter>
             <Routes>
                 {/* ── Auth routes ───────────────────────────────────── */}
-                <Route path="/signin"          element={user ? <Navigate replace to={paths.live} /> : <AuthPage onLogin={setUser} />} />
-                <Route path="/signup"          element={user ? <Navigate replace to={paths.live} /> : <AuthPage onLogin={setUser} />} />
-                <Route path="/verify-email"    element={user ? <Navigate replace to={paths.live} /> : <AuthPage onLogin={setUser} />} />
-                <Route path="/forgot-password" element={user ? <Navigate replace to={paths.live} /> : <AuthPage onLogin={setUser} />} />
-                <Route path="/reset-password"  element={user ? <Navigate replace to={paths.live} /> : <AuthPage onLogin={setUser} />} />
+                <Route path="/signin"          element={user ? <Navigate replace to="/live" /> : <AuthPage onLogin={setUser} />} />
+                <Route path="/signup"          element={user ? <Navigate replace to="/live" /> : <AuthPage onLogin={setUser} />} />
+                <Route path="/verify-email"    element={user ? <Navigate replace to="/live" /> : <AuthPage onLogin={setUser} />} />
+                <Route path="/forgot-password" element={user ? <Navigate replace to="/live" /> : <AuthPage onLogin={setUser} />} />
+                <Route path="/reset-password"  element={user ? <Navigate replace to="/live" /> : <AuthPage onLogin={setUser} />} />
 
                 {/* ── Protected app routes (nested under AppRoutes layout) ── */}
                 <Route element={user ? <AppRoutes user={user} onLogout={() => setUser(null)} /> : <Navigate replace to="/signin" />}>
-                    <Route index element={<Navigate replace to={paths.live} />} />
-                    <Route path={paths.live}                  element={null} />
-                    <Route path={`${paths.live}/camera/:cameraId`} element={null} />
-                    <Route path={paths.cameras}               element={<CamerasRoute />} />
-                    <Route path={paths.addCamera}             element={<AddCameraRoute />} />
-                    <Route path={paths.layouts}               element={<LayoutsRoute />} />
-                    <Route path={paths.archive}               element={<ArchiveRoute />} />
-                    <Route path={paths.connections}           element={<ConnectionsRoute />} />
-                    <Route path={paths.settings}              element={<SettingsPage />} />
-                    <Route path="*"                           element={<Navigate replace to={paths.live} />} />
+                    <Route index element={<Navigate replace to="/live" />} />
+                    <Route path="/live"                  element={null} />
+                    <Route path="/live/camera/:cameraId" element={null} />
+                    <Route path="/cameras"               element={<CamerasRoute />} />
+                    <Route path="/add-camera"             element={<AddCameraRoute />} />
+                    <Route path="/layouts"               element={<LayoutsRoute />} />
+                    <Route path="/archive"               element={<ArchiveRoute />} />
+                    <Route path="/connections"           element={<ConnectionsRoute />} />
+                    <Route path="/settings"              element={<SettingsPage />} />
+                    <Route path="*"                           element={<Navigate replace to="/live" />} />
                 </Route>
             </Routes>
         </BrowserRouter>

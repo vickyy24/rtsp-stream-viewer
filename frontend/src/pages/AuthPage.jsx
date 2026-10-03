@@ -18,7 +18,7 @@ function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onCha
     const isPassword = type === "password";
     return (
         <div className="auth-field">
-            <label className="auth-label sr-only" htmlFor={id}>{label}</label>
+            <label className="auth-label" htmlFor={id}>{label}</label>
             <div className={`auth-control ${error ? "has-error" : ""}`}>
                 <FieldIcon aria-hidden="true" className="auth-control-icon" />
                 <input

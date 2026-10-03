@@ -78,7 +78,7 @@ export default function SettingsPage() {
                     <section className="scroll-mt-4 rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4" id="access-settings">
                         <h2 className="text-base font-semibold text-stone-800">Access and unavailable features</h2>
                         <p className="mt-2 text-xs leading-5 text-stone-500">
-                            Stream access uses one workspace key from the backend environment; there are no individual user accounts. Recording, notifications, and saved workspace preferences are not implemented. This screen reports service configuration and does not offer settings the backend cannot store.
+                            Camera management and streams are available to visitors of this deployment. Individual user accounts, recording, notifications, and saved workspace preferences are not implemented.
                         </p>
                     </section>
                 </div>

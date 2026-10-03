@@ -1,5 +1,4 @@
 import asyncio
-import hmac
 import json
 import logging
 from urllib.parse import urlsplit
@@ -61,7 +60,6 @@ class StreamConsumer(AsyncWebsocketConsumer):
         self.capacity_acquired = False
         self.disconnecting = False
         self.stopping_stream = False
-        self.authenticated = settings.DEBUG and not settings.STREAM_ACCESS_KEY
         await self.accept()
         await self._send_event({"type": "ready"})
 
@@ -80,12 +78,7 @@ class StreamConsumer(AsyncWebsocketConsumer):
             await self._send_error("The stream control message must be an object.")
             return
 
-        if message.get("type") == "authenticate":
-            await self._authenticate(message.get("key"))
-        elif message.get("type") == "start":
-            if not self.authenticated:
-                await self._send_error("Authenticate with the workspace key before starting a camera.")
-                return
+        if message.get("type") == "start":
             if message.get("camera_id"):
                 await self._start_saved_camera(message.get("camera_id"))
             else:
@@ -93,28 +86,9 @@ class StreamConsumer(AsyncWebsocketConsumer):
         elif message.get("type") == "stop":
             await self._stop_stream(notify=True)
         elif message.get("type") == "ping":
-            if self.authenticated:
-                await self._send_event({"type": "pong"})
-            else:
-                await self._send_error("Authenticate with the workspace key first.")
+            await self._send_event({"type": "pong"})
         else:
-            await self._send_error("Use an authenticate, start, or stop command.")
-
-    async def _authenticate(self, provided_key):
-        expected_key = settings.STREAM_ACCESS_KEY
-        if not isinstance(provided_key, str):
-            provided_key = ""
-        self.authenticated = bool(expected_key) and hmac.compare_digest(
-            provided_key,
-            expected_key,
-        )
-        if settings.DEBUG and not expected_key and not provided_key:
-            self.authenticated = True
-
-        if self.authenticated:
-            await self._send_event({"type": "authenticated"})
-        else:
-            await self._send_error("The workspace access key is invalid.")
+            await self._send_error("Use a start, stop, or ping command.")
 
     async def disconnect(self, close_code):
         self.disconnecting = True

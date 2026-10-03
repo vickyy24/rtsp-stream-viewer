@@ -14,8 +14,6 @@ services:
         value: "false"
       - key: DJANGO_SECRET_KEY
         generateValue: true
-      - key: STREAM_ACCESS_KEY
-        generateValue: true
       - key: CAMERA_URL_ENCRYPTION_KEY
         generateValue: true
       - key: DATABASE_URL

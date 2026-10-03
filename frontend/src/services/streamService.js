@@ -8,23 +8,11 @@ const apiUrl = (
 
 console.log("apiUrl:", apiUrl);
 
-const WORKSPACE_KEY_STORAGE = "rtsp-viewer-workspace-key";
-
-export function getWorkspaceKey() {
-    return sessionStorage.getItem(WORKSPACE_KEY_STORAGE) || "";
-}
-
-export function setWorkspaceKey(key) {
-    if (key) sessionStorage.setItem(WORKSPACE_KEY_STORAGE, key);
-    else sessionStorage.removeItem(WORKSPACE_KEY_STORAGE);
-}
-
-async function apiRequest(path, { key = getWorkspaceKey(), ...options } = {}) {
+async function apiRequest(path, options = {}) {
     const response = await fetch(`${apiUrl}${path}`, {
         ...options,
         headers: {
             ...(options.body ? { "Content-Type": "application/json" } : {}),
-            ...(key ? { Authorization: `Bearer ${key}` } : {}),
             ...options.headers,
         },
     });
@@ -39,8 +27,7 @@ export function listCameras() {
     return apiRequest("/api/cameras/");
 }
 
-export async function saveCamera(camera, key) {
-    if (key) setWorkspaceKey(key);
+export async function saveCamera(camera) {
     const result = await apiRequest("/api/cameras/", {
         method: "POST",
         body: JSON.stringify(camera),
@@ -64,13 +51,12 @@ export function getStreamSocketUrl() {
     return backendUrl.toString();
 }
 
-export function testStreamConnection({ accessKey, url }) {
+export function testStreamConnection({ url }) {
     return new Promise((resolve, reject) => {
         const socket = new WebSocket(getStreamSocketUrl());
         let settled = false;
         let closed = false;
         let releaseTimeout;
-        let authenticated = false;
         const timeout = window.setTimeout(() => {
             fail(new Error("No video arrived before the connection test timed out."));
         }, 23000);
@@ -94,7 +80,7 @@ export function testStreamConnection({ accessKey, url }) {
         }
 
         socket.onopen = () => {
-            socket.send(JSON.stringify({ type: "authenticate", key: accessKey }));
+            socket.send(JSON.stringify({ type: "start", url }));
         };
         socket.onmessage = (event) => {
             if (typeof event.data !== "string") return;
@@ -105,11 +91,7 @@ export function testStreamConnection({ accessKey, url }) {
                 return;
             }
 
-            if (message.type === "authenticated" && !authenticated) {
-                authenticated = true;
-                if (accessKey) setWorkspaceKey(accessKey);
-                socket.send(JSON.stringify({ type: "start", url }));
-            } else if (message.type === "status" && message.status === "live") {
+            if (message.type === "status" && message.status === "live") {
                 if (!settled) {
                     settled = true;
                     window.clearTimeout(timeout);

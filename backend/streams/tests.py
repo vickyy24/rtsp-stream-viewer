@@ -17,12 +17,11 @@ from .models import Camera
 
 @override_settings(
     DEBUG=False,
-    STREAM_ACCESS_KEY="workspace-test-key",
     CAMERA_URL_ENCRYPTION_KEY="test-encryption-key",
 )
 class CameraApiTests(TestCase):
     def setUp(self):
-        self.client = Client(HTTP_AUTHORIZATION="Bearer workspace-test-key")
+        self.client = Client()
 
     def test_camera_is_persisted_and_secret_url_is_never_returned(self):
         secret_url = "rtsp://viewer:secret-token@camera.example.test/live"
@@ -44,11 +43,11 @@ class CameraApiTests(TestCase):
         self.assertEqual(listing.json()["cameras"][0]["id"], camera_id)
         self.assertNotContains(listing, "secret-token")
 
-    def test_camera_changes_require_workspace_access_key(self):
+    def test_camera_api_is_available_without_workspace_key(self):
         anonymous = Client()
         response = anonymous.get("/api/cameras/")
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 200)
 
     def test_camera_url_validation_and_fields_are_bounded(self):
         invalid_url = self.client.post(
@@ -158,44 +157,7 @@ class FfmpegTests(SimpleTestCase):
 
 
 class StreamConsumerTests(SimpleTestCase):
-    @override_settings(DEBUG=False, STREAM_ACCESS_KEY="test-workspace-key")
-    def test_production_streams_require_the_workspace_key(self):
-        from channels.testing import WebsocketCommunicator
-        from config.asgi import application
-
-        async def exercise_connection():
-            communicator = WebsocketCommunicator(
-                application,
-                "/ws/streams/",
-                headers=[(b"origin", b"http://127.0.0.1:5173")],
-            )
-            connected, _ = await communicator.connect()
-            self.assertTrue(connected)
-            ready = await communicator.receive_json_from(timeout=1)
-            await communicator.send_json_to(
-                {"type": "start", "url": "rtsp://camera.example.test/live"}
-            )
-            rejected = await communicator.receive_json_from(timeout=1)
-            await communicator.send_json_to(
-                {"type": "authenticate", "key": "wrong-key"}
-            )
-            invalid_key = await communicator.receive_json_from(timeout=1)
-            await communicator.send_json_to(
-                {"type": "authenticate", "key": "test-workspace-key"}
-            )
-            accepted = await communicator.receive_json_from(timeout=1)
-            await communicator.disconnect()
-            return ready, rejected, invalid_key, accepted
-
-        ready, rejected, invalid_key, accepted = async_to_sync(exercise_connection)()
-
-        self.assertEqual(ready["type"], "ready")
-        self.assertEqual(rejected["type"], "error")
-        self.assertIn("Authenticate", rejected["message"])
-        self.assertEqual(invalid_key["type"], "error")
-        self.assertEqual(accepted["type"], "authenticated")
-
-    @override_settings(DEBUG=True, STREAM_ACCESS_KEY="")
+    @override_settings(DEBUG=False, CORS_ALLOWED_ORIGINS=["http://127.0.0.1:5173"])
     def test_invalid_start_message_returns_a_safe_error(self):
         from channels.testing import WebsocketCommunicator
         from config.asgi import application
@@ -225,7 +187,7 @@ class StreamConsumerTests(SimpleTestCase):
         self.assertEqual(response["type"], "error")
         self.assertIn("RTSP", response["message"])
 
-    @override_settings(DEBUG=True, STREAM_ACCESS_KEY="")
+    @override_settings(DEBUG=False, CORS_ALLOWED_ORIGINS=["http://127.0.0.1:5173"])
     def test_start_stream_forwards_binary_video_and_lifecycle_events(self):
         from channels.testing import WebsocketCommunicator
         from config.asgi import application

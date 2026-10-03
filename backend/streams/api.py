@@ -1,5 +1,4 @@
 import json
-import hmac
 import logging
 from urllib.parse import urlsplit
 
@@ -16,15 +15,6 @@ logger = logging.getLogger(__name__)
 MAX_REQUEST_BYTES = 8192
 
 
-def _authorized(request):
-    expected = settings.STREAM_ACCESS_KEY
-    supplied = request.headers.get("Authorization", "")
-    prefix = "Bearer "
-    if not expected:
-        return settings.DEBUG and not supplied
-    return supplied.startswith(prefix) and hmac.compare_digest(supplied[len(prefix):], expected)
-
-
 def _read_payload(request):
     if len(request.body) > MAX_REQUEST_BYTES:
         return None
@@ -38,9 +28,6 @@ def _read_payload(request):
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def cameras(request):
-    if not _authorized(request):
-        return JsonResponse({"error": "Workspace access key is invalid."}, status=401)
-
     if request.method == "GET":
         return JsonResponse({"cameras": [camera.public_data() for camera in Camera.objects.order_by("created_at")]})
 
@@ -77,8 +64,6 @@ def cameras(request):
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def camera_detail(request, camera_id):
-    if not _authorized(request):
-        return JsonResponse({"error": "Workspace access key is invalid."}, status=401)
     try:
         camera = Camera.objects.get(id=camera_id)
     except (Camera.DoesNotExist, ValueError):

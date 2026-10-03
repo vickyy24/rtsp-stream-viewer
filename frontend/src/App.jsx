@@ -6,7 +6,7 @@ import AppRoutes from "./app/AppRoutes.jsx";
 import AppLayout from "./components/layout/AppLayout.jsx";
 import LiveDashboard from "./views/LiveDashboard.jsx";
 import { paths } from "./app/paths.js";
-import { deleteSavedCamera, getWorkspaceKey, listCameras, saveCamera } from "./services/streamService.js";
+import { deleteSavedCamera, listCameras, saveCamera } from "./services/streamService.js";
 
 function App() {
     const navigate = useNavigate();
@@ -39,7 +39,6 @@ function App() {
             if (!active) return;
             setStreams(cameras.map((camera) => ({
                 ...camera,
-                accessKey: getWorkspaceKey(),
                 playing: true,
                 retryCount: 0,
             })));
@@ -79,10 +78,9 @@ function App() {
             name: camera.name,
             location: camera.location,
             url: camera.url,
-        }, camera.accessKey);
+        });
         const newCamera = {
             ...savedCamera,
-            accessKey: camera.accessKey,
             playing: true,
             retryCount: 0,
         };
@@ -90,7 +88,6 @@ function App() {
             const { cameras } = await listCameras();
             setStreams(cameras.map((cameraItem) => ({
                 ...cameraItem,
-                accessKey: camera.accessKey,
                 playing: true,
                 retryCount: 0,
             })));

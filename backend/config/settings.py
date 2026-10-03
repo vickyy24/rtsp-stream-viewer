@@ -17,14 +17,11 @@ if not SECRET_KEY:
     if not DEBUG:
         raise RuntimeError("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
     SECRET_KEY = "development-only-insecure-key"
-STREAM_ACCESS_KEY = os.environ.get("STREAM_ACCESS_KEY", "")
 CAMERA_URL_ENCRYPTION_KEY = os.environ.get("CAMERA_URL_ENCRYPTION_KEY", "")
 if not CAMERA_URL_ENCRYPTION_KEY:
     if not DEBUG:
         raise RuntimeError("CAMERA_URL_ENCRYPTION_KEY must be set when DJANGO_DEBUG is false.")
     CAMERA_URL_ENCRYPTION_KEY = "MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA="
-if not DEBUG and not STREAM_ACCESS_KEY:
-    raise RuntimeError("STREAM_ACCESS_KEY must be set when DJANGO_DEBUG is false.")
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")

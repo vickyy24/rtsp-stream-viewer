@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LuCheck, LuChevronLeft, LuChevronRight, LuCircleCheck, LuCircleDot } from "react-icons/lu";
 import PageHeading from "../components/PageHeading.jsx";
-import { getWorkspaceKey, testStreamConnection } from "../services/streamService.js";
+import { testStreamConnection } from "../services/streamService.js";
 
 const steps = ["Camera details", "Test connection", "Preview", "Save"];
 
@@ -35,7 +35,6 @@ export default function AddCameraWizard({ onCancel, onSave }) {
     const [name, setName] = useState("");
     const [locationName, setLocationName] = useState("");
     const [url, setUrl] = useState("");
-    const [accessKey, setAccessKey] = useState(() => getWorkspaceKey());
     const [testState, setTestState] = useState("idle");
     const [error, setError] = useState("");
     const [saving, setSaving] = useState(false);
@@ -59,7 +58,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
         setTestState("testing");
         setError("");
         try {
-            const session = await testStreamConnection({ accessKey, url: url.trim() });
+            const session = await testStreamConnection({ url: url.trim() });
             testSessionRef.current = session;
             setTestSession(session);
             setTestState("success");
@@ -112,7 +111,6 @@ export default function AddCameraWizard({ onCancel, onSave }) {
         setError("");
         try {
             const savedCamera = await onSave({
-                accessKey,
                 location: locationName.trim(),
                 name: name.trim(),
                 url: url.trim(),
@@ -171,23 +169,6 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                                     type="url"
                                     value={url}
                                 />
-                            </label>
-                            <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600">
-                                Workspace access key
-                                <input
-                                    autoComplete="off"
-                                    className="rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)]"
-                                    onChange={(event) => {
-                                        setAccessKey(event.target.value);
-                                        clearTestSession();
-                                    }}
-                                    placeholder="Required on hosted backend"
-                                    type="password"
-                                    value={accessKey}
-                                />
-                                <span className="text-[11px] font-normal text-stone-400">
-                                    Remembered for this browser tab after a successful connection test.
-                                </span>
                             </label>
                         </div>
                         <aside className="rounded-lg border border-stone-200 bg-stone-50 p-4">

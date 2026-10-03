@@ -67,11 +67,13 @@ export function getCurrentAccount() {
     return apiRequest("/api/auth/me/");
 }
 
-export function verifyAccountEmail(token) {
-    return apiRequest("/api/auth/verify-email/", {
+export async function verifyAccountEmail(email, code) {
+    const result = await apiRequest("/api/auth/verify-email/", {
         method: "POST",
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ email, code }),
     });
+    saveAuthToken(result.token);
+    return result.user;
 }
 
 export function listCameras() {

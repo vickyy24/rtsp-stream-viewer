@@ -1,5 +1,9 @@
+import hashlib
+import hmac
 import json
 import logging
+import secrets
+from datetime import timedelta
 from functools import wraps
 
 from django.conf import settings
@@ -8,16 +12,15 @@ from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from streams.models import Camera
-from .models import User
+from .models import SignupChallenge, User
 from .tokens import (
     create_access_token,
-    create_verification_token,
     get_user_from_access_token,
-    get_user_from_verification_token,
 )
 
 logger = logging.getLogger(__name__)
@@ -77,26 +80,46 @@ def signup(request):
             {"error": "Email verification is not configured on the server yet."}, status=503
         )
 
+    now = timezone.now()
+    SignupChallenge.objects.filter(expires_at__lte=now).delete()
+    existing_user = User.objects.filter(email=email).first()
+    if existing_user and existing_user.is_verified:
+        return JsonResponse({"error": "An account with this email already exists."}, status=409)
+
+    pending = SignupChallenge.objects.filter(email=email).first()
+    if pending and now - pending.last_sent_at < timedelta(seconds=30):
+        return JsonResponse({"error": "A verification code was sent recently. Wait 30 seconds before requesting another."}, status=429)
+
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    temporary_user = User(email=email, full_name=full_name.strip())
+    temporary_user.set_password(password)
+    code_hash = hmac.new(
+        settings.SECRET_KEY.encode("utf-8"),
+        f"{email}:{code}".encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
     try:
         with transaction.atomic():
-            user = User.objects.create_user(email=email, password=password)
-            user.full_name = full_name.strip()
-            user.save(update_fields=["full_name"])
-            if User.objects.count() == 1:
-                Camera.objects.filter(owner__isnull=True).update(owner=user)
-            verification_url = (
-                f"{settings.FRONTEND_URL.rstrip('/')}/verify-email"
-                f"?token={create_verification_token(user)}"
+            SignupChallenge.objects.update_or_create(
+                email=email,
+                defaults={
+                    "full_name": full_name.strip(),
+                    "password_hash": temporary_user.password,
+                    "code_hash": code_hash,
+                    "attempts": 0,
+                    "expires_at": now + timedelta(minutes=10),
+                    "last_sent_at": now,
+                },
             )
             send_mail(
-                subject="Verify your Signal account",
+                subject="Your Signal verification code",
                 message=(
-                    f"Hello {user.full_name},\n\n"
-                    f"Verify your email address using this link (valid for 24 hours):\n"
-                    f"{verification_url}\n\nIf you did not create this account, ignore this email."
+                    f"Hello {full_name.strip()},\n\n"
+                    f"Your Signal signup verification code is {code}.\n"
+                    "It expires in 10 minutes. If you did not request this code, ignore this email."
                 ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
+                recipient_list=[email],
                 fail_silently=False,
             )
     except IntegrityError:
@@ -106,21 +129,60 @@ def signup(request):
         return JsonResponse(
             {"error": "Signup email could not be sent. Please try again later."}, status=503
         )
-    return JsonResponse({"message": "Check your email for the verification link."}, status=201)
+    return JsonResponse({"message": "A verification code was sent to your email."}, status=202)
 
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def verify_email(request):
     payload = _payload(request)
-    token = payload.get("token") if payload else None
-    user = get_user_from_verification_token(token) if isinstance(token, str) else None
-    if user is None:
-        return JsonResponse({"error": "This verification link is invalid or expired."}, status=400)
-    if not user.is_verified:
-        user.is_verified = True
-        user.save(update_fields=["is_verified"])
-    return JsonResponse({"message": "Email verified. You can now sign in."})
+    email = payload.get("email") if payload else None
+    code = payload.get("code") if payload else None
+    if not isinstance(email, str) or not isinstance(code, str):
+        return JsonResponse({"error": "Enter the email address and six-digit verification code."}, status=400)
+    email = email.strip().lower()
+    if len(code) != 6 or not code.isdigit():
+        return JsonResponse({"error": "Enter the six-digit code sent to your email."}, status=400)
+
+    with transaction.atomic():
+        challenge = SignupChallenge.objects.select_for_update().filter(email=email).first()
+        if challenge is None:
+            return JsonResponse({"error": "This verification code is invalid or expired. Sign up again to get a new code."}, status=400)
+        if challenge.expires_at <= timezone.now() or challenge.attempts >= 5:
+            challenge.delete()
+            return JsonResponse({"error": "This verification code expired. Sign up again to get a new code."}, status=400)
+        submitted_hash = hmac.new(
+            settings.SECRET_KEY.encode("utf-8"),
+            f"{email}:{code}".encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+        if not hmac.compare_digest(challenge.code_hash, submitted_hash):
+            challenge.attempts += 1
+            challenge.save(update_fields=["attempts"])
+            return JsonResponse({"error": "That verification code is incorrect."}, status=400)
+
+        user = User.objects.select_for_update().filter(email=challenge.email).first()
+        if user and user.is_verified:
+            challenge.delete()
+            return JsonResponse({"error": "An account with this email already exists."}, status=409)
+        if user is None:
+            user = User(
+                email=challenge.email,
+                full_name=challenge.full_name,
+                password=challenge.password_hash,
+                is_verified=True,
+            )
+            user.save()
+        else:
+            user.full_name = challenge.full_name
+            user.password = challenge.password_hash
+            user.is_verified = True
+            user.save(update_fields=["full_name", "password", "is_verified"])
+        if User.objects.count() == 1:
+            Camera.objects.filter(owner__isnull=True).update(owner=user)
+        challenge.delete()
+        result = {"token": create_access_token(user), "user": _user_data(user)}
+    return JsonResponse(result)
 
 
 @csrf_exempt
@@ -138,7 +200,7 @@ def signin(request):
     if user is None or not user.check_password(password):
         return JsonResponse({"error": "Email or password is incorrect."}, status=401)
     if not user.is_verified:
-        return JsonResponse({"error": "Verify your email before signing in."}, status=403)
+        return JsonResponse({"error": "Complete email verification before signing in."}, status=403)
     return JsonResponse({"token": create_access_token(user), "user": _user_data(user)})
 
 

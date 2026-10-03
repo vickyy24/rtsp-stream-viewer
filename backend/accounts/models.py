@@ -1,6 +1,7 @@
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import models
 from django.db.models.functions import Lower
+from django.utils import timezone
 
 
 class EmailUserManager(models.Manager):
@@ -48,3 +49,14 @@ class User(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class SignupChallenge(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    email = models.EmailField(max_length=254, unique=True)
+    full_name = models.CharField(max_length=150)
+    password_hash = models.CharField(max_length=128)
+    code_hash = models.CharField(max_length=64)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    expires_at = models.DateTimeField()
+    last_sent_at = models.DateTimeField(default=timezone.now)

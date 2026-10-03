@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import SignalLogo from "../components/SignalLogo.jsx";
 import { signInAccount, signUpAccount, verifyAccountEmail } from "../services/streamService.js";
 
-function AuthInput({ autoComplete, error, id, label, maxLength, onChange, type = "text", value }) {
+function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onChange, type = "text", value }) {
     return (
         <div className="flex flex-col gap-1.5 text-sm font-medium text-stone-700">
             <label htmlFor={id}>{label}</label>
@@ -13,6 +13,7 @@ function AuthInput({ autoComplete, error, id, label, maxLength, onChange, type =
                 autoComplete={autoComplete}
                 className={`auth-input h-11 rounded-lg border bg-white px-3 text-sm font-normal text-stone-900 outline-none transition focus:ring-2 focus:ring-[var(--color-forest-100)] ${error ? "border-rose-500 focus:border-rose-600" : "border-stone-200 focus:border-[var(--color-forest-700)]"}`}
                 id={id}
+                inputMode={inputMode}
                 maxLength={maxLength}
                 onChange={(event) => onChange(event.target.value)}
                 required
@@ -28,53 +29,44 @@ export default function AuthPage({ onLogin }) {
     const location = useLocation();
     const navigate = useNavigate();
     const mode = location.pathname === "/signup" ? "signup" : location.pathname === "/verify-email" ? "verify" : "signin";
+    const verificationEmail = new URLSearchParams(location.search).get("email")?.trim().toLowerCase() || "";
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmation, setConfirmation] = useState("");
-    const [busy, setBusy] = useState(mode === "verify");
+    const [verificationCode, setVerificationCode] = useState("");
+    const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
-    const [notice, setNotice] = useState("");
 
     function updateField(field, setter, value) {
         setter(value);
         setFieldErrors((current) => ({ ...current, [field]: "" }));
     }
 
-    useEffect(() => {
-        if (mode !== "verify") return;
-        setBusy(true);
-        setError("");
-        setNotice("");
-        const token = new URLSearchParams(location.search).get("token");
-        if (!token) {
-            setError("This verification link is missing its token.");
-            setBusy(false);
-            return;
-        }
-        let active = true;
-        verifyAccountEmail(token)
-            .then((result) => {
-                if (active) setNotice(result.message);
-            })
-            .catch((verifyError) => {
-                if (active) setError(verifyError.message);
-            })
-            .finally(() => {
-                if (active) setBusy(false);
-            });
-        return () => { active = false; };
-    }, [location.search, mode]);
-
     async function submit(event) {
         event.preventDefault();
         setBusy(true);
         setError("");
-        setNotice("");
         setFieldErrors({});
         try {
             const nextFieldErrors = {};
+            if (mode === "verify") {
+                if (!verificationEmail) {
+                    setError("The signup email is missing. Return to sign up and request a new code.");
+                    return;
+                }
+                if (!/^\d{6}$/.test(verificationCode)) {
+                    nextFieldErrors.code = "Enter the six-digit code sent to your email.";
+                    setFieldErrors(nextFieldErrors);
+                    return;
+                }
+                const user = await verifyAccountEmail(verificationEmail, verificationCode);
+                onLogin(user);
+                navigate("/live", { replace: true });
+                return;
+            }
+
             const emailInput = event.currentTarget.elements.email;
             if (!email.trim()) nextFieldErrors.email = "Enter your email address.";
             else if (emailInput.validity.typeMismatch) nextFieldErrors.email = "Enter a valid email address.";
@@ -94,12 +86,12 @@ export default function AuthPage({ onLogin }) {
             }
 
             if (mode === "signup") {
-                const result = await signUpAccount({
+                await signUpAccount({
                     full_name: fullName.trim(),
                     email: email.trim(),
                     password,
                 });
-                setNotice(result.message);
+                navigate(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`, { replace: true });
             } else {
                 const user = await signInAccount({ email: email.trim(), password });
                 onLogin(user);
@@ -131,23 +123,36 @@ export default function AuthPage({ onLogin }) {
                 </h1>
                 <p className="mt-1.5 text-sm leading-6 text-stone-500">
                     {isVerify
-                        ? "We’re confirming your email address."
+                        ? "Your account will be created after your email code is confirmed."
                         : isSignup
                             ? "Sign up with your name and email to manage your cameras."
                             : "Sign in to access your cameras and live streams."}
                 </p>
 
                 {isVerify ? (
-                    <div aria-live="polite" className="mt-6">
-                        {busy && <p className="text-sm text-stone-600">Verifying your email…</p>}
-                        {error && <p className="text-sm text-rose-700">{error}</p>}
-                        {notice && <p className="text-sm text-[var(--color-forest-800)]">{notice}</p>}
-                        {!busy && (notice || error) && (
-                            <Link className="brand-gradient mt-5 inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-semibold" to="/signin">
-                                Continue to sign in
-                            </Link>
-                        )}
-                    </div>
+                    <form className="mt-6 flex flex-col gap-4" noValidate onSubmit={submit}>
+                        <p className="text-sm leading-6 text-stone-600">
+                            Enter the six-digit code sent to <span className="font-medium text-stone-800">{verificationEmail || "your email"}</span>. The code expires in 10 minutes.
+                        </p>
+                        <AuthInput
+                            autoComplete="one-time-code"
+                            error={fieldErrors.code}
+                            id="verification-code"
+                            inputMode="numeric"
+                            label="Email verification code"
+                            maxLength={6}
+                            onChange={(value) => updateField("code", setVerificationCode, value.replace(/\D/g, "").slice(0, 6))}
+                            type="text"
+                            value={verificationCode}
+                        />
+                        {error && <p aria-live="polite" className="text-sm text-rose-700" role="alert">{error}</p>}
+                        <button className="brand-gradient mt-1 h-11 rounded-lg text-sm font-semibold disabled:cursor-wait disabled:opacity-60" disabled={busy} type="submit">
+                            {busy ? "Verifying…" : "Verify email and continue"}
+                        </button>
+                        <Link className="text-center text-sm font-semibold text-[var(--color-forest-800)] hover:underline" to="/signup">
+                            Back to sign up to request a new code
+                        </Link>
+                    </form>
                 ) : (
                     <form className="mt-6 flex flex-col gap-4" noValidate onSubmit={submit}>
                         {isSignup && (
@@ -159,11 +164,6 @@ export default function AuthPage({ onLogin }) {
                             <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
                         )}
                         {error && <p aria-live="polite" className="text-sm text-rose-700">{error}</p>}
-                        {notice && (
-                            <div aria-live="polite" className="rounded-lg border border-[var(--color-forest-200)] bg-[var(--color-forest-50)] p-3 text-sm leading-5 text-[var(--color-forest-900)]">
-                                {notice} {isSignup && "Open the link in that email to verify your account."}
-                            </div>
-                        )}
                         <button className="brand-gradient mt-1 h-11 rounded-lg text-sm font-semibold disabled:cursor-wait disabled:opacity-60" disabled={busy} type="submit">
                             {busy ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
                         </button>

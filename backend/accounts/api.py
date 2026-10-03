@@ -16,7 +16,6 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from streams.models import Camera
 from .models import SignupChallenge, User
 from .tokens import (
     create_access_token,
@@ -82,8 +81,7 @@ def signup(request):
 
     now = timezone.now()
     SignupChallenge.objects.filter(expires_at__lte=now).delete()
-    existing_user = User.objects.filter(email=email).first()
-    if existing_user and existing_user.is_verified:
+    if User.objects.filter(email=email).exists():
         return JsonResponse({"error": "An account with this email already exists."}, status=409)
 
     pending = SignupChallenge.objects.filter(email=email).first()
@@ -161,25 +159,15 @@ def verify_email(request):
             challenge.save(update_fields=["attempts"])
             return JsonResponse({"error": "That verification code is incorrect."}, status=400)
 
-        user = User.objects.select_for_update().filter(email=challenge.email).first()
-        if user and user.is_verified:
+        if User.objects.filter(email=challenge.email).exists():
             challenge.delete()
             return JsonResponse({"error": "An account with this email already exists."}, status=409)
-        if user is None:
-            user = User(
-                email=challenge.email,
-                full_name=challenge.full_name,
-                password=challenge.password_hash,
-                is_verified=True,
-            )
-            user.save()
-        else:
-            user.full_name = challenge.full_name
-            user.password = challenge.password_hash
-            user.is_verified = True
-            user.save(update_fields=["full_name", "password", "is_verified"])
-        if User.objects.count() == 1:
-            Camera.objects.filter(owner__isnull=True).update(owner=user)
+        user = User(
+            email=challenge.email,
+            full_name=challenge.full_name,
+            password=challenge.password_hash,
+        )
+        user.save()
         challenge.delete()
         result = {"token": create_access_token(user), "user": _user_data(user)}
     return JsonResponse(result)
@@ -199,8 +187,6 @@ def signin(request):
         user = None
     if user is None or not user.check_password(password):
         return JsonResponse({"error": "Email or password is incorrect."}, status=401)
-    if not user.is_verified:
-        return JsonResponse({"error": "Complete email verification before signing in."}, status=403)
     return JsonResponse({"token": create_access_token(user), "user": _user_data(user)})
 
 

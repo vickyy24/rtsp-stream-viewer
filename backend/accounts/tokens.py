@@ -25,6 +25,6 @@ def get_user_from_access_token(token):
 
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[JWT_ALGORITHM])
-        return User.objects.get(pk=payload["sub"], is_verified=True)
+        return User.objects.get(pk=payload["sub"])
     except (jwt.PyJWTError, KeyError, TypeError, ValueError, User.DoesNotExist):
         return None

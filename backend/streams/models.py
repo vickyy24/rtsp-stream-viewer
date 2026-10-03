@@ -20,13 +20,12 @@ class Camera(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     camera_name = models.CharField(max_length=120)
     camera_location = models.CharField(max_length=160, blank=True)
-    host = models.CharField(max_length=253)
     encrypted_url = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     @classmethod
-    def create_with_url(cls, *, camera_name, camera_location, host, url):
-        camera = cls(camera_name=camera_name, camera_location=camera_location, host=host)
+    def create_with_url(cls, *, camera_name, camera_location, url):
+        camera = cls(camera_name=camera_name, camera_location=camera_location)
         camera.set_stream_url(url)
         camera.save()
         return camera
@@ -48,6 +47,5 @@ class Camera(models.Model):
             "id": str(self.id),
             "name": self.camera_name,
             "location": self.camera_location,
-            "host": self.host,
             "created_at": self.created_at.isoformat(),
         }

@@ -31,9 +31,8 @@ export default function CameraRow({ camera, index, onOpen, onRemove, onToggle, s
                     {camera.name || `Camera ${index + 1}`}
                 </span>
                 <span className="mt-1 block truncate text-xs text-stone-500">
-                    {camera.location || camera.host}
+                    {camera.location || "Location not set"}
                 </span>
-                <span className="mt-1 block truncate text-xs text-stone-400">{camera.host}</span>
             </button>
             <div className="flex items-center justify-between gap-4 sm:justify-start">
                 <div className="min-w-28">

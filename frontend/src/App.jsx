@@ -137,7 +137,7 @@ function App() {
     const filteredLiveStreams = selectedCamera
         ? visibleStreams
         : visibleStreams.filter((camera) => !search.trim()
-            || `${camera.name} ${camera.location} ${camera.host}`.toLowerCase().includes(search.trim().toLowerCase()));
+            || `${camera.name} ${camera.location}`.toLowerCase().includes(search.trim().toLowerCase()));
     const liveStatuses = Object.fromEntries(filteredLiveStreams.map((camera) => [
         camera.id,
         statuses[camera.id],
@@ -152,7 +152,7 @@ function App() {
                         <div className="mb-3 flex items-center justify-between">
                             <div>
                                 <h1 className="text-xl font-semibold tracking-tight text-stone-900">{selectedCamera.name || "Live camera"}</h1>
-                                <p className="mt-0.5 text-xs text-stone-500">{selectedCamera.location || selectedCamera.host || "Single camera view"}</p>
+                                <p className="mt-0.5 text-xs text-stone-500">{selectedCamera.location || "Single camera view"}</p>
                             </div>
                             <button
                                 className="text-sm font-semibold text-[var(--color-forest-700)] hover:underline"

@@ -1,6 +1,5 @@
 import json
 import logging
-from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
@@ -45,14 +44,10 @@ def cameras(request):
         stream_url = validate_stream_url(raw_url)
     except InvalidStreamUrl:
         return JsonResponse({"error": "Enter a valid RTSP or RTSPS camera address."}, status=400)
-    parsed = urlsplit(stream_url)
-    if len(parsed.hostname or "") > 253:
-        return JsonResponse({"error": "The RTSP host name is too long."}, status=400)
     try:
         camera = Camera.create_with_url(
             camera_name=name.strip(),
             camera_location=location.strip(),
-            host=parsed.hostname or "",
             url=stream_url,
         )
     except RuntimeError:

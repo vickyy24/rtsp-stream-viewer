@@ -168,7 +168,6 @@ export default function LiveDashboard({
                             <DetailRow label="Camera" value={selectedStream.name || "Camera"} />
                             <DetailRow label="Location" value={selectedStream.location || "Not specified"} />
                             <DetailRow label="Status" value={selectedStatus === "live" ? "Live" : selectedStatus === "error" ? "Connection issue" : selectedStatus} />
-                            <DetailRow label="Source host" value={selectedStream.host || "Unavailable"} />
                         </dl>
                     ) : (
                         <p className="text-sm leading-5 text-stone-500">Add a camera to see its connection details.</p>

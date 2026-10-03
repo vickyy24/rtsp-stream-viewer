@@ -173,10 +173,10 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                 <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pb-3 pt-12 text-white">
                     <span className="min-w-0">
                         <span className="block truncate text-sm font-semibold uppercase tracking-wide">
-                            CAM {String(index + 1).padStart(2, "0")} / {stream.location || stream.name || "Camera"}
+                            CAM {String(index + 1).padStart(2, "0")} / {stream.name || "Camera"}
                         </span>
                         <span className="mt-1 block truncate text-xs text-white/85">
-                            {stream.location && stream.location !== stream.name ? stream.location : stream.host}
+                            {stream.location || "Live feed"}
                         </span>
                     </span>
                     <span aria-hidden="true" className="flex h-6 shrink-0 items-end gap-1 pr-14">

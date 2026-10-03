@@ -39,7 +39,7 @@ export default function CameraThumbnails({ streams, statuses, frameUrls, selecte
                                         {stream.name || `Camera ${String(index + 1).padStart(2, "0")}`}
                                     </span>
                                     <span className="block truncate text-xs text-stone-500">
-                                        {stream.location || stream.host}
+                                        {stream.location || "Location not set"}
                                     </span>
                                 </span>
                             </span>

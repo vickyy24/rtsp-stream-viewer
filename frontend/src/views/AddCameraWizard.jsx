@@ -226,7 +226,6 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                             <dl className="mt-3 flex flex-col gap-2 text-xs">
                                 <div><dt className="text-stone-400">Name</dt><dd className="mt-0.5 text-stone-700">{name}</dd></div>
                                 <div><dt className="text-stone-400">Location</dt><dd className="mt-0.5 text-stone-700">{locationName || "Not set"}</dd></div>
-                                <div><dt className="text-stone-400">RTSP host</dt><dd className="mt-0.5 break-all text-stone-700">{new URL(url).hostname}</dd></div>
                             </dl>
                         </aside>
                     </div>
@@ -239,7 +238,6 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                         <dl className="mt-5 grid gap-4 rounded-lg border border-stone-200 bg-stone-50 p-4 sm:grid-cols-2">
                             <div><dt className="text-xs text-stone-400">Camera name</dt><dd className="mt-1 text-sm font-medium text-stone-700">{name}</dd></div>
                             <div><dt className="text-xs text-stone-400">Location</dt><dd className="mt-1 text-sm font-medium text-stone-700">{locationName || "Not set"}</dd></div>
-                            <div className="sm:col-span-2"><dt className="text-xs text-stone-400">RTSP host</dt><dd className="mt-1 break-all text-sm font-medium text-stone-700">{new URL(url).hostname}</dd></div>
                         </dl>
                     </div>
                 )}

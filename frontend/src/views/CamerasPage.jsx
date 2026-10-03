@@ -31,7 +31,7 @@ export default function CamerasPage({
             || (statusFilter === "offline" && isOffline);
         const search = query.trim().toLowerCase();
         const matchesSearch = !search
-            || `${camera.name} ${camera.location} ${camera.host}`.toLowerCase().includes(search);
+            || `${camera.name} ${camera.location}`.toLowerCase().includes(search);
         return matchesStatus && matchesSearch;
     });
 

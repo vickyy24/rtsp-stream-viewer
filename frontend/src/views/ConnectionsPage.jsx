@@ -16,11 +16,10 @@ export default function ConnectionsPage({ onRemove, onRetry, onToggle, statuses,
                 </div>
                 {streams.length ? (
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[600px] text-left">
+                        <table className="w-full min-w-[420px] text-left">
                             <thead className="bg-stone-50 text-xs uppercase tracking-wide text-stone-400">
                                 <tr>
                                     <th className="px-4 py-3 font-semibold">Camera</th>
-                                    <th className="px-4 py-3 font-semibold">RTSP host</th>
                                     <th className="px-4 py-3 font-semibold">Status</th>
                                     <th className="px-4 py-3 text-right font-semibold">Actions</th>
                                 </tr>
@@ -32,9 +31,6 @@ export default function ConnectionsPage({ onRemove, onRetry, onToggle, statuses,
                                         <tr key={stream.id}>
                                             <td className="px-4 py-3 text-sm font-medium text-stone-800">
                                                 {stream.name || `Camera ${index + 1}`}
-                                            </td>
-                                            <td className="max-w-64 truncate px-4 py-3 text-xs text-stone-500">
-                                                {stream.host}
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className="inline-flex items-center gap-2 text-xs text-stone-600">

@@ -22,7 +22,7 @@ if not CAMERA_URL_ENCRYPTION_KEY:
     CAMERA_URL_ENCRYPTION_KEY = "MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA="
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", ".onrender.com").split(",")
     if host.strip()
 ]
 
@@ -69,17 +69,17 @@ ASGI_APPLICATION = "config.asgi.application"
 WSGI_APPLICATION = "config.wsgi.application"
 
 cors_allowed_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "")
-if DEBUG and not cors_allowed_origins.strip():
-    cors_allowed_origins = ",".join(
-        f"http://{host}:{port}"
-        for host in ("localhost", "127.0.0.1")
-        for port in (5173, 5174)
-    )
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in cors_allowed_origins.split(",")
     if origin.strip()
 ]
+if not DEBUG:
+    CORS_ALLOWED_ORIGINS = [
+        origin
+        for origin in CORS_ALLOWED_ORIGINS
+        if urlsplit(origin).hostname not in {"localhost", "127.0.0.1", "::1"}
+    ]
 production_frontend_origin = "https://rtsp-stream-viewer-roan.vercel.app"
 if not DEBUG and production_frontend_origin not in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.append(production_frontend_origin)

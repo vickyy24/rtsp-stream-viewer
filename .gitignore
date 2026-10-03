@@ -17,7 +17,12 @@ htmlcov/
 
 # Frontend dependencies and build output
 node_modules/
+**/node_modules/
 dist/
+dist-*/
+**/dist/
+frontend/dist/
+dist-ssr/
 .vercel/
 npm-debug.log*
 pnpm-debug.log*

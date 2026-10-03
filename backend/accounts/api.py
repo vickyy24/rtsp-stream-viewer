@@ -17,6 +17,9 @@ from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from google.auth.exceptions import GoogleAuthError
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
 
 from .models import User
 from .tokens import (
@@ -381,6 +384,50 @@ def signin(request):
         user = None
     if user is None or not user.check_password(password):
         return JsonResponse({"error": "Email or password is incorrect."}, status=401)
+    return JsonResponse({"token": create_access_token(user), "user": _user_data(user)})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def google_signin(request):
+    payload = _payload(request)
+    credential = payload.get("credential") if payload else None
+    if not isinstance(credential, str) or not credential or len(credential) > 8192:
+        return JsonResponse({"error": "Google did not provide a valid sign-in credential."}, status=400)
+    client_id = getattr(settings, "GOOGLE_OAUTH_CLIENT_ID", "")
+    if not client_id:
+        return JsonResponse({"error": "Google sign-in is not configured on the server."}, status=503)
+
+    try:
+        claims = id_token.verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            audience=client_id,
+        )
+    except (ValueError, GoogleAuthError):
+        return JsonResponse({"error": "Google sign-in could not be verified. Please try again."}, status=401)
+
+    email = claims.get("email")
+    full_name = claims.get("name")
+    if not isinstance(email, str) or claims.get("email_verified") is not True:
+        return JsonResponse({"error": "Use a Google account with a verified email address."}, status=401)
+    email = email.strip().lower()
+    try:
+        validate_email(email)
+    except ValidationError:
+        return JsonResponse({"error": "Google did not provide a valid email address."}, status=401)
+
+    try:
+        user = User.objects.filter(email__iexact=email).first()
+        if user is None:
+            user = User(email=email, full_name=full_name.strip()[:150] if isinstance(full_name, str) else "")
+            user.set_password(secrets.token_urlsafe(48))
+            user.save(force_insert=True)
+    except IntegrityError:
+        user = User.objects.filter(email__iexact=email).first()
+        if user is None:
+            return JsonResponse({"error": "Google sign-in could not create your account. Please try again."}, status=503)
+
     return JsonResponse({"token": create_access_token(user), "user": _user_data(user)})
 
 

@@ -10,7 +10,7 @@ import {
     verifyAccountEmail,
 } from "../services/streamService.js";
 
-function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onChange, type = "text", value }) {
+function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onChange, placeholder, type = "text", value }) {
     const [showPassword, setShowPassword] = useState(false);
     const FieldIcon = type === "email" ? FiMail
         : id.includes("password") ? FiLock
@@ -30,7 +30,7 @@ function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onCha
                     inputMode={inputMode}
                     maxLength={maxLength}
                     onChange={(event) => onChange(event.target.value)}
-                    placeholder={label}
+                    placeholder={placeholder || label}
                     required
                     type={isPassword && showPassword ? "text" : type}
                     value={value}
@@ -71,6 +71,7 @@ export default function AuthPage({ onLogin }) {
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState(verificationEmail);
     const [password, setPassword] = useState("");
+    const [rememberMe, setRememberMe] = useState(true);
     const [confirmation, setConfirmation] = useState("");
     const [verificationCode, setVerificationCode] = useState("");
     const [busy, setBusy] = useState(false);
@@ -159,7 +160,7 @@ export default function AuthPage({ onLogin }) {
                 });
                 navigate(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`, { replace: true });
             } else {
-                const user = await signInAccount({ email: email.trim(), password });
+                const user = await signInAccount({ email: email.trim(), password, remember: rememberMe });
                 onLogin(user);
                 navigate("/live", { replace: true });
             }
@@ -267,7 +268,7 @@ export default function AuthPage({ onLogin }) {
                 ) : isForgot ? (
                     <form className="auth-form" noValidate onSubmit={submit}>
                         <FormAlert>{error}</FormAlert>
-                        <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} type="email" value={email} />
+                        <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} placeholder="Enter your email" type="email" value={email} />
                         <button className="auth-submit brand-gradient" disabled={busy} type="submit">
                             {busy ? "Sending code…" : "Send reset code"}
                         </button>
@@ -280,17 +281,21 @@ export default function AuthPage({ onLogin }) {
                     <form className="auth-form" noValidate onSubmit={submit}>
                         <FormAlert>{error}</FormAlert>
                         {isSignup && (
-                            <AuthInput autoComplete="name" error={fieldErrors.fullName} id="full-name" label="Full name" maxLength={150} onChange={(value) => updateField("fullName", setFullName, value)} value={fullName} />
+                            <AuthInput autoComplete="name" error={fieldErrors.fullName} id="full-name" label="Full name" maxLength={150} onChange={(value) => updateField("fullName", setFullName, value)} placeholder="Enter your full name" value={fullName} />
                         )}
-                        <AuthInput autoComplete="off" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} type="email" value={email} />
-                        <AuthInput autoComplete={isSignup ? "new-password" : "current-password"} error={fieldErrors.password} id="password" label="Password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} type="password" value={password} />
+                        <AuthInput autoComplete={isSignup ? "email" : "username"} error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} placeholder="Enter your email" type="email" value={email} />
+                        <AuthInput autoComplete={isSignup ? "new-password" : "current-password"} error={fieldErrors.password} id="password" label="Password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} placeholder="Enter your password" type="password" value={password} />
                         {!isSignup && (
-                            <Link className="auth-forgot-link" to="/forgot-password">
-                                Forgot password?
-                            </Link>
+                            <div className="auth-options-row">
+                                <label className="auth-remember">
+                                    <input checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} type="checkbox" />
+                                    <span>Remember me</span>
+                                </label>
+                                <Link className="auth-forgot-link" to="/forgot-password">Forgot password?</Link>
+                            </div>
                         )}
                         {isSignup && (
-                            <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
+                            <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} placeholder="Confirm your password" type="password" value={confirmation} />
                         )}
                         <button className="auth-submit brand-gradient" disabled={busy} type="submit">
                             {busy ? "Please wait…" : isSignup ? "Create account" : "Sign in"}

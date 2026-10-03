@@ -109,14 +109,15 @@ a {
 .auth-shell {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
     background: #fbfbf6;
 }
 
 .auth-story {
     position: relative;
     display: flex;
-    min-height: 100dvh;
+    min-height: 0;
     overflow: hidden;
     background: linear-gradient(145deg, #fbfbf6 0%, #eef3e8 100%);
     isolation: isolate;
@@ -151,20 +152,20 @@ a {
     max-width: 790px;
     flex-direction: column;
     justify-content: flex-start;
-    padding: clamp(36px, 5.4vw, 92px) clamp(32px, 6.4vw, 112px);
+    padding: clamp(22px, 4vh, 44px) clamp(28px, 5vw, 80px);
 }
 
 .auth-brand {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: clamp(42px, 6vh, 76px);
+    margin-bottom: clamp(20px, 3.4vh, 38px);
 }
 
 .auth-pitch h2 {
     margin: 0;
     color: #111d28;
-    font-size: clamp(36px, 4vw, 64px);
+    font-size: clamp(34px, 3.35vw, 52px);
     font-weight: 750;
     letter-spacing: -0.045em;
     line-height: 0.99;
@@ -176,16 +177,16 @@ a {
 
 .auth-story-copy {
     max-width: 330px;
-    margin: 20px 0 0;
+    margin: 12px 0 0;
     color: #718096;
-    font-size: clamp(15px, 1.2vw, 20px);
-    line-height: 1.55;
+    font-size: clamp(14px, 1.05vw, 17px);
+    line-height: 1.4;
 }
 
 .auth-benefits {
     display: grid;
-    gap: clamp(12px, 1.6vh, 20px);
-    margin: clamp(25px, 4vh, 42px) 0 0;
+    gap: clamp(8px, 1.15vh, 14px);
+    margin: clamp(17px, 2.5vh, 26px) 0 0;
     padding: 0;
     list-style: none;
 }
@@ -199,14 +200,14 @@ a {
 
 .auth-benefit-icon {
     display: grid;
-    width: 58px;
-    height: 58px;
+    width: 48px;
+    height: 48px;
     flex: 0 0 auto;
     place-items: center;
     border-radius: 50%;
     background: rgb(231 239 223 / 88%);
     color: #078b70;
-    font-size: 26px;
+    font-size: 22px;
 }
 
 .auth-benefits strong,
@@ -216,30 +217,30 @@ a {
 
 .auth-benefits strong {
     color: #14202b;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
 }
 
 .auth-benefits small {
     margin-top: 3px;
     color: #718096;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.4;
 }
 
 .auth-form-panel {
     display: flex;
     min-width: 0;
-    min-height: 100dvh;
-    align-items: flex-start;
+    min-height: 0;
+    align-items: center;
     justify-content: center;
-    padding: clamp(28px, 5vh, 56px) clamp(24px, 4.4vw, 80px) 48px;
+    padding: 20px clamp(24px, 4.4vw, 72px);
     background: #fbfbf6;
 }
 
 .auth-form-content {
     width: 100%;
-    max-width: 720px;
+    max-width: 620px;
 }
 
 .auth-tabs {
@@ -250,7 +251,7 @@ a {
 
 .auth-tabs button {
     position: relative;
-    min-height: 54px;
+    min-height: 44px;
     border: 0;
     background: transparent;
     color: #858b98;
@@ -276,59 +277,56 @@ a {
 }
 
 .auth-heading {
-    margin: clamp(36px, 7vh, 72px) 0 0;
+    margin: clamp(18px, 3.1vh, 30px) 0 0;
     text-align: center;
 }
 
 .auth-heading h1 {
     margin: 0;
     color: #111d28;
-    font-size: clamp(28px, 2.8vw, 46px);
+    font-size: clamp(26px, 2.4vw, 38px);
     font-weight: 750;
     letter-spacing: -0.04em;
     line-height: 1.16;
 }
 
 .auth-heading p {
-    margin: 9px 0 0;
+    margin: 6px 0 0;
     color: #858b98;
-    font-size: clamp(15px, 1.3vw, 20px);
-    line-height: 1.5;
+    font-size: clamp(14px, 1.15vw, 17px);
+    line-height: 1.4;
 }
 
 .auth-form {
     display: flex;
     flex-direction: column;
-    gap: 17px;
-    margin-top: clamp(28px, 5.2vh, 54px);
+    gap: 11px;
+    margin-top: clamp(18px, 3vh, 28px);
 }
 
 .auth-field {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 5px;
     color: #333d49;
     font-size: 14px;
     font-weight: 600;
 }
 
 .auth-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
+    color: #333d49;
+    font-size: 13px;
+    font-weight: 600;
     line-height: 1.35;
 }
 
 .auth-control {
     display: flex;
     min-width: 0;
-    height: 58px;
+    height: 48px;
     align-items: center;
-    gap: 14px;
-    padding: 0 16px;
+    gap: 11px;
+    padding: 0 13px;
     border: 1px solid #dfe2e4;
     border-radius: 11px;
     background: #fff;
@@ -345,8 +343,8 @@ a {
 }
 
 .auth-control-icon {
-    width: 21px;
-    height: 21px;
+    width: 18px;
+    height: 18px;
     flex: 0 0 auto;
     color: #818997;
     stroke-width: 2.3;
@@ -360,7 +358,7 @@ a {
     outline: 0;
     background: transparent;
     color: #1c2732;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 400 !important;
 }
 
@@ -402,8 +400,31 @@ a {
 }
 
 .auth-forgot-link {
-    align-self: flex-end;
-    margin-top: -7px;
+    margin: 0;
+}
+
+.auth-options-row {
+    display: flex;
+    min-height: 24px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.auth-remember {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #26313c;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.auth-remember input {
+    width: 18px;
+    height: 18px;
+    accent-color: #079576;
 }
 
 .auth-forgot-link:hover,
@@ -413,12 +434,12 @@ a {
 }
 
 .auth-submit {
-    min-height: 60px;
+    min-height: 50px;
     margin-top: 4px;
     border: 0;
     border-radius: 11px;
     cursor: pointer;
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 700;
     transition: filter 150ms ease, transform 150ms ease;
 }
@@ -434,7 +455,7 @@ a {
 }
 
 .auth-switch-prompt {
-    margin: 30px 0 0;
+    margin: 18px 0 0;
     color: #858b98;
     font-size: 15px;
     text-align: center;
@@ -504,6 +525,9 @@ a {
 
 @media (max-width: 680px) {
     .auth-shell {
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
         grid-template-columns: minmax(0, 1fr);
     }
 
@@ -559,6 +583,50 @@ a {
 
     .auth-form {
         margin-top: 26px;
+    }
+}
+
+@media (max-height: 760px) and (min-width: 681px) {
+    .auth-story-content {
+        padding-top: 18px;
+        padding-bottom: 18px;
+    }
+
+    .auth-brand {
+        margin-bottom: 16px;
+    }
+
+    .auth-pitch h2 {
+        font-size: clamp(30px, 3vw, 42px);
+    }
+
+    .auth-benefits {
+        gap: 7px;
+        margin-top: 13px;
+    }
+
+    .auth-benefit-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 19px;
+    }
+
+    .auth-form-panel {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    .auth-heading {
+        margin-top: 15px;
+    }
+
+    .auth-form {
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .auth-switch-prompt {
+        margin-top: 12px;
     }
 }
 

@@ -17,15 +17,19 @@ const PASSWORD_RESET_CHALLENGE_KEY = "signal_pending_password_reset";
 window.localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
 
 export function getAuthToken() {
-    return window.localStorage.getItem(AUTH_TOKEN_KEY);
+    return window.localStorage.getItem(AUTH_TOKEN_KEY)
+        || window.sessionStorage.getItem(AUTH_TOKEN_KEY);
 }
 
-export function saveAuthToken(token) {
-    window.localStorage.setItem(AUTH_TOKEN_KEY, token);
+export function saveAuthToken(token, remember = true) {
+    window.localStorage.removeItem(AUTH_TOKEN_KEY);
+    window.sessionStorage.removeItem(AUTH_TOKEN_KEY);
+    (remember ? window.localStorage : window.sessionStorage).setItem(AUTH_TOKEN_KEY, token);
 }
 
 export function clearAuthToken() {
     window.localStorage.removeItem(AUTH_TOKEN_KEY);
+    window.sessionStorage.removeItem(AUTH_TOKEN_KEY);
 }
 
 async function apiRequest(path, options = {}) {
@@ -59,12 +63,12 @@ export function signUpAccount({ full_name, email, password }) {
     });
 }
 
-export async function signInAccount({ email, password }) {
+export async function signInAccount({ email, password, remember = true }) {
     const result = await apiRequest("/api/auth/signin/", {
         method: "POST",
         body: JSON.stringify({ email, password }),
     });
-    saveAuthToken(result.token);
+    saveAuthToken(result.token, remember);
     return result.user;
 }
 

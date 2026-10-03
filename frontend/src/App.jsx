@@ -96,7 +96,7 @@ function App() {
         navigate("/signin", { replace: true });
     }
 
-    const isAuthPath = ["/signin", "/signup", "/verify-email"].includes(location.pathname);
+    const isAuthPath = ["/signin", "/signup", "/verify-email", "/forgot-password", "/reset-password"].includes(location.pathname);
 
     const addActivity = useCallback((message, tone = "info") => {
         setActivities((current) => [

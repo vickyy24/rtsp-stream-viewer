@@ -11,6 +11,7 @@ console.log("apiUrl:", apiUrl);
 const AUTH_TOKEN_KEY = "signal_access_token_v2";
 const LEGACY_AUTH_TOKEN_KEY = "signal_access_token";
 const SIGNUP_CHALLENGE_KEY = "signal_pending_signup_challenge";
+const PASSWORD_RESET_CHALLENGE_KEY = "signal_pending_password_reset";
 
 // Tokens from the pre-authentication workspace must not silently sign visitors in.
 window.localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
@@ -83,6 +84,31 @@ export async function verifyAccountEmail(email, code) {
     window.sessionStorage.removeItem(SIGNUP_CHALLENGE_KEY);
     saveAuthToken(result.token);
     return result.user;
+}
+
+export async function requestPasswordReset(email) {
+    const result = await apiRequest("/api/auth/password-reset/request/", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+    });
+    if (!result.challenge_token) {
+        throw new Error("A reset code could not be prepared. Please try again.");
+    }
+    window.sessionStorage.setItem(PASSWORD_RESET_CHALLENGE_KEY, result.challenge_token);
+    return result;
+}
+
+export async function resetAccountPassword({ email, code, new_password }) {
+    const challengeToken = window.sessionStorage.getItem(PASSWORD_RESET_CHALLENGE_KEY);
+    if (!challengeToken) {
+        throw new Error("Your reset session expired. Request a new code.");
+    }
+    const result = await apiRequest("/api/auth/password-reset/confirm/", {
+        method: "POST",
+        body: JSON.stringify({ email, code, new_password, challenge_token: challengeToken }),
+    });
+    window.sessionStorage.removeItem(PASSWORD_RESET_CHALLENGE_KEY);
+    return result;
 }
 
 export function listCameras() {

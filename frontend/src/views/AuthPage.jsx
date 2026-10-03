@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import SignalLogo from "../components/SignalLogo.jsx";
-import { signInAccount, signUpAccount, verifyAccountEmail } from "../services/streamService.js";
+import {
+    requestPasswordReset,
+    resetAccountPassword,
+    signInAccount,
+    signUpAccount,
+    verifyAccountEmail,
+} from "../services/streamService.js";
 
 function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onChange, type = "text", value }) {
     return (
@@ -37,10 +43,13 @@ function FormAlert({ children }) {
 export default function AuthPage({ onLogin }) {
     const location = useLocation();
     const navigate = useNavigate();
-    const mode = location.pathname === "/signup" ? "signup" : location.pathname === "/verify-email" ? "verify" : "signin";
+    const mode = location.pathname === "/signup" ? "signup"
+        : location.pathname === "/verify-email" ? "verify"
+            : location.pathname === "/forgot-password" ? "forgot"
+                : location.pathname === "/reset-password" ? "reset" : "signin";
     const verificationEmail = new URLSearchParams(location.search).get("email")?.trim().toLowerCase() || "";
     const [fullName, setFullName] = useState("");
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState(verificationEmail);
     const [password, setPassword] = useState("");
     const [confirmation, setConfirmation] = useState("");
     const [verificationCode, setVerificationCode] = useState("");
@@ -66,9 +75,11 @@ export default function AuthPage({ onLogin }) {
         setFieldErrors({});
         try {
             const nextFieldErrors = {};
-            if (mode === "verify") {
+            if (mode === "verify" || mode === "reset") {
                 if (!verificationEmail) {
-                    setError("The signup email is missing. Return to sign up and request a new code.");
+                    setError(mode === "verify"
+                        ? "The signup email is missing. Return to sign up and request a new code."
+                        : "The reset email is missing. Request a new code to continue.");
                     return;
                 }
                 if (!/^\d{6}$/.test(verificationCode)) {
@@ -76,16 +87,33 @@ export default function AuthPage({ onLogin }) {
                     setFieldErrors(nextFieldErrors);
                     return;
                 }
-                const user = await verifyAccountEmail(verificationEmail, verificationCode);
-                onLogin(user);
-                navigate("/live", { replace: true });
+                if (mode === "verify") {
+                    const user = await verifyAccountEmail(verificationEmail, verificationCode);
+                    onLogin(user);
+                    navigate("/live", { replace: true });
+                    return;
+                }
+                if (password.length < 10) nextFieldErrors.password = "Use at least 10 characters.";
+                if (password.length > 128) nextFieldErrors.password = "Use 128 characters or fewer.";
+                if (!confirmation) nextFieldErrors.confirmation = "Confirm your new password.";
+                else if (password !== confirmation) nextFieldErrors.confirmation = "Passwords do not match.";
+                if (Object.keys(nextFieldErrors).length) {
+                    setFieldErrors(nextFieldErrors);
+                    return;
+                }
+                await resetAccountPassword({
+                    email: verificationEmail,
+                    code: verificationCode,
+                    new_password: password,
+                });
+                navigate("/signin?passwordReset=success", { replace: true });
                 return;
             }
 
             const emailInput = event.currentTarget.elements.email;
             if (!email.trim()) nextFieldErrors.email = "Enter your email address.";
             else if (emailInput.validity.typeMismatch) nextFieldErrors.email = "Enter a valid email address.";
-            if (!password) nextFieldErrors.password = "Enter your password.";
+            if (mode === "signin" && !password) nextFieldErrors.password = "Enter your password.";
 
             if (mode === "signup") {
                 if (!fullName.trim()) nextFieldErrors.fullName = "Enter your full name.";
@@ -100,7 +128,10 @@ export default function AuthPage({ onLogin }) {
                 return;
             }
 
-            if (mode === "signup") {
+            if (mode === "forgot") {
+                await requestPasswordReset(email.trim().toLowerCase());
+                navigate(`/reset-password?email=${encodeURIComponent(email.trim().toLowerCase())}`, { replace: true });
+            } else if (mode === "signup") {
                 await signUpAccount({
                     full_name: fullName.trim(),
                     email: email.trim(),
@@ -121,6 +152,9 @@ export default function AuthPage({ onLogin }) {
 
     const isSignup = mode === "signup";
     const isVerify = mode === "verify";
+    const isForgot = mode === "forgot";
+    const isReset = mode === "reset";
+    const passwordResetComplete = new URLSearchParams(location.search).get("passwordReset") === "success";
 
     return (
         <main className="flex min-h-dvh items-center justify-center bg-[var(--color-app-background)] px-4 py-10">
@@ -134,17 +168,28 @@ export default function AuthPage({ onLogin }) {
                 </div>
 
                 <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
-                    {isVerify ? "Verify your email" : isSignup ? "Create your account" : "Welcome back"}
+                    {isVerify ? "Verify your email"
+                        : isReset ? "Choose a new password"
+                            : isForgot ? "Forgot your password?"
+                                : isSignup ? "Create your account" : "Welcome back"}
                 </h1>
                 <p className="mt-1.5 text-sm leading-6 text-stone-500">
                     {isVerify
                         ? "Your account will be created after your email code is confirmed."
-                        : isSignup
-                            ? "Sign up with your name and email to manage your cameras."
-                            : "Sign in to access your cameras and live streams."}
+                        : isReset ? "Verify the email code to reset your password."
+                            : isForgot ? "Enter your account email and we’ll send a reset code if it matches an account."
+                                : isSignup
+                                    ? "Sign up with your name and email to manage your cameras."
+                                    : "Sign in to access your cameras and live streams."}
                 </p>
 
-                {isVerify ? (
+                {passwordResetComplete && !isForgot && !isReset && !isVerify && (
+                    <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm leading-5 text-emerald-800" role="status">
+                        Password reset complete. Sign in with your new password.
+                    </p>
+                )}
+
+                {isVerify || isReset ? (
                     <form className="mt-6 flex flex-col gap-4" noValidate onSubmit={submit}>
                         <p className="text-sm leading-6 text-stone-600">
                             Enter the six-digit code sent to <span className="font-medium text-stone-800">{verificationEmail || "your email"}</span>. The code expires in 10 minutes.
@@ -155,17 +200,34 @@ export default function AuthPage({ onLogin }) {
                             error={fieldErrors.code}
                             id="verification-code"
                             inputMode="numeric"
-                            label="Email verification code"
+                            label={isReset ? "Password reset code" : "Email verification code"}
                             maxLength={6}
                             onChange={(value) => updateField("code", setVerificationCode, value.replace(/\D/g, "").slice(0, 6))}
                             type="text"
                             value={verificationCode}
                         />
+                        {isReset && (
+                            <>
+                                <AuthInput autoComplete="new-password" error={fieldErrors.password} id="password" label="New password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} type="password" value={password} />
+                                <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm new password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
+                            </>
+                        )}
                         <button className="brand-gradient mt-1 h-11 rounded-lg text-sm font-semibold disabled:cursor-wait disabled:opacity-60" disabled={busy} type="submit">
-                            {busy ? "Verifying…" : "Verify email and continue"}
+                            {busy ? "Please wait…" : isReset ? "Reset password" : "Verify email and continue"}
                         </button>
-                        <Link className="text-center text-sm font-semibold text-[var(--color-forest-800)] hover:underline" to="/signup">
-                            Back to sign up to request a new code
+                        <Link className="text-center text-sm font-semibold text-[var(--color-forest-800)] hover:underline" to={isReset ? "/forgot-password" : "/signup"}>
+                            {isReset ? "Request a new reset code" : "Back to sign up to request a new code"}
+                        </Link>
+                    </form>
+                ) : isForgot ? (
+                    <form className="mt-6 flex flex-col gap-4" noValidate onSubmit={submit}>
+                        <FormAlert>{error}</FormAlert>
+                        <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} type="email" value={email} />
+                        <button className="brand-gradient mt-1 h-11 rounded-lg text-sm font-semibold disabled:cursor-wait disabled:opacity-60" disabled={busy} type="submit">
+                            {busy ? "Sending code…" : "Send reset code"}
+                        </button>
+                        <Link className="text-center text-sm font-semibold text-[var(--color-forest-800)] hover:underline" to="/signin">
+                            Back to sign in
                         </Link>
                     </form>
                 ) : (
@@ -195,6 +257,11 @@ export default function AuthPage({ onLogin }) {
                         )}
                         <AuthInput autoComplete="off" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} type="email" value={email} />
                         <AuthInput autoComplete={isSignup ? "new-password" : "current-password"} error={fieldErrors.password} id="password" label="Password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} type="password" value={password} />
+                        {!isSignup && (
+                            <Link className="-mt-2 self-end text-sm font-semibold text-[var(--color-forest-800)] hover:underline" to="/forgot-password">
+                                Forgot password?
+                            </Link>
+                        )}
                         {isSignup && (
                             <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
                         )}

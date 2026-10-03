@@ -29,6 +29,8 @@ MAX_REQUEST_BYTES = 8192
 SIGNUP_TOKEN_SALT = "accounts.signup-verification"
 SIGNUP_TOKEN_TTL = 10 * 60
 SIGNUP_MAX_ATTEMPTS = 5
+PASSWORD_RESET_TOKEN_SALT = "accounts.password-reset"
+PASSWORD_RESET_TOKEN_TTL = 10 * 60
 
 
 def _signup_cache_key(kind, value):
@@ -39,6 +41,13 @@ def _signup_cache_key(kind, value):
 def _signup_token_cipher():
     key_material = hashlib.sha256(
         f"signup-verification:{settings.SECRET_KEY}".encode("utf-8")
+    ).digest()
+    return Fernet(base64.urlsafe_b64encode(key_material))
+
+
+def _password_reset_token_cipher():
+    key_material = hashlib.sha256(
+        f"password-reset:{settings.SECRET_KEY}".encode("utf-8")
     ).digest()
     return Fernet(base64.urlsafe_b64encode(key_material))
 
@@ -220,6 +229,142 @@ def verify_email(request):
     cache.delete(attempts_key)
     result = {"token": create_access_token(user), "user": _user_data(user)}
     return JsonResponse(result)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def request_password_reset(request):
+    payload = _payload(request)
+    email = payload.get("email") if payload else None
+    if not isinstance(email, str) or len(email.strip()) > 254:
+        return JsonResponse({"error": "Enter a valid email address."}, status=400)
+    email = email.strip().lower()
+    try:
+        validate_email(email)
+    except ValidationError:
+        return JsonResponse({"error": "Enter a valid email address."}, status=400)
+
+    response_message = "If an account exists for this email, a password reset code has been sent."
+    send_key = _signup_cache_key(f"password-reset-send:{email}", email)
+    if not cache.add(send_key, True, timeout=30):
+        return JsonResponse(
+            {"error": "Wait 30 seconds before requesting another reset code."},
+            status=429,
+        )
+
+    if not all((settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)):
+        cache.delete(send_key)
+        logger.error("Password reset is unavailable because email delivery is not configured")
+        return JsonResponse(
+            {"error": "Password reset is temporarily unavailable. Please try again later."},
+            status=503,
+        )
+    user = User.objects.filter(email=email).first()
+
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    challenge_id = secrets.token_urlsafe(24)
+    code_hash = hmac.new(
+        settings.SECRET_KEY.encode("utf-8"),
+        f"password-reset:{email}:{challenge_id}:{code}".encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    cache.set(_signup_cache_key("password-reset-active", email), challenge_id, timeout=PASSWORD_RESET_TOKEN_TTL)
+    cache.set(_signup_cache_key("password-reset-attempts", challenge_id), 0, timeout=PASSWORD_RESET_TOKEN_TTL)
+
+    if user:
+        try:
+            send_mail(
+                subject="Your Signal password reset code",
+                message=(
+                    f"Hello {user.full_name},\n\n"
+                    f"Your Signal password reset code is {code}.\n"
+                    "It expires in 10 minutes. If you did not request this code, ignore this email."
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except Exception:
+            cache.delete(_signup_cache_key("password-reset-active", email))
+            cache.delete(_signup_cache_key("password-reset-attempts", challenge_id))
+            cache.delete(send_key)
+            logger.exception("Unable to send password reset email")
+            return JsonResponse(
+                {"error": "The reset email could not be sent. Please try again later."},
+                status=503,
+            )
+
+    signed_challenge = signing.dumps(
+        {"id": challenge_id, "email": email, "code_hash": code_hash},
+        salt=PASSWORD_RESET_TOKEN_SALT,
+        compress=True,
+    )
+    challenge_token = _password_reset_token_cipher().encrypt(signed_challenge.encode("utf-8")).decode("ascii")
+    return JsonResponse(
+        {"message": response_message, "challenge_token": challenge_token},
+        status=202,
+    )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def reset_password(request):
+    payload = _payload(request)
+    email = payload.get("email") if payload else None
+    code = payload.get("code") if payload else None
+    new_password = payload.get("new_password") if payload else None
+    challenge_token = payload.get("challenge_token") if payload else None
+    if not all(isinstance(value, str) for value in (email, code, new_password, challenge_token)):
+        return JsonResponse({"error": "Enter your email, code, and new password."}, status=400)
+    email = email.strip().lower()
+    if len(code) != 6 or not code.isdigit() or len(challenge_token) > 4096:
+        return JsonResponse({"error": "Enter the six-digit reset code sent to your email."}, status=400)
+    if len(new_password) < 10 or len(new_password) > 128:
+        return JsonResponse({"error": "Password must be between 10 and 128 characters."}, status=400)
+
+    try:
+        signed_challenge = _password_reset_token_cipher().decrypt(challenge_token.encode("ascii"))
+        challenge = signing.loads(
+            signed_challenge.decode("utf-8"),
+            salt=PASSWORD_RESET_TOKEN_SALT,
+            max_age=PASSWORD_RESET_TOKEN_TTL,
+        )
+    except (InvalidToken, UnicodeEncodeError, UnicodeDecodeError, signing.BadSignature):
+        return JsonResponse({"error": "This reset code expired. Request a new code."}, status=400)
+
+    if (
+        not isinstance(challenge, dict)
+        or challenge.get("email") != email
+        or not isinstance(challenge.get("id"), str)
+        or not isinstance(challenge.get("code_hash"), str)
+        or cache.get(_signup_cache_key("password-reset-active", email)) != challenge.get("id")
+    ):
+        return JsonResponse({"error": "This reset code is invalid or expired. Request a new code."}, status=400)
+
+    attempts_key = _signup_cache_key("password-reset-attempts", challenge["id"])
+    if cache.get(attempts_key) is None:
+        return JsonResponse({"error": "This reset code expired. Request a new code."}, status=400)
+    if cache.incr(attempts_key) > SIGNUP_MAX_ATTEMPTS:
+        cache.delete(_signup_cache_key("password-reset-active", email))
+        cache.delete(attempts_key)
+        return JsonResponse({"error": "Too many incorrect attempts. Request a new reset code."}, status=400)
+
+    submitted_hash = hmac.new(
+        settings.SECRET_KEY.encode("utf-8"),
+        f"password-reset:{email}:{challenge['id']}:{code}".encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    if not hmac.compare_digest(challenge["code_hash"], submitted_hash):
+        return JsonResponse({"error": "That reset code is incorrect."}, status=400)
+
+    user = User.objects.filter(email=email).first()
+    if user is None:
+        return JsonResponse({"error": "This reset code is invalid or expired. Request a new code."}, status=400)
+    user.set_password(new_password)
+    user.save(update_fields=["password"])
+    cache.delete(_signup_cache_key("password-reset-active", email))
+    cache.delete(attempts_key)
+    return JsonResponse({"message": "Your password has been reset. Sign in with your new password."})
 
 
 @csrf_exempt

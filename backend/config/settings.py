@@ -75,6 +75,9 @@ CORS_ALLOWED_ORIGINS = [
     for origin in cors_allowed_origins.split(",")
     if origin.strip()
 ]
+production_frontend_origin = "https://rtsp-stream-viewer-roan.vercel.app"
+if not DEBUG and production_frontend_origin not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(production_frontend_origin)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.environ.get(
     "DJANGO_SECURE_SSL_REDIRECT", "false"

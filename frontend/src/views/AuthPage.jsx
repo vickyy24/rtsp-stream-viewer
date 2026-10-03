@@ -74,17 +74,26 @@ export default function AuthPage({ onLogin }) {
         setNotice("");
         setFieldErrors({});
         try {
+            const nextFieldErrors = {};
+            const emailInput = event.currentTarget.elements.email;
+            if (!email.trim()) nextFieldErrors.email = "Enter your email address.";
+            else if (emailInput.validity.typeMismatch) nextFieldErrors.email = "Enter a valid email address.";
+            if (!password) nextFieldErrors.password = "Enter your password.";
+
             if (mode === "signup") {
-                const nextFieldErrors = {};
                 if (!fullName.trim()) nextFieldErrors.fullName = "Enter your full name.";
                 if (fullName.trim().length > 150) nextFieldErrors.fullName = "Use 150 characters or fewer.";
                 if (password.length < 10) nextFieldErrors.password = "Use at least 10 characters.";
                 if (password.length > 128) nextFieldErrors.password = "Use 128 characters or fewer.";
-                if (password !== confirmation) nextFieldErrors.confirmation = "Passwords do not match.";
-                if (Object.keys(nextFieldErrors).length) {
-                    setFieldErrors(nextFieldErrors);
-                    return;
-                }
+                if (!confirmation) nextFieldErrors.confirmation = "Confirm your password.";
+                else if (password !== confirmation) nextFieldErrors.confirmation = "Passwords do not match.";
+            }
+            if (Object.keys(nextFieldErrors).length) {
+                setFieldErrors(nextFieldErrors);
+                return;
+            }
+
+            if (mode === "signup") {
                 const result = await signUpAccount({
                     full_name: fullName.trim(),
                     email: email.trim(),
@@ -140,7 +149,7 @@ export default function AuthPage({ onLogin }) {
                         )}
                     </div>
                 ) : (
-                    <form className="mt-6 flex flex-col gap-4" onSubmit={submit}>
+                    <form className="mt-6 flex flex-col gap-4" noValidate onSubmit={submit}>
                         {isSignup && (
                             <AuthInput autoComplete="name" error={fieldErrors.fullName} id="full-name" label="Full name" maxLength={150} onChange={(value) => updateField("fullName", setFullName, value)} value={fullName} />
                         )}

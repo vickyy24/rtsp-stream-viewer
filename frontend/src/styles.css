@@ -55,10 +55,14 @@ input {
 .auth-input:-webkit-autofill,
 .auth-input:-webkit-autofill:hover,
 .auth-input:-webkit-autofill:focus,
-.auth-input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px #fff inset;
-    -webkit-text-fill-color: #1c1917;
-    caret-color: #1c1917;
+.auth-input:-webkit-autofill:active,
+.auth-input:autofill {
+    background-color: #fff !important;
+    background-image: none !important;
+    -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+    -webkit-text-fill-color: #1c1917 !important;
+    caret-color: #1c1917 !important;
+    transition: background-color 9999s ease-out 0s;
 }
 
 button,

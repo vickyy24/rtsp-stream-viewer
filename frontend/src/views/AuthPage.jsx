@@ -53,6 +53,12 @@ export default function AuthPage({ onLogin }) {
         setFieldErrors((current) => ({ ...current, [field]: "" }));
     }
 
+    function switchMode(nextMode) {
+        setError("");
+        setFieldErrors({});
+        navigate(nextMode === "signup" ? "/signup" : "/signin");
+    }
+
     async function submit(event) {
         event.preventDefault();
         setBusy(true);
@@ -163,7 +169,26 @@ export default function AuthPage({ onLogin }) {
                         </Link>
                     </form>
                 ) : (
-                    <form className="mt-6 flex flex-col gap-4" noValidate onSubmit={submit}>
+                    <>
+                    <div aria-label="Account access" className="mt-6 grid grid-cols-2 rounded-lg bg-stone-100 p-1" role="group">
+                        <button
+                            aria-pressed={!isSignup}
+                            className={`h-10 rounded-md text-sm font-semibold transition ${!isSignup ? "bg-white text-stone-900 shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
+                            onClick={() => switchMode("signin")}
+                            type="button"
+                        >
+                            Sign in
+                        </button>
+                        <button
+                            aria-pressed={isSignup}
+                            className={`h-10 rounded-md text-sm font-semibold transition ${isSignup ? "bg-white text-stone-900 shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
+                            onClick={() => switchMode("signup")}
+                            type="button"
+                        >
+                            Create account
+                        </button>
+                    </div>
+                    <form className="mt-5 flex flex-col gap-4" noValidate onSubmit={submit}>
                         <FormAlert>{error}</FormAlert>
                         {isSignup && (
                             <AuthInput autoComplete="name" error={fieldErrors.fullName} id="full-name" label="Full name" maxLength={150} onChange={(value) => updateField("fullName", setFullName, value)} value={fullName} />
@@ -177,15 +202,7 @@ export default function AuthPage({ onLogin }) {
                             {busy ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
                         </button>
                     </form>
-                )}
-
-                {!isVerify && (
-                    <p className="mt-6 text-center text-sm text-stone-500">
-                        {isSignup ? "Already have an account? " : "New to Signal? "}
-                        <Link className="font-semibold text-[var(--color-forest-800)] hover:underline" to={isSignup ? "/signin" : "/signup"}>
-                            {isSignup ? "Sign in" : "Create an account"}
-                        </Link>
-                    </p>
+                    </>
                 )}
             </section>
         </main>

@@ -678,7 +678,7 @@ a {
     }
 
     .auth-content-signup .auth-heading {
-        margin: 2px 0 7px !important;
+        margin: 2px 0 8px !important;
     }
 
     .auth-content-signup .auth-heading h1 {
@@ -692,21 +692,21 @@ a {
     }
 
     .auth-signup-form {
-        gap: 6px !important;
+        gap: 7px !important;
         margin-top: 7px !important;
     }
 
     .auth-signup-form .auth-field {
-        gap: 2px;
+        gap: 3px;
     }
 
     .auth-signup-form .auth-label-roomy {
-        font-size: 15px;
+        font-size: 16px;
         line-height: 1.2;
     }
 
     .auth-signup-form .auth-control-roomy {
-        height: 46px;
+        height: 47px;
         border-radius: 9px;
     }
 
@@ -719,29 +719,29 @@ a {
     }
 
     .auth-signup-form .auth-remember {
-        gap: 6px;
-        font-size: 13px;
+        gap: 7px;
+        font-size: 14px;
     }
 
     .auth-signup-form .auth-remember input {
-        width: 15px;
-        height: 15px;
+        width: 16px;
+        height: 16px;
     }
 
     .auth-signup-form .auth-submit,
     .auth-content-signup .auth-google-btn {
-        min-height: 44px;
+        min-height: 45px;
         border-radius: 9px;
         font-size: 15px;
     }
 
     .auth-signup-divider {
-        margin: 3px 0 4px;
+        margin: 4px 0;
         font-size: 13px;
     }
 
     .auth-signup-prompt {
-        margin-top: 4px;
+        margin-top: 5px;
         font-size: 13px;
     }
 }
@@ -764,35 +764,35 @@ a {
     }
 
     .auth-signup-form {
-        gap: 2px !important;
+        gap: 3px !important;
         margin-top: 2px !important;
     }
 
     .auth-signup-form .auth-label-roomy {
-        font-size: 14px;
+        font-size: 15px;
     }
 
     .auth-signup-form .auth-control-roomy {
-        height: 40px;
+        height: 42px;
     }
 
     .auth-signup-form .auth-remember {
-        font-size: 12px;
+        font-size: 13px;
     }
 
     .auth-signup-form .auth-submit,
     .auth-content-signup .auth-google-btn {
-        min-height: 40px;
+        min-height: 42px;
         font-size: 14px;
     }
 
     .auth-signup-divider {
-        margin: 1px 0 2px;
+        margin: 2px 0 3px;
     }
 
     .auth-signup-prompt {
-        margin-top: 2px;
-        font-size: 12px;
+        margin-top: 3px;
+        font-size: 13px;
     }
 }
 

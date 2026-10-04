@@ -225,7 +225,8 @@ export default function AppRoutes({ user, onLogout }) {
                     )}
                     <LiveDashboard
                         activities={activities}
-                        layout={selectedCamera ? "1x1" : layout}
+                        gridLayout={selectedCamera ? "1x1" : layout}
+                        layout={layout}
                         onAddCamera={openCameraWizard}
                         onRetry={retryCamera}
                         onStatusChange={updateStatus}

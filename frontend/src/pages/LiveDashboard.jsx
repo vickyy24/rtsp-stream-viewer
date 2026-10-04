@@ -7,6 +7,7 @@ import StreamGrid from "../components/StreamGrid.jsx";
 
 export default function LiveDashboard({
     activities,
+    gridLayout = layout,
     layout,
     onAddCamera,
     onRetry,
@@ -105,7 +106,7 @@ export default function LiveDashboard({
                 >
                     {streams.length ? (
                         <StreamGrid
-                            layout={layout}
+                            layout={gridLayout}
                             isFullscreen={isFullscreen}
                             onFrame={receiveFrame}
                             onRetry={onRetry}

@@ -32,7 +32,7 @@ export default function WorkspaceHeader({ onMenuClick, onSearchChange, searchVal
     }
 
     return (
-        <header className="sticky top-0 z-20 flex shrink-0 items-center gap-2 border-b border-stone-200 bg-[var(--color-surface)] px-3 py-3 sm:gap-4">
+        <header className="sticky top-0 z-20 flex min-w-0 shrink-0 items-center gap-2 border-b border-stone-200 bg-[var(--color-surface)] px-3 py-3 sm:gap-4">
             <button
                 aria-label="Open navigation"
                 className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-sm transition hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] lg:hidden"
@@ -53,7 +53,7 @@ export default function WorkspaceHeader({ onMenuClick, onSearchChange, searchVal
                     />
             </label>
 
-            <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+            <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
                 <div className="hidden text-right min-[420px]:block">
                     <p className="text-xs text-stone-400">
                         {new Intl.DateTimeFormat(undefined, {

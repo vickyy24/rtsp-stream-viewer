@@ -109,7 +109,9 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
                 ))}
             </nav>
 
-            <div className={`${isDrawer || expanded ? "mt-auto border-t border-stone-200 pt-4" : "hidden"} ${!isDrawer ? "hidden lg:block" : ""}`}>
+            <div className={isDrawer
+                ? "mt-auto border-t border-stone-200 pt-4"
+                : expanded ? "mt-auto hidden border-t border-stone-200 pt-4 lg:block" : "hidden"}>
                 <button className="mb-3 flex min-h-11 w-full items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-left text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" onClick={onLogout} type="button">
                     <LuLogOut aria-hidden="true" className="size-[18px] shrink-0 stroke-[2.4]" />
                     <span>Log out</span>
@@ -152,7 +154,7 @@ export default function Sidebar({ activePage, mobileOpen, onLogout, onMobileOpen
 
     return (
         <>
-            <aside className={`sticky top-0 z-30 hidden h-dvh shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] py-3 transition-[width,padding] duration-200 lg:flex ${expanded ? "w-52 px-4 py-6" : "w-16 px-2 py-6"}`}>
+            <aside className={`sticky top-0 z-30 hidden h-dvh shrink-0 flex-col overflow-x-hidden overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] py-3 transition-[width,padding] duration-200 lg:flex ${expanded ? "w-52 px-4 py-6" : "w-16 px-2 py-6"}`}>
                 <SidebarContents
                     activePage={activePage}
                     expanded={expanded}

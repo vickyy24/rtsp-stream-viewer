@@ -256,7 +256,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
 
                 {step === 3 && (
                     <div className="grid min-h-64 gap-4 py-5 md:grid-cols-[minmax(0,1fr)_16rem]">
-                        <div className="flex aspect-video flex-col items-center justify-center rounded-lg border border-stone-200 bg-stone-100 text-center">
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-stone-200 bg-stone-100 text-center">
                             <LuCircleCheck aria-hidden="true" className="size-8 text-[var(--color-olive-600)]" />
                             <h2 className="mt-3 text-base font-semibold text-stone-800">Source is reachable</h2>
                             <p className="mt-1 text-xs text-stone-500">A live preview starts after saving this camera.</p>

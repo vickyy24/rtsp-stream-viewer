@@ -4,6 +4,7 @@ import hmac
 import json
 import logging
 import secrets
+import time
 from functools import wraps
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -28,6 +29,7 @@ logger = logging.getLogger(__name__)
 MAX_REQUEST_BYTES = 8192
 SIGNUP_TOKEN_SALT = "accounts.signup-verification"
 SIGNUP_TOKEN_TTL = 10 * 60
+SIGNUP_CHALLENGE_TTL = 24 * 60 * 60
 SIGNUP_MAX_ATTEMPTS = 5
 PASSWORD_RESET_TOKEN_SALT = "accounts.password-reset"
 PASSWORD_RESET_TOKEN_TTL = 10 * 60
@@ -109,6 +111,7 @@ def signup(request):
     if User.objects.filter(email=email).exists():
         return JsonResponse({"error": "An account with this email already exists."}, status=409)
 
+    send_started_at = time.monotonic()
     send_key = _signup_cache_key("send", email)
     if not cache.add(send_key, True, timeout=30):
         return JsonResponse({"error": "A verification code was sent recently. Wait 30 seconds before requesting another."}, status=429)
@@ -140,7 +143,8 @@ def signup(request):
             {"error": "Signup email could not be sent. Please try again later."}, status=503
         )
 
-    cache.set(_signup_cache_key("active", email), challenge_id, timeout=SIGNUP_TOKEN_TTL)
+    code_created_at = int(time.time())
+    cache.set(_signup_cache_key("active", email), challenge_id, timeout=SIGNUP_CHALLENGE_TTL)
     cache.set(_signup_cache_key("attempts", challenge_id), 0, timeout=SIGNUP_TOKEN_TTL)
     signed_challenge = signing.dumps(
         {
@@ -155,7 +159,12 @@ def signup(request):
     )
     challenge_token = _signup_token_cipher().encrypt(signed_challenge.encode("utf-8")).decode("ascii")
     return JsonResponse(
-        {"message": "A verification code was sent to your email.", "challenge_token": challenge_token},
+        {
+            "message": "A verification code request was accepted.",
+            "challenge_token": challenge_token,
+            "code_expires_at": code_created_at + SIGNUP_TOKEN_TTL,
+            "resend_after_seconds": max(0, 30 - int(time.monotonic() - send_started_at)),
+        },
         status=202,
     )
 
@@ -176,7 +185,7 @@ def resend_signup_verification(request):
         challenge = signing.loads(
             signed_challenge.decode("utf-8"),
             salt=SIGNUP_TOKEN_SALT,
-            max_age=SIGNUP_TOKEN_TTL,
+            max_age=SIGNUP_CHALLENGE_TTL,
         )
     except (InvalidToken, UnicodeEncodeError, UnicodeDecodeError, signing.BadSignature):
         return JsonResponse({"error": "Your signup session expired. Start signup again to request a new code."}, status=400)
@@ -192,6 +201,7 @@ def resend_signup_verification(request):
     ):
         return JsonResponse({"error": "Your signup session is no longer active. Start signup again."}, status=400)
 
+    send_started_at = time.monotonic()
     send_key = _signup_cache_key("send", email)
     if not cache.add(send_key, True, timeout=30):
         return JsonResponse({"error": "Please wait 30 seconds before requesting another code."}, status=429)
@@ -219,12 +229,18 @@ def resend_signup_verification(request):
         logger.exception("Unable to resend signup verification email")
         return JsonResponse({"error": "The email service could not send a new code. Please try again."}, status=503)
 
-    cache.set(_signup_cache_key("active", email), new_challenge["id"], timeout=SIGNUP_TOKEN_TTL)
+    code_created_at = int(time.time())
+    cache.set(_signup_cache_key("active", email), new_challenge["id"], timeout=SIGNUP_CHALLENGE_TTL)
     cache.set(_signup_cache_key("attempts", new_challenge["id"]), 0, timeout=SIGNUP_TOKEN_TTL)
     signed_new_challenge = signing.dumps(new_challenge, salt=SIGNUP_TOKEN_SALT, compress=True)
     new_token = _signup_token_cipher().encrypt(signed_new_challenge.encode("utf-8")).decode("ascii")
     return JsonResponse(
-        {"message": "A new verification code was sent.", "challenge_token": new_token},
+        {
+            "message": "A new verification code request was accepted.",
+            "challenge_token": new_token,
+            "code_expires_at": code_created_at + SIGNUP_TOKEN_TTL,
+            "resend_after_seconds": max(0, 30 - int(time.monotonic() - send_started_at)),
+        },
         status=202,
     )
 

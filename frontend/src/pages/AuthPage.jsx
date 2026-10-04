@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { FiCamera, FiEye, FiEyeOff, FiGrid, FiKey, FiLock, FiMail, FiPlayCircle, FiRefreshCw, FiShield, FiUser } from "react-icons/fi";
 import SignalLogo from "../components/SignalLogo.jsx";
 import {
+    deferSignupResend,
+    getSignupVerificationTiming,
     requestPasswordReset,
     resendSignupVerification,
     resetAccountPassword,
@@ -76,7 +78,8 @@ export default function AuthPage({ onLogin }) {
     const [agreeToTerms, setAgreeToTerms] = useState(false);
     const [confirmation, setConfirmation] = useState("");
     const [verificationCode, setVerificationCode] = useState("");
-    const [resendSeconds, setResendSeconds] = useState(0);
+    const [verificationTiming, setVerificationTiming] = useState(null);
+    const [clockNow, setClockNow] = useState(() => Date.now());
     const [verificationNotice, setVerificationNotice] = useState("");
     const [busy, setBusy] = useState(false);
     const [googleBusy, setGoogleBusy] = useState(false);
@@ -85,21 +88,23 @@ export default function AuthPage({ onLogin }) {
 
     useEffect(() => {
         if (mode !== "verify") {
-            setResendSeconds(0);
+            setVerificationTiming(null);
             return undefined;
         }
-        setResendSeconds(30);
+        setVerificationTiming(getSignupVerificationTiming());
         const timer = window.setInterval(() => {
-            setResendSeconds((remaining) => {
-                if (remaining <= 1) {
-                    window.clearInterval(timer);
-                    return 0;
-                }
-                return remaining - 1;
-            });
+            setClockNow(Date.now());
         }, 1000);
         return () => window.clearInterval(timer);
     }, [mode, verificationEmail]);
+
+    const codeSecondsLeft = verificationTiming
+        ? Math.max(0, Math.ceil((verificationTiming.codeExpiresAt - clockNow) / 1000))
+        : 10 * 60;
+    const resendSecondsLeft = verificationTiming
+        ? Math.max(0, Math.ceil((verificationTiming.resendAt - clockNow) / 1000))
+        : 0;
+    const formatCountdown = (seconds) => `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
     function updateField(field, setter, value) {
         setter(value);
@@ -113,11 +118,15 @@ export default function AuthPage({ onLogin }) {
         try {
             await resendSignupVerification(verificationEmail);
             setVerificationCode("");
-            setVerificationNotice("The new code request was accepted. Check your inbox and spam folder.");
-            setResendSeconds(30);
+            setVerificationTiming(getSignupVerificationTiming());
+            setClockNow(Date.now());
+            setVerificationNotice("A new code was requested. Check your inbox, spam, or promotions folder.");
         } catch (requestError) {
             setError(requestError.message || "Could not resend the code. Please try again.");
-            if (requestError.message?.includes("30 seconds")) setResendSeconds(30);
+            if (requestError.message?.includes("30 seconds")) {
+                const resendAt = deferSignupResend(30);
+                setVerificationTiming((current) => ({ ...(current || getSignupVerificationTiming()), resendAt }));
+            }
         } finally {
             setBusy(false);
         }
@@ -278,14 +287,18 @@ export default function AuthPage({ onLogin }) {
 
                     {isVerify || isReset ? (
                         <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
-                            <div className="w-full max-w-[560px] self-center rounded-2xl border border-stone-200 bg-white/80 p-6 shadow-sm max-[680px]:p-5">
+                            <div className="flex w-full max-w-[560px] flex-col self-center rounded-2xl border border-stone-200 bg-white/80 p-6 shadow-sm max-[680px]:p-5">
                                 <div className="mb-5 flex items-start gap-3">
                                     <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-emerald-50 text-xl text-emerald-700"><FiMail /></span>
                                     <div>
                                         <p className="text-sm leading-6 text-slate-600">
                                             Enter the six-digit code requested for <span className="font-semibold text-slate-800">{verificationEmail || "your email"}</span>.
                                         </p>
-                                        <p className="mt-1 text-xs text-slate-500">It expires in 10 minutes. Check spam or promotions if it doesn’t arrive.</p>
+                                        <p aria-live="off" className={`mt-1 text-xs ${codeSecondsLeft ? "text-slate-500" : "font-medium text-rose-700"}`}>
+                                            {codeSecondsLeft
+                                                ? <>Code expires in <span className="font-semibold tabular-nums">{formatCountdown(codeSecondsLeft)}</span>. Check spam or promotions if it hasn’t arrived.</>
+                                                : "This code has expired. Request a new one to continue."}
+                                        </p>
                                     </div>
                                 </div>
                                 <FormAlert>{error}</FormAlert>
@@ -308,15 +321,20 @@ export default function AuthPage({ onLogin }) {
                                         <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm new password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
                                     </>
                                 )}
-                                <button className="auth-submit brand-gradient [@media(max-height:760px)_and_(min-width:681px)]:min-h-[44px]" disabled={busy} type="submit">
+                                <button className="auth-submit brand-gradient w-full [@media(max-height:760px)_and_(min-width:681px)]:min-h-[44px]" disabled={busy} type="submit">
                                     {busy ? "Please wait…" : isReset ? "Reset password" : "Verify email and continue"}
                                 </button>
                                 {isVerify ? (
                                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 pt-4 text-sm">
-                                        <button className="inline-flex items-center gap-2 font-semibold text-emerald-700 transition hover:text-emerald-900 disabled:cursor-not-allowed disabled:text-slate-400" disabled={busy || resendSeconds > 0} onClick={resendCode} type="button">
-                                            <FiRefreshCw aria-hidden="true" />
-                                            {resendSeconds > 0 ? `Resend code in ${resendSeconds}s` : "Resend code"}
-                                        </button>
+                                        <div className="flex flex-col gap-1">
+                                            <button className="inline-flex items-center gap-2 self-start font-semibold text-emerald-700 transition hover:text-emerald-900 disabled:cursor-not-allowed disabled:text-slate-400" disabled={busy || resendSecondsLeft > 0} onClick={resendCode} type="button">
+                                                <FiRefreshCw aria-hidden="true" />
+                                                Resend code
+                                            </button>
+                                            <span aria-live="polite" className="pl-6 text-xs text-slate-500">
+                                                {resendSecondsLeft > 0 ? `Available in ${formatCountdown(resendSecondsLeft)}` : "Didn’t receive the email?"}
+                                            </span>
+                                        </div>
                                         <Link className="font-medium text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline" to={`/signup?email=${encodeURIComponent(verificationEmail)}`}>Change email</Link>
                                     </div>
                                 ) : (

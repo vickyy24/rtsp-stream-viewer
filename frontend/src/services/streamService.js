@@ -11,7 +11,38 @@ console.log("apiUrl:", apiUrl);
 const AUTH_TOKEN_KEY = "signal_access_token_v2";
 const LEGACY_AUTH_TOKEN_KEY = "signal_access_token";
 const SIGNUP_CHALLENGE_KEY = "signal_pending_signup_challenge";
+const SIGNUP_CODE_EXPIRES_AT_KEY = "signal_signup_code_expires_at";
+const SIGNUP_RESEND_AT_KEY = "signal_signup_resend_at";
 const PASSWORD_RESET_CHALLENGE_KEY = "signal_pending_password_reset";
+
+function saveSignupChallenge(result) {
+    window.sessionStorage.setItem(SIGNUP_CHALLENGE_KEY, result.challenge_token);
+    if (Number.isFinite(result.code_expires_at)) {
+        window.sessionStorage.setItem(SIGNUP_CODE_EXPIRES_AT_KEY, String(result.code_expires_at * 1000));
+    }
+    const resendAt = Date.now() + Math.max(0, Number(result.resend_after_seconds) || 0) * 1000;
+    window.sessionStorage.setItem(SIGNUP_RESEND_AT_KEY, String(resendAt));
+}
+
+export function getSignupVerificationTiming() {
+    let expiresAt = Number(window.sessionStorage.getItem(SIGNUP_CODE_EXPIRES_AT_KEY));
+    let resendAt = Number(window.sessionStorage.getItem(SIGNUP_RESEND_AT_KEY));
+    if (!Number.isFinite(expiresAt) || expiresAt <= 0) {
+        expiresAt = Date.now() + 10 * 60 * 1000;
+        window.sessionStorage.setItem(SIGNUP_CODE_EXPIRES_AT_KEY, String(expiresAt));
+    }
+    if (!Number.isFinite(resendAt) || resendAt <= 0) {
+        resendAt = Date.now();
+        window.sessionStorage.setItem(SIGNUP_RESEND_AT_KEY, String(resendAt));
+    }
+    return { codeExpiresAt: expiresAt, resendAt };
+}
+
+export function deferSignupResend(seconds = 30) {
+    const resendAt = Date.now() + Math.max(0, seconds) * 1000;
+    window.sessionStorage.setItem(SIGNUP_RESEND_AT_KEY, String(resendAt));
+    return resendAt;
+}
 
 // Tokens from the pre-authentication workspace must not silently sign visitors in.
 window.localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
@@ -58,7 +89,7 @@ export function signUpAccount({ full_name, email, password }) {
         method: "POST",
         body: JSON.stringify({ full_name, email, password }),
     }).then((result) => {
-        window.sessionStorage.setItem(SIGNUP_CHALLENGE_KEY, result.challenge_token);
+        saveSignupChallenge(result);
         return result;
     });
 }
@@ -72,7 +103,7 @@ export async function resendSignupVerification(email) {
         method: "POST",
         body: JSON.stringify({ email, challenge_token: challengeToken }),
     });
-    window.sessionStorage.setItem(SIGNUP_CHALLENGE_KEY, result.challenge_token);
+    saveSignupChallenge(result);
     return result;
 }
 
@@ -99,6 +130,8 @@ export async function verifyAccountEmail(email, code) {
         body: JSON.stringify({ email, code, challenge_token: challengeToken }),
     });
     window.sessionStorage.removeItem(SIGNUP_CHALLENGE_KEY);
+    window.sessionStorage.removeItem(SIGNUP_CODE_EXPIRES_AT_KEY);
+    window.sessionStorage.removeItem(SIGNUP_RESEND_AT_KEY);
     saveAuthToken(result.token);
     return result.user;
 }

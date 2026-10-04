@@ -1,12 +1,17 @@
+import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router";
 import {
     LuHistory,
     LuLayoutGrid,
     LuLogOut,
+    LuMenu,
     LuMonitor,
     LuNetwork,
+    LuPanelLeftClose,
+    LuPanelLeftOpen,
     LuSettings,
     LuVideo,
+    LuX,
 } from "react-icons/lu";
 import SignalLogo from "./SignalLogo.jsx";
 
@@ -29,21 +34,49 @@ const groups = [
     },
 ];
 
-export default function Sidebar({ activePage, onLogout, user }) {
+function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = false, mobileOpen = false, onLogout, onNavigate, onToggle, user }) {
+    const ToggleIcon = isDrawer
+        ? LuX
+        : expanded ? LuPanelLeftClose : LuPanelLeftOpen;
+    const toggleLabel = isDrawer
+        ? "Close navigation"
+        : isMobile ? "Open navigation" : expanded ? "Collapse sidebar" : "Expand sidebar";
+
     return (
-        <aside className="sticky top-0 flex h-dvh w-14 shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-1.5 py-3 sm:w-16 sm:px-2 lg:w-52 lg:px-4 lg:py-6">
-            <Link
-                aria-label="Signal live dashboard"
-                className="mb-5 flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)] lg:-translate-y-1 lg:mb-8 lg:ml-1 lg:justify-start"
-                title="Signal live dashboard"
-                to="/live"
-            >
-                <SignalLogo className="size-9 shrink-0" />
-                <span className="hidden min-w-0 text-left lg:block">
-                    <span className="block whitespace-nowrap text-sm font-bold tracking-[0.3em] text-stone-900">SIGNAL</span>
-                    <span className="mt-0.5 block whitespace-nowrap text-xs font-medium tracking-wide text-stone-500">RTSP STREAM VIEWER</span>
-                </span>
-            </Link>
+        <>
+            <div className={`mb-5 flex flex-col items-center gap-2 ${isDrawer || expanded ? "lg:flex-row lg:justify-between" : ""}`}>
+                <Link
+                    aria-label="Signal live dashboard"
+                    className="flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)]"
+                    onClick={onNavigate}
+                    title="Signal live dashboard"
+                    to="/live"
+                >
+                    <SignalLogo className="size-9 shrink-0" />
+                    <span className={`${isDrawer ? "block" : expanded ? "hidden lg:block" : "hidden"} min-w-0 text-left`}>
+                        <span className="block whitespace-nowrap text-sm font-bold tracking-[0.3em] text-stone-900">SIGNAL</span>
+                        <span className="mt-0.5 block whitespace-nowrap text-xs font-medium tracking-wide text-stone-500">RTSP STREAM VIEWER</span>
+                    </span>
+                </Link>
+
+                <button
+                    aria-expanded={isDrawer ? true : isMobile ? mobileOpen : expanded}
+                    aria-label={toggleLabel}
+                    className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-sm transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)]"
+                    onClick={onToggle}
+                    title={toggleLabel}
+                    type="button"
+                >
+                    {isDrawer
+                        ? <ToggleIcon aria-hidden="true" className="size-[18px]" />
+                        : (
+                            <>
+                                <ToggleIcon aria-hidden="true" className="hidden size-[18px] lg:block" />
+                                <LuMenu aria-hidden="true" className="size-[18px] lg:hidden" />
+                            </>
+                        )}
+                </button>
+            </div>
 
             <nav aria-label="Main navigation" className="flex flex-col gap-4 lg:gap-6">
                 {groups.map((group, groupIndex) => (
@@ -51,36 +84,35 @@ export default function Sidebar({ activePage, onLogout, user }) {
                         className={groupIndex > 0 ? "border-t border-stone-200 pt-4 lg:pt-5" : ""}
                         key={group.label}
                     >
-                        <p className="mb-2 hidden px-2 text-xs font-semibold uppercase tracking-[0.14em] text-stone-400 lg:block">
+                        <p className={`${isDrawer ? "block" : expanded ? "hidden lg:block" : "hidden"} mb-2 px-2 text-xs font-semibold uppercase tracking-[0.14em] text-stone-400`}>
                             {group.label}
                         </p>
                         <div className="flex flex-col gap-1">
-                            {group.items.map(({ id, label, to, Icon }) => {
-                                return (
-                                    <NavLink
-                                        aria-current={activePage === id ? "page" : undefined}
-                                        className={({ isActive }) => `relative flex min-h-10 items-center justify-center gap-2 px-2 text-sm transition-colors lg:justify-start ${isActive || activePage === id
-                                            ? "rounded-lg border-l-4 border-[var(--color-forest-800)] bg-[var(--color-forest-200)] font-semibold text-stone-900"
-                                            : "rounded-lg text-stone-600 hover:bg-stone-100 hover:text-stone-900"
-                                            }`}
-                                        key={id}
-                                        title={label}
-                                        to={to}
-                                    >
-                                        <Icon aria-hidden="true" className="size-[18px] shrink-0" />
-                                        <span className="sr-only lg:not-sr-only">{label}</span>
-                                    </NavLink>
-                                );
-                            })}
+                            {group.items.map(({ id, label, to, Icon }) => (
+                                <NavLink
+                                    aria-current={activePage === id ? "page" : undefined}
+                                    className={({ isActive }) => `relative flex min-h-10 items-center gap-2 px-2 text-sm transition-colors ${isDrawer ? "justify-start" : expanded ? "justify-center lg:justify-start" : "justify-center"} ${isActive || activePage === id
+                                        ? "rounded-lg border-l-4 border-[var(--color-forest-800)] bg-[var(--color-forest-200)] font-semibold text-stone-900"
+                                        : "rounded-lg text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+                                        }`}
+                                    key={id}
+                                    onClick={onNavigate}
+                                    title={label}
+                                    to={to}
+                                >
+                                    <Icon aria-hidden="true" className="size-[18px] shrink-0" />
+                                    <span className={isDrawer ? "" : expanded ? "sr-only lg:not-sr-only" : "sr-only"}>{label}</span>
+                                </NavLink>
+                            ))}
                         </div>
                     </div>
                 ))}
             </nav>
 
-            <div className="mt-auto hidden border-t border-stone-200 pt-4 lg:block">
+            <div className={`${isDrawer || expanded ? "mt-auto border-t border-stone-200 pt-4" : "hidden"} ${!isDrawer ? "hidden lg:block" : ""}`}>
                 <button className="mb-3 flex min-h-11 w-full items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-left text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" onClick={onLogout} type="button">
                     <LuLogOut aria-hidden="true" className="size-[18px] shrink-0 stroke-[2.4]" />
-                    Log out
+                    <span>Log out</span>
                 </button>
                 <div className="flex items-center gap-2">
                     <span className="brand-gradient flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">{user?.full_name?.[0]?.toUpperCase() || "S"}</span>
@@ -90,6 +122,77 @@ export default function Sidebar({ activePage, onLogout, user }) {
                     </span>
                 </div>
             </div>
-        </aside>
+        </>
+    );
+}
+
+export default function Sidebar({ activePage, onLogout, user }) {
+    const [expanded, setExpanded] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(() => !window.matchMedia("(min-width: 1024px)").matches);
+
+    useEffect(() => {
+        const breakpoint = window.matchMedia("(min-width: 1024px)");
+        const handleBreakpointChange = (event) => {
+            setIsMobile(!event.matches);
+            setExpanded(event.matches);
+            setMobileOpen(false);
+        };
+        breakpoint.addEventListener("change", handleBreakpointChange);
+        return () => breakpoint.removeEventListener("change", handleBreakpointChange);
+    }, []);
+
+    function handleNavigate() {
+        if (!window.matchMedia("(min-width: 1024px)").matches) setMobileOpen(false);
+    }
+
+    function handleLogout() {
+        setMobileOpen(false);
+        onLogout();
+    }
+
+    return (
+        <>
+            <aside className={`sticky top-0 z-30 flex h-dvh shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] py-3 transition-[width,padding] duration-200 ${expanded ? "w-14 px-1.5 sm:w-16 sm:px-2 lg:w-52 lg:px-4 lg:py-6" : "w-14 px-1.5 sm:w-16 sm:px-2 lg:w-16 lg:px-2 lg:py-6"}`}>
+                <SidebarContents
+                    activePage={activePage}
+                    expanded={expanded}
+                    isMobile={isMobile}
+                    mobileOpen={mobileOpen}
+                    onLogout={handleLogout}
+                    onNavigate={handleNavigate}
+                    onToggle={() => {
+                        if (window.matchMedia("(min-width: 1024px)").matches) {
+                            setExpanded((current) => !current);
+                        } else {
+                            setMobileOpen(true);
+                        }
+                    }}
+                    user={user}
+                />
+            </aside>
+
+            {mobileOpen && (
+                <>
+                    <button
+                        aria-label="Close navigation"
+                        className="fixed inset-0 z-40 bg-stone-950/35 lg:hidden"
+                        onClick={() => setMobileOpen(false)}
+                        type="button"
+                    />
+                    <aside aria-label="Navigation drawer" className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-4 py-4 shadow-xl lg:hidden">
+                        <SidebarContents
+                            activePage={activePage}
+                            expanded
+                            isDrawer
+                            onLogout={handleLogout}
+                            onNavigate={handleNavigate}
+                            onToggle={() => setMobileOpen(false)}
+                            user={user}
+                        />
+                    </aside>
+                </>
+            )}
+        </>
     );
 }

@@ -77,7 +77,8 @@ export default function AddCameraWizard({ onCancel, onSave }) {
             const trimmedUrl = url.trim();
             if (!trimmedName) nextFieldErrors.name = "Enter a camera name.";
             else if (trimmedName.length > 120) nextFieldErrors.name = "Use 120 characters or fewer.";
-            if (trimmedLocation.length > 160) nextFieldErrors.location = "Use 160 characters or fewer.";
+            if (!trimmedLocation) nextFieldErrors.location = "Enter a camera location.";
+            else if (trimmedLocation.length > 160) nextFieldErrors.location = "Use 160 characters or fewer.";
             if (!trimmedUrl) {
                 nextFieldErrors.url = "Enter an RTSP or RTSPS address.";
             } else if (trimmedUrl.length > 2048) {
@@ -171,7 +172,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                                 {fieldErrors.name && <span className="text-xs font-normal text-rose-700" id="camera-name-error">{fieldErrors.name}</span>}
                             </label>
                             <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600" htmlFor="camera-location">
-                                Location (optional)
+                                <span>Camera location <span aria-hidden="true" className="text-rose-700">*</span></span>
                                 <input
                                     aria-invalid={Boolean(fieldErrors.location)}
                                     aria-describedby={fieldErrors.location ? "camera-location-error" : undefined}
@@ -183,6 +184,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                                         setFieldErrors((current) => ({ ...current, location: "" }));
                                     }}
                                     placeholder="e.g. Office, parking lot"
+                                    required
                                     value={locationName}
                                 />
                                 {fieldErrors.location && <span className="text-xs font-normal text-rose-700" id="camera-location-error">{fieldErrors.location}</span>}

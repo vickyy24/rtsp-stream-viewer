@@ -40,7 +40,9 @@ def cameras(request):
     raw_url = payload.get("url")
     if not isinstance(name, str) or not name.strip() or len(name.strip()) > 120:
         return JsonResponse({"error": "Camera name must be between 1 and 120 characters."}, status=400)
-    if not isinstance(location, str) or len(location.strip()) > 160:
+    if not isinstance(location, str) or not location.strip():
+        return JsonResponse({"error": "Camera location is required."}, status=400)
+    if len(location.strip()) > 160:
         return JsonResponse({"error": "Camera location must be at most 160 characters."}, status=400)
     try:
         stream_url = validate_stream_url(raw_url)

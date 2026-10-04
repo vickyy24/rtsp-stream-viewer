@@ -162,6 +162,75 @@ def signup(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+def resend_signup_verification(request):
+    payload = _payload(request)
+    email = payload.get("email") if payload else None
+    challenge_token = payload.get("challenge_token") if payload else None
+    if not isinstance(email, str) or not isinstance(challenge_token, str):
+        return JsonResponse({"error": "Request a new code from your signup session."}, status=400)
+    email = email.strip().lower()
+    if len(challenge_token) > 4096:
+        return JsonResponse({"error": "Your signup session is invalid. Start signup again."}, status=400)
+    try:
+        signed_challenge = _signup_token_cipher().decrypt(challenge_token.encode("ascii"))
+        challenge = signing.loads(
+            signed_challenge.decode("utf-8"),
+            salt=SIGNUP_TOKEN_SALT,
+            max_age=SIGNUP_TOKEN_TTL,
+        )
+    except (InvalidToken, UnicodeEncodeError, UnicodeDecodeError, signing.BadSignature):
+        return JsonResponse({"error": "Your signup session expired. Start signup again to request a new code."}, status=400)
+
+    if (
+        not isinstance(challenge, dict)
+        or challenge.get("email") != email
+        or not isinstance(challenge.get("id"), str)
+        or not isinstance(challenge.get("full_name"), str)
+        or not isinstance(challenge.get("password_hash"), str)
+        or not isinstance(challenge.get("code_hash"), str)
+        or cache.get(_signup_cache_key("active", email)) != challenge.get("id")
+    ):
+        return JsonResponse({"error": "Your signup session is no longer active. Start signup again."}, status=400)
+
+    send_key = _signup_cache_key("send", email)
+    if not cache.add(send_key, True, timeout=30):
+        return JsonResponse({"error": "Please wait 30 seconds before requesting another code."}, status=429)
+
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    new_challenge = {**challenge, "id": secrets.token_urlsafe(24)}
+    new_challenge["code_hash"] = hmac.new(
+        settings.SECRET_KEY.encode("utf-8"),
+        f"{email}:{code}".encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    try:
+        send_transactional_email(
+            subject="Your Signal verification code",
+            message=(
+                f"Hello {new_challenge['full_name']},\n\n"
+                f"Your new Signal signup verification code is {code}.\n"
+                "It expires in 10 minutes. If you did not request this code, ignore this email."
+            ),
+            recipient=email,
+            recipient_name=new_challenge["full_name"],
+        )
+    except Exception:
+        cache.delete(send_key)
+        logger.exception("Unable to resend signup verification email")
+        return JsonResponse({"error": "The email service could not send a new code. Please try again."}, status=503)
+
+    cache.set(_signup_cache_key("active", email), new_challenge["id"], timeout=SIGNUP_TOKEN_TTL)
+    cache.set(_signup_cache_key("attempts", new_challenge["id"]), 0, timeout=SIGNUP_TOKEN_TTL)
+    signed_new_challenge = signing.dumps(new_challenge, salt=SIGNUP_TOKEN_SALT, compress=True)
+    new_token = _signup_token_cipher().encrypt(signed_new_challenge.encode("utf-8")).decode("ascii")
+    return JsonResponse(
+        {"message": "A new verification code was sent.", "challenge_token": new_token},
+        status=202,
+    )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
 def verify_email(request):
     payload = _payload(request)
     email = payload.get("email") if payload else None

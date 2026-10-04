@@ -63,6 +63,19 @@ export function signUpAccount({ full_name, email, password }) {
     });
 }
 
+export async function resendSignupVerification(email) {
+    const challengeToken = window.sessionStorage.getItem(SIGNUP_CHALLENGE_KEY);
+    if (!challengeToken) {
+        throw new Error("Your signup session expired. Start signup again to request a new code.");
+    }
+    const result = await apiRequest("/api/auth/signup/resend/", {
+        method: "POST",
+        body: JSON.stringify({ email, challenge_token: challengeToken }),
+    });
+    window.sessionStorage.setItem(SIGNUP_CHALLENGE_KEY, result.challenge_token);
+    return result;
+}
+
 export async function signInAccount({ email, password, remember = true }) {
     const result = await apiRequest("/api/auth/signin/", {
         method: "POST",

@@ -99,6 +99,21 @@ a {
     background-color: #20251e;
 }
 
+.camera-error-message {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+}
+
+@media (min-width: 640px) {
+    .camera-error-message {
+        display: block;
+        overflow: visible;
+    }
+}
+
 .camera-preview:fullscreen {
     width: 100vw;
     height: 100dvh;

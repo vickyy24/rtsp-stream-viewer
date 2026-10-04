@@ -157,7 +157,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                         </span>
                     )}
                 </button>
-                <span className={`pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:left-3 sm:top-3 sm:gap-1.5 sm:px-2.5 sm:py-1.5 sm:text-xs ${status === "live"
+                <span className={`pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide sm:left-3 sm:top-3 sm:gap-1.5 sm:px-2.5 sm:py-1.5 sm:text-xs ${status === "live"
                     ? "bg-black/75 text-[var(--color-olive-500)]"
                     : status === "error"
                         ? "bg-rose-950/90 text-rose-200"
@@ -170,16 +170,16 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                     {new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date())}
                 </span>
                 {frameUrl && status === "error" && message && (
-                    <span className="pointer-events-none absolute inset-x-3 top-14 z-10 mx-auto max-w-lg rounded-lg bg-rose-950/90 px-3 py-2 text-center text-xs font-medium leading-5 text-rose-100 shadow-lg">
+                    <span aria-label={message} className="camera-error-message pointer-events-none absolute inset-x-1.5 top-8 z-10 mx-auto max-w-lg rounded-md bg-rose-950/90 px-1.5 py-0.5 text-center text-[8px] font-medium leading-[10px] text-rose-100 shadow-lg sm:inset-x-3 sm:top-14 sm:rounded-lg sm:px-3 sm:py-2 sm:text-xs sm:leading-5" title={message}>
                         {message}
                     </span>
                 )}
                 <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-2 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-2 pb-2 pt-8 text-white sm:gap-3 sm:px-4 sm:pb-3 sm:pt-12">
                     <span className="min-w-0">
-                        <span className="block truncate text-xs font-semibold uppercase leading-4 tracking-wide sm:text-sm">
+                        <span className="block truncate text-[10px] font-semibold uppercase leading-3 tracking-wide sm:text-sm sm:leading-normal">
                             <span className="hidden sm:inline">CAM {String(index + 1).padStart(2, "0")} / </span>{stream.name || `Camera ${String(index + 1).padStart(2, "0")}`}
                         </span>
-                        <span className="mt-0.5 block truncate text-[10px] leading-3 text-white/85 sm:mt-1 sm:text-xs sm:leading-normal">
+                        <span className="mt-0.5 block truncate text-[9px] leading-[11px] text-white/85 sm:mt-1 sm:text-xs sm:leading-normal">
                             {stream.location || "Live feed"}
                         </span>
                     </span>
@@ -193,7 +193,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                     {status === "error" && (
                         <button
                             aria-label={`Retry camera ${index + 1}`}
-                            className="rounded-md bg-black/75 px-2.5 py-1.5 text-sm font-semibold text-white transition hover:bg-black"
+                            className="rounded-md bg-black/75 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-black sm:px-2.5 sm:py-1.5 sm:text-sm"
                             onClick={onRetry}
                             type="button"
                         >

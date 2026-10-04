@@ -47,7 +47,7 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
             <div className={`mb-5 flex min-w-0 items-center gap-2 ${isDrawer || expanded ? "justify-between" : "justify-center"}`}>
                 <Link
                     aria-label="Signal live dashboard"
-                    className={`flex min-h-10 min-w-0 items-center gap-1.5 text-[var(--color-clay-700)] ${expanded || isDrawer ? "flex-1 justify-start" : "hidden"}`}
+                    className={`-translate-y-1 flex min-h-10 min-w-0 items-center gap-1.5 text-[var(--color-clay-700)] ${expanded || isDrawer ? "flex-1 justify-start" : "hidden"}`}
                     onClick={onNavigate}
                     title="Signal live dashboard"
                     to="/live"

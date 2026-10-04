@@ -229,6 +229,7 @@ export default function AuthPage({ onLogin }) {
     }
 
     const isSignup = mode === "signup";
+    const isSignin = mode === "signin";
     const isVerify = mode === "verify";
     const isForgot = mode === "forgot";
     const isReset = mode === "reset";
@@ -266,7 +267,7 @@ export default function AuthPage({ onLogin }) {
                         <button aria-pressed={isSignup} className={isSignup ? "active" : ""} onClick={() => switchMode("signup")} type="button">Sign Up</button>
                     </div>
                 )}
-                <div className={`auth-content ${isSignup ? "auth-content-signup" : "[@media(max-height:760px)_and_(min-width:681px)]:!py-[6px]"} max-[680px]:!flex-none max-[680px]:!py-[16px_0_24px]`}>
+                <div className={`auth-content ${isSignup ? "auth-content-signup" : isSignin ? "auth-content-signin" : "[@media(max-height:760px)_and_(min-width:681px)]:!py-[6px]"} max-[680px]:!flex-none max-[680px]:!py-[16px_0_24px]`}>
 
                     <header className={`auth-heading ${isSignup ? "auth-heading-signup" : "[@media(max-height:760px)_and_(min-width:681px)]:!mt-[15px] [@media(max-height:760px)_and_(min-width:681px)]:!mb-[8px]"} max-[680px]:!mt-[28px]`}>
                         <h1 className={`${isSignup ? "" : "[@media(max-height:760px)_and_(min-width:681px)]:!text-[clamp(28px,2.7vw,38px)]"} max-[680px]:!text-[30px]`}>

@@ -993,3 +993,10 @@ a {
         font-size: 13px;
     }
 }
+
+@media (min-width: 681px) {
+    .auth-content-signin {
+        justify-content: flex-start;
+        padding-top: clamp(28px, 5vh, 42px);
+    }
+}

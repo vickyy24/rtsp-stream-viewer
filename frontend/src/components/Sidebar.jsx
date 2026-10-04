@@ -44,25 +44,25 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
 
     return (
         <>
-            <div className={`mb-5 ${isDrawer ? "flex items-center justify-between" : "flex flex-col gap-2"} ${expanded && !isDrawer ? "items-stretch" : "items-center"}`}>
+            <div className={`mb-5 flex items-center ${isDrawer || expanded ? "justify-between" : "justify-center"}`}>
                 <Link
                     aria-label="Signal live dashboard"
-                    className={`flex min-h-10 items-center gap-2 text-[var(--color-clay-700)] ${expanded || isDrawer ? "justify-start" : "justify-center"}`}
+                    className={`flex min-h-10 min-w-0 items-center gap-2 text-[var(--color-clay-700)] ${expanded || isDrawer ? "justify-start" : "justify-center"}`}
                     onClick={onNavigate}
                     title="Signal live dashboard"
                     to="/live"
                 >
                     <SignalLogo className="size-9 shrink-0" />
                     <span className={`${isDrawer ? "block" : expanded ? "hidden lg:block" : "hidden"} min-w-0 text-left`}>
-                        <span className="block whitespace-nowrap text-sm font-bold tracking-[0.3em] text-stone-900">SIGNAL</span>
-                        <span className="mt-0.5 block whitespace-nowrap text-xs font-medium tracking-wide text-stone-500">RTSP STREAM VIEWER</span>
+                        <span className="block whitespace-nowrap text-sm font-bold tracking-[0.2em] text-stone-900">SIGNAL</span>
+                        <span className="mt-0.5 block whitespace-nowrap text-[11px] font-medium tracking-normal text-stone-500">RTSP STREAM VIEWER</span>
                     </span>
                 </Link>
 
                 <button
                     aria-expanded={isDrawer ? true : isMobile ? mobileOpen : expanded}
                     aria-label={toggleLabel}
-                    className={`flex size-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-sm transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] ${expanded && !isDrawer ? "self-end" : ""}`}
+                    className={`flex shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-sm transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] ${expanded || isDrawer ? "size-8" : "size-6"}`}
                     onClick={onToggle}
                     title={toggleLabel}
                     type="button"
@@ -72,7 +72,7 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
                         : (
                             <>
                                 <ToggleIcon aria-hidden="true" className="hidden size-[18px] lg:block" />
-                                <LuMenu aria-hidden="true" className="size-[18px] lg:hidden" />
+                                <LuMenu aria-hidden="true" className="size-4 lg:hidden" />
                             </>
                         )}
                 </button>
@@ -154,7 +154,7 @@ export default function Sidebar({ activePage, mobileOpen, onLogout, onMobileOpen
 
     return (
         <>
-            <aside className={`sticky top-0 z-30 hidden h-dvh shrink-0 flex-col overflow-x-hidden overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] py-3 transition-[width,padding] duration-200 lg:flex ${expanded ? "w-52 px-4 py-6" : "w-16 px-2 py-6"}`}>
+            <aside className={`sticky top-0 z-30 hidden h-dvh shrink-0 flex-col overflow-x-hidden overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] py-3 transition-[width,padding] duration-200 lg:flex ${expanded ? "w-52 px-3 py-6" : "w-16 px-0.5 py-6"}`}>
                 <SidebarContents
                     activePage={activePage}
                     expanded={expanded}

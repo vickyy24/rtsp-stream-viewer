@@ -190,6 +190,7 @@ def resend_signup_verification(request):
     except (InvalidToken, UnicodeEncodeError, UnicodeDecodeError, signing.BadSignature):
         return JsonResponse({"error": "Your signup session expired. Start signup again to request a new code."}, status=400)
 
+    active_challenge_id = cache.get(_signup_cache_key("active", email))
     if (
         not isinstance(challenge, dict)
         or challenge.get("email") != email
@@ -197,7 +198,7 @@ def resend_signup_verification(request):
         or not isinstance(challenge.get("full_name"), str)
         or not isinstance(challenge.get("password_hash"), str)
         or not isinstance(challenge.get("code_hash"), str)
-        or cache.get(_signup_cache_key("active", email)) != challenge.get("id")
+        or (active_challenge_id is not None and active_challenge_id != challenge.get("id"))
     ):
         return JsonResponse({"error": "Your signup session is no longer active. Start signup again."}, status=400)
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { FiCamera, FiEye, FiEyeOff, FiGrid, FiKey, FiLock, FiMail, FiPlayCircle, FiRefreshCw, FiShield, FiUser } from "react-icons/fi";
+import { FiCamera, FiClock, FiEye, FiEyeOff, FiGrid, FiKey, FiLock, FiMail, FiPlayCircle, FiRefreshCw, FiShield, FiUser } from "react-icons/fi";
 import SignalLogo from "../components/SignalLogo.jsx";
 import {
     deferSignupResend,
@@ -287,60 +287,69 @@ export default function AuthPage({ onLogin }) {
 
                     {isVerify || isReset ? (
                         <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
-                            <div className="flex w-full max-w-[560px] flex-col self-center rounded-2xl border border-stone-200 bg-white/80 p-6 shadow-sm max-[680px]:p-5">
-                                <div className="mb-5 flex items-start gap-3">
-                                    <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-emerald-50 text-xl text-emerald-700"><FiMail /></span>
-                                    <div>
-                                        <p className="text-sm leading-6 text-slate-600">
-                                            Enter the six-digit code requested for <span className="font-semibold text-slate-800">{verificationEmail || "your email"}</span>.
-                                        </p>
-                                        <p aria-live="off" className={`mt-1 text-xs ${codeSecondsLeft ? "text-slate-500" : "font-medium text-rose-700"}`}>
-                                            {codeSecondsLeft
-                                                ? <>Code expires in <span className="font-semibold tabular-nums">{formatCountdown(codeSecondsLeft)}</span>. Check spam or promotions if it hasn’t arrived.</>
-                                                : "This code has expired. Request a new one to continue."}
-                                        </p>
+                            {isVerify ? (
+                                <div className="w-full max-w-[500px] self-center">
+                                    <div className="mb-7 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200/80">
+                                        <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-emerald-50 text-xl text-emerald-700"><FiMail /></span>
+                                        <div className="min-w-0">
+                                            <p className="text-xs font-medium uppercase tracking-[0.08em] text-slate-500">Verification email</p>
+                                            <p className="truncate text-sm font-semibold text-slate-900">{verificationEmail || "your email address"}</p>
+                                        </div>
+                                    </div>
+
+                                    <FormAlert>{error}</FormAlert>
+                                    {verificationNotice && <p aria-live="polite" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-5 text-emerald-900" role="status">{verificationNotice}</p>}
+
+                                    <div className="mb-2 flex items-center justify-between gap-3">
+                                        <label className="text-sm font-semibold text-slate-800" htmlFor="verification-code">6-digit verification code</label>
+                                        <span aria-live="off" className={`inline-flex shrink-0 items-center gap-1.5 text-xs font-medium tabular-nums ${codeSecondsLeft ? "text-slate-500" : "text-rose-700"}`}>
+                                            <FiClock aria-hidden="true" />
+                                            {codeSecondsLeft ? `Expires in ${formatCountdown(codeSecondsLeft)}` : "Code expired"}
+                                        </span>
+                                    </div>
+                                    <input
+                                        aria-describedby={fieldErrors.code ? "verification-code-error" : undefined}
+                                        aria-invalid={Boolean(fieldErrors.code)}
+                                        autoComplete="one-time-code"
+                                        autoFocus
+                                        className={`h-[66px] w-full rounded-2xl border bg-white px-4 text-center text-2xl font-semibold tracking-[0.55em] text-slate-900 shadow-sm outline-none transition placeholder:text-sm placeholder:font-normal placeholder:tracking-normal focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 ${fieldErrors.code ? "border-rose-500" : "border-slate-200"}`}
+                                        id="verification-code"
+                                        inputMode="numeric"
+                                        maxLength={6}
+                                        onChange={(event) => updateField("code", setVerificationCode, event.target.value.replace(/\D/g, "").slice(0, 6))}
+                                        placeholder="Enter code"
+                                        required
+                                        type="text"
+                                        value={verificationCode}
+                                    />
+                                    {fieldErrors.code && <p className="mt-1 text-xs font-medium text-rose-700" id="verification-code-error">{fieldErrors.code}</p>}
+                                    <p className="mt-2 text-xs leading-5 text-slate-500">Codes are valid for 10 minutes. Check your spam folder if the message isn’t in your inbox.</p>
+
+                                    <button className="auth-submit brand-gradient mt-5 min-h-[56px] w-full rounded-2xl text-base" disabled={busy || !codeSecondsLeft} type="submit">
+                                        {busy ? "Verifying…" : "Verify email"}
+                                    </button>
+
+                                    <div className="mt-6 flex flex-col items-center gap-3 border-t border-slate-200/80 pt-5 text-sm">
+                                        <p className="text-slate-500">Didn’t receive a code?</p>
+                                        <button className="inline-flex min-h-10 items-center gap-2 rounded-full px-4 font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:text-slate-400" disabled={busy || resendSecondsLeft > 0} onClick={resendCode} type="button">
+                                            <FiRefreshCw aria-hidden="true" />
+                                            {busy ? "Sending…" : resendSecondsLeft > 0 ? `Resend available in ${formatCountdown(resendSecondsLeft)}` : "Resend code"}
+                                        </button>
+                                        <Link className="text-sm font-medium text-slate-500 underline-offset-4 hover:text-slate-900 hover:underline" to={`/signup?email=${encodeURIComponent(verificationEmail)}`}>Use a different email</Link>
                                     </div>
                                 </div>
-                                <FormAlert>{error}</FormAlert>
-                                {verificationNotice && <p aria-live="polite" className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800" role="status">{verificationNotice}</p>}
-                                <AuthInput
-                                    autoComplete="one-time-code"
-                                    error={fieldErrors.code}
-                                    id="verification-code"
-                                    inputMode="numeric"
-                                    label={isReset ? "Password reset code" : "Email verification code"}
-                                    maxLength={6}
-                                    onChange={(value) => updateField("code", setVerificationCode, value.replace(/\D/g, "").slice(0, 6))}
-                                    placeholder="Enter your 6-digit code"
-                                    type="text"
-                                    value={verificationCode}
-                                />
-                                {isReset && (
-                                    <>
-                                        <AuthInput autoComplete="new-password" error={fieldErrors.password} id="password" label="New password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} type="password" value={password} />
-                                        <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm new password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
-                                    </>
-                                )}
-                                <button className="auth-submit brand-gradient w-full [@media(max-height:760px)_and_(min-width:681px)]:min-h-[44px]" disabled={busy} type="submit">
-                                    {busy ? "Please wait…" : isReset ? "Reset password" : "Verify email and continue"}
-                                </button>
-                                {isVerify ? (
-                                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 pt-4 text-sm">
-                                        <div className="flex flex-col gap-1">
-                                            <button className="inline-flex items-center gap-2 self-start font-semibold text-emerald-700 transition hover:text-emerald-900 disabled:cursor-not-allowed disabled:text-slate-400" disabled={busy || resendSecondsLeft > 0} onClick={resendCode} type="button">
-                                                <FiRefreshCw aria-hidden="true" />
-                                                Resend code
-                                            </button>
-                                            <span aria-live="polite" className="pl-6 text-xs text-slate-500">
-                                                {resendSecondsLeft > 0 ? `Available in ${formatCountdown(resendSecondsLeft)}` : "Didn’t receive the email?"}
-                                            </span>
-                                        </div>
-                                        <Link className="font-medium text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline" to={`/signup?email=${encodeURIComponent(verificationEmail)}`}>Change email</Link>
-                                    </div>
-                                ) : (
+                            ) : (
+                                <div className="flex w-full max-w-[560px] flex-col self-center rounded-2xl border border-stone-200 bg-white/80 p-6 shadow-sm max-[680px]:p-5">
+                                    <AuthInput autoComplete="one-time-code" error={fieldErrors.code} id="verification-code" inputMode="numeric" label="Password reset code" maxLength={6} onChange={(value) => updateField("code", setVerificationCode, value.replace(/\D/g, "").slice(0, 6))} placeholder="Enter your 6-digit code" type="text" value={verificationCode} />
+                                    <AuthInput autoComplete="new-password" error={fieldErrors.password} id="password" label="New password" maxLength={128} onChange={(value) => updateField("password", setPassword, value)} type="password" value={password} />
+                                    <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm new password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
+                                    <FormAlert>{error}</FormAlert>
+                                    <button className="auth-submit brand-gradient w-full [@media(max-height:760px)_and_(min-width:681px)]:min-h-[44px]" disabled={busy} type="submit">
+                                        {busy ? "Please wait…" : "Reset password"}
+                                    </button>
                                     <Link className="auth-secondary-link" to="/forgot-password">Request a new reset code</Link>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </form>
                     ) : isForgot ? (
                         <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>

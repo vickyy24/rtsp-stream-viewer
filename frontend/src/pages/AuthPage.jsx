@@ -288,21 +288,21 @@ export default function AuthPage({ onLogin }) {
                     {isVerify || isReset ? (
                         <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
                             {isVerify ? (
-                                <div className="w-full max-w-[500px] self-center">
-                                    <div className="mb-7 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200/80">
-                                        <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-emerald-50 text-xl text-emerald-700"><FiMail /></span>
-                                        <div className="min-w-0">
-                                            <p className="text-xs font-medium uppercase tracking-[0.08em] text-slate-500">Verification email</p>
-                                            <p className="truncate text-sm font-semibold text-slate-900">{verificationEmail || "your email address"}</p>
+                                <div className="mx-auto flex w-full max-w-[640px] flex-col self-center">
+                                    <div className="mb-6 flex items-start gap-4 max-[680px]:mb-5">
+                                        <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-full bg-emerald-50 text-xl text-emerald-700"><FiMail /></span>
+                                        <div className="min-w-0 pt-0.5">
+                                            <p className="text-base font-medium leading-6 text-slate-800 max-[680px]:text-sm">Enter the six-digit code sent to <strong className="break-all font-semibold text-slate-950">{verificationEmail || "your email address"}</strong>.</p>
+                                            <p className="mt-1 text-sm leading-5 text-slate-600">Check your spam or promotions folder if it hasn’t arrived.</p>
                                         </div>
                                     </div>
 
                                     <FormAlert>{error}</FormAlert>
-                                    {verificationNotice && <p aria-live="polite" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-5 text-emerald-900" role="status">{verificationNotice}</p>}
+                                    {verificationNotice && <p aria-live="polite" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-base leading-6 text-emerald-900" role="status">{verificationNotice}</p>}
 
-                                    <div className="mb-2 flex items-center justify-between gap-3">
-                                        <label className="text-sm font-semibold text-slate-800" htmlFor="verification-code">6-digit verification code</label>
-                                        <span aria-live="off" className={`inline-flex shrink-0 items-center gap-1.5 text-xs font-medium tabular-nums ${codeSecondsLeft ? "text-slate-500" : "text-rose-700"}`}>
+                                    <div className="mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                                        <label className="text-lg font-semibold text-slate-800 max-[680px]:text-base" htmlFor="verification-code">Email verification code</label>
+                                        <span aria-live="off" className={`inline-flex shrink-0 items-center gap-2 text-sm font-medium tabular-nums ${codeSecondsLeft ? "text-slate-600" : "text-rose-700"}`}>
                                             <FiClock aria-hidden="true" />
                                             {codeSecondsLeft ? `Expires in ${formatCountdown(codeSecondsLeft)}` : "Code expired"}
                                         </span>
@@ -312,7 +312,7 @@ export default function AuthPage({ onLogin }) {
                                         aria-invalid={Boolean(fieldErrors.code)}
                                         autoComplete="one-time-code"
                                         autoFocus
-                                        className={`h-[66px] w-full rounded-2xl border bg-white px-4 text-center text-2xl font-semibold tracking-[0.55em] text-slate-900 shadow-sm outline-none transition placeholder:text-sm placeholder:font-normal placeholder:tracking-normal focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 ${fieldErrors.code ? "border-rose-500" : "border-slate-200"}`}
+                                        className={`h-[68px] w-full rounded-xl border bg-white px-5 text-center text-2xl font-semibold tracking-[0.55em] text-slate-900 outline-none transition placeholder:text-base placeholder:font-normal placeholder:tracking-normal focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 max-[680px]:h-[60px] ${fieldErrors.code ? "border-rose-500" : "border-slate-300"}`}
                                         id="verification-code"
                                         inputMode="numeric"
                                         maxLength={6}
@@ -323,19 +323,21 @@ export default function AuthPage({ onLogin }) {
                                         value={verificationCode}
                                     />
                                     {fieldErrors.code && <p className="mt-1 text-xs font-medium text-rose-700" id="verification-code-error">{fieldErrors.code}</p>}
-                                    <p className="mt-2 text-xs leading-5 text-slate-500">Codes are valid for 10 minutes. Check your spam folder if the message isn’t in your inbox.</p>
+                                    <p className="mt-2 text-sm leading-5 text-slate-600">Your code is valid for 10 minutes.</p>
 
-                                    <button className="auth-submit brand-gradient mt-5 min-h-[56px] w-full rounded-2xl text-base" disabled={busy || !codeSecondsLeft} type="submit">
-                                        {busy ? "Verifying…" : "Verify email"}
+                                    <button className="auth-submit brand-gradient mt-5 min-h-[60px] w-full rounded-xl text-lg max-[680px]:mt-4 max-[680px]:min-h-[54px] max-[680px]:text-base" disabled={busy || !codeSecondsLeft} type="submit">
+                                        {busy ? "Verifying…" : "Verify email and continue"}
                                     </button>
 
-                                    <div className="mt-6 flex flex-col items-center gap-3 border-t border-slate-200/80 pt-5 text-sm">
-                                        <p className="text-slate-500">Didn’t receive a code?</p>
-                                        <button className="inline-flex min-h-10 items-center gap-2 rounded-full px-4 font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:text-slate-400" disabled={busy || resendSecondsLeft > 0} onClick={resendCode} type="button">
-                                            <FiRefreshCw aria-hidden="true" />
-                                            {busy ? "Sending…" : resendSecondsLeft > 0 ? `Resend available in ${formatCountdown(resendSecondsLeft)}` : "Resend code"}
-                                        </button>
-                                        <Link className="text-sm font-medium text-slate-500 underline-offset-4 hover:text-slate-900 hover:underline" to={`/signup?email=${encodeURIComponent(verificationEmail)}`}>Use a different email</Link>
+                                    <div className="mt-6 flex items-center justify-between gap-4 border-t border-slate-200/80 pt-4 text-base max-[680px]:mt-5 max-[680px]:text-sm">
+                                        <div>
+                                            <p className="font-medium text-slate-700">Didn’t receive the email?</p>
+                                            <button className="mt-1 inline-flex min-h-9 items-center gap-2 rounded-lg pr-2 font-semibold text-emerald-700 transition hover:text-emerald-900 disabled:cursor-not-allowed disabled:text-slate-400" disabled={busy || resendSecondsLeft > 0} onClick={resendCode} type="button">
+                                                <FiRefreshCw aria-hidden="true" />
+                                                {busy ? "Sending code…" : resendSecondsLeft > 0 ? `Resend in ${formatCountdown(resendSecondsLeft)}` : "Resend code"}
+                                            </button>
+                                        </div>
+                                        <Link className="shrink-0 rounded-lg px-2 py-2 font-semibold text-slate-700 underline-offset-4 hover:text-emerald-800 hover:underline" to={`/signup?email=${encodeURIComponent(verificationEmail)}`}>Change email</Link>
                                     </div>
                                 </div>
                             ) : (

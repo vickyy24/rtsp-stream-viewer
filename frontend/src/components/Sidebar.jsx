@@ -54,15 +54,15 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
                 >
                     <SignalLogo className="size-9 shrink-0" />
                     <span className={`${isDrawer ? "block" : expanded ? "hidden lg:block" : "hidden"} min-w-0 text-left`}>
-                        <span className="block whitespace-nowrap text-sm font-bold tracking-[0.2em] text-stone-900">SIGNAL</span>
-                        <span className="mt-0.5 block whitespace-nowrap text-[11px] font-medium tracking-normal text-stone-500">RTSP STREAM VIEWER</span>
+                        <span className="block whitespace-nowrap text-sm font-bold tracking-[0.15em] text-stone-900">SIGNAL</span>
+                        <span className="mt-0.5 block whitespace-nowrap text-[10px] font-medium tracking-normal text-stone-500">RTSP STREAM VIEWER</span>
                     </span>
                 </Link>
 
                 <button
                     aria-expanded={isDrawer ? true : isMobile ? mobileOpen : expanded}
                     aria-label={toggleLabel}
-                    className={`-translate-y-1 flex shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-sm transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] ${expanded || isDrawer ? "size-8" : "size-6"}`}
+                    className={`-translate-y-2 flex shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-sm transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] ${expanded || isDrawer ? "size-8" : "size-6"}`}
                     onClick={onToggle}
                     title={toggleLabel}
                     type="button"

@@ -210,10 +210,10 @@ class StreamConsumer(AsyncWebsocketConsumer):
             )
         except asyncio.CancelledError:
             raise
-        except (ConnectionError, OSError, RuntimeError):
+        except (ConnectionError, OSError, RuntimeError) as error:
             if not self.disconnecting and not self.stopping_stream:
                 logger.exception("The WebSocket stream delivery failed")
-                await self._send_error(self._stream_interruption_message())
+                await self._send_error(self._stream_interruption_message(error))
         finally:
             if not self.disconnecting and not self.stopping_stream:
                 await self._stop_stream(notify=False)
@@ -240,13 +240,15 @@ class StreamConsumer(AsyncWebsocketConsumer):
             return "The camera closed the RTSP connection before sending video. Check the stream path, login, and whether the camera allows another viewer."
         if "does not contain any stream" in diagnostics or "matches no streams" in diagnostics:
             return "The RTSP address opened, but it did not provide a video stream. Check the camera’s channel or profile path."
-        return "The camera connection ended before video arrived. Check the RTSP address, camera login, and network access from the hosted stream server."
+        return "The camera connection ended before video arrived. Check the RTSP address and make sure the camera is reachable from the hosted stream server."
 
-    def _stream_interruption_message(self):
+    def _stream_interruption_message(self, error):
+        if "payload limit" in str(error).lower() or "payloadexceedederror" in type(error).__name__.lower():
+            return "The camera sent a video frame larger than the stream server allowed. The camera was reached, but the server rejected the frame. Please retry after the stream service update."
         diagnostics = self.stderr_tail.decode("utf-8", errors="replace").lower()
         if diagnostics:
             return self._ffmpeg_failure_message()
-        return "The stream stopped before the test completed. Check that the camera stays online and that its RTSP port is reachable from the hosted server, then try again. A camera available only on your local Wi-Fi cannot be reached by the hosted app."
+        return "The stream stopped before the test completed. Check that the camera stays online and that its RTSP address is reachable from the hosted server, then try again."
 
     async def _stop_stream(self, notify):
         self.stopping_stream = True

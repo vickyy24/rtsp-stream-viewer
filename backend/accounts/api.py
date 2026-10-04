@@ -184,6 +184,7 @@ def verify_email(request):
     except (InvalidToken, UnicodeEncodeError, UnicodeDecodeError, signing.BadSignature):
         return JsonResponse({"error": "This verification code expired. Sign up again to request a new code."}, status=400)
 
+    active_challenge_id = cache.get(_signup_cache_key("active", email))
     if (
         not isinstance(challenge, dict)
         or challenge.get("email") != email
@@ -191,16 +192,17 @@ def verify_email(request):
         or not isinstance(challenge.get("full_name"), str)
         or not isinstance(challenge.get("password_hash"), str)
         or not isinstance(challenge.get("code_hash"), str)
-        or cache.get(_signup_cache_key("active", email)) != challenge.get("id")
+        or (active_challenge_id is not None and active_challenge_id != challenge.get("id"))
     ):
         return JsonResponse({"error": "This verification code is invalid or expired. Sign up again to get a new code."}, status=400)
 
     attempts_key = _signup_cache_key("attempts", challenge["id"])
-    if cache.get(attempts_key) is None:
-        return JsonResponse({"error": "This verification code expired. Sign up again to request a new code."}, status=400)
+    # The signed challenge is authoritative for its 10-minute lifetime. Cache entries
+    # are only for attempt limiting and can disappear when a hosted worker restarts.
+    cache.add(attempts_key, 0, timeout=SIGNUP_TOKEN_TTL)
     attempts = cache.incr(attempts_key)
     if attempts > SIGNUP_MAX_ATTEMPTS:
-        cache.delete(_signup_cache_key("active", email))
+        cache.set(_signup_cache_key("active", email), f"blocked:{challenge['id']}", timeout=SIGNUP_TOKEN_TTL)
         cache.delete(attempts_key)
         return JsonResponse({"error": "Too many incorrect attempts. Sign up again to request a new code."}, status=400)
 

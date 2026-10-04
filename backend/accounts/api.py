@@ -11,7 +11,6 @@ from django.conf import settings
 from django.core import signing
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse
@@ -19,6 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from .models import User
+from .email_delivery import email_delivery_configured, send_transactional_email
 from .tokens import (
     create_access_token,
     get_user_from_access_token,
@@ -100,7 +100,7 @@ def signup(request):
         return JsonResponse({"error": "Enter a valid email address."}, status=400)
     if not isinstance(password, str) or len(password) < 10 or len(password) > 128:
         return JsonResponse({"error": "Password must be between 10 and 128 characters."}, status=400)
-    if not all((settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)):
+    if not email_delivery_configured():
         logger.error("Signup is unavailable because email delivery is not configured")
         return JsonResponse(
             {"error": "Sign up is temporarily unavailable. Please try again later."}, status=503
@@ -123,16 +123,15 @@ def signup(request):
         hashlib.sha256,
     ).hexdigest()
     try:
-        send_mail(
+        send_transactional_email(
             subject="Your Signal verification code",
             message=(
                 f"Hello {full_name.strip()},\n\n"
                 f"Your Signal signup verification code is {code}.\n"
                 "It expires in 10 minutes. If you did not request this code, ignore this email."
             ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
+            recipient=email,
+            recipient_name=full_name.strip(),
         )
     except Exception:
         cache.delete(send_key)
@@ -254,7 +253,7 @@ def request_password_reset(request):
             status=429,
         )
 
-    if not all((settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)):
+    if not email_delivery_configured():
         cache.delete(send_key)
         logger.error("Password reset is unavailable because email delivery is not configured")
         return JsonResponse(
@@ -275,16 +274,15 @@ def request_password_reset(request):
 
     if user:
         try:
-            send_mail(
+            send_transactional_email(
                 subject="Your Signal password reset code",
                 message=(
                     f"Hello {user.full_name},\n\n"
                     f"Your Signal password reset code is {code}.\n"
                     "It expires in 10 minutes. If you did not request this code, ignore this email."
                 ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=False,
+                recipient=email,
+                recipient_name=user.full_name,
             )
         except Exception:
             cache.delete(_signup_cache_key("password-reset-active", email))

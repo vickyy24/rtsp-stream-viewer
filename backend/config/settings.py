@@ -91,6 +91,10 @@ if not DEBUG and production_frontend_origin not in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.append(production_frontend_origin)
 FRONTEND_URL = os.environ.get("FRONTEND_URL", production_frontend_origin).rstrip("/")
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_PROVIDER = os.environ.get(
+    "EMAIL_PROVIDER", "smtp" if DEBUG else "brevo"
+).strip().lower()
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")

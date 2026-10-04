@@ -28,17 +28,9 @@ services:
         value: "4"
       - key: FRONTEND_URL
         value: https://rtsp-stream-viewer-roan.vercel.app
-      - key: EMAIL_HOST_USER
-        value: vikassontakke2002@gmail.com
-      - key: EMAIL_HOST_PASSWORD
+      - key: EMAIL_PROVIDER
+        value: brevo
+      - key: BREVO_API_KEY
         sync: false
-      - key: EMAIL_HOST
-        value: smtp.gmail.com
-      - key: EMAIL_PORT
-        value: "587"
-      - key: EMAIL_USE_TLS
-        value: "true"
-      - key: EMAIL_USE_SSL
-        value: "false"
       - key: DEFAULT_FROM_EMAIL
         value: vikassontakke2002@gmail.com

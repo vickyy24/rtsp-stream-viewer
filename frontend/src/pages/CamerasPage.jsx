@@ -38,8 +38,24 @@ export default function CamerasPage({
     return (
         <div className="flex flex-col gap-3">
             <PageHeading
-                action={(
+                description="Manage your camera sources and their current connection state."
+                title="Cameras"
+            />
+
+            <SurfaceCard as="section">
+                <div className="flex flex-wrap items-center gap-3">
+                    <label className="flex min-h-10 min-w-0 w-full max-w-md flex-1 items-center gap-2 rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2">
+                        <LuSearch aria-hidden="true" className="size-4 shrink-0 text-stone-400" />
+                        <span className="sr-only">Search cameras</span>
+                        <input
+                            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-stone-400"
+                            onChange={(event) => setQuery(event.target.value)}
+                            placeholder="Search cameras…"
+                            value={query}
+                        />
+                    </label>
                     <Button
+                        className="shrink-0"
                         variant="primary"
                         onClick={onAddCamera}
                         type="button"
@@ -47,22 +63,7 @@ export default function CamerasPage({
                         <LuPlus aria-hidden="true" className="size-4" />
                         Add camera
                     </Button>
-                )}
-                description="Manage your camera sources and their current connection state."
-                title="Cameras"
-            />
-
-            <SurfaceCard as="section">
-                <label className="flex max-w-md items-center gap-2 rounded-lg border border-stone-200 bg-[var(--color-canvas-soft)] px-3 py-2">
-                    <LuSearch aria-hidden="true" className="size-4 text-stone-400" />
-                    <span className="sr-only">Search cameras</span>
-                    <input
-                        className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-stone-400"
-                        onChange={(event) => setQuery(event.target.value)}
-                        placeholder="Search cameras…"
-                        value={query}
-                    />
-                </label>
+                </div>
                 <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filter cameras by status">
                     {filters.map(({ id, label }) => {
                         const count = id === "all"

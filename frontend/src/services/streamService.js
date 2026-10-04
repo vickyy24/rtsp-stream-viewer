@@ -17,6 +17,8 @@ const SIGNUP_RESEND_AT_KEY = "signal_signup_resend_at";
 const PASSWORD_RESET_CHALLENGE_KEY = "signal_pending_password_reset";
 const DASHBOARD_LAYOUT_KEY = "signal_dashboard_layout";
 const DASHBOARD_LAYOUTS = new Set(["1x1", "2x2", "3x3", "4x4"]);
+const AUTO_START_CAMERAS_KEY = "signal_auto_start_cameras";
+const PAUSE_CAMERAS_OUTSIDE_LIVE_KEY = "signal_pause_cameras_outside_live";
 
 export function getSavedDashboardLayout() {
     const savedLayout = window.localStorage.getItem(DASHBOARD_LAYOUT_KEY);
@@ -28,6 +30,27 @@ export function saveDashboardLayout(layout) {
         throw new Error("Choose a supported camera layout.");
     }
     window.localStorage.setItem(DASHBOARD_LAYOUT_KEY, layout);
+}
+
+function getSavedBooleanPreference(key, defaultValue) {
+    const value = window.localStorage.getItem(key);
+    return value === null ? defaultValue : value === "true";
+}
+
+export function getAutoStartCameras() {
+    return getSavedBooleanPreference(AUTO_START_CAMERAS_KEY, true);
+}
+
+export function saveAutoStartCameras(enabled) {
+    window.localStorage.setItem(AUTO_START_CAMERAS_KEY, String(Boolean(enabled)));
+}
+
+export function getPauseCamerasOutsideLive() {
+    return getSavedBooleanPreference(PAUSE_CAMERAS_OUTSIDE_LIVE_KEY, true);
+}
+
+export function savePauseCamerasOutsideLive(enabled) {
+    window.localStorage.setItem(PAUSE_CAMERAS_OUTSIDE_LIVE_KEY, String(Boolean(enabled)));
 }
 
 function saveSignupChallenge(result) {

@@ -13,9 +13,7 @@ import {
     consumeGoogleOAuthToken,
     getCurrentAccount,
     getAuthToken,
-    getStreamSocketUrl,
     saveAuthToken,
-    testStreamServiceConnection,
 } from "./services/streamService.js";
 
 // ── Route element wrappers — pull handlers from AppRoutes via Outlet context ──
@@ -69,14 +67,22 @@ function ConnectionsRoute() {
 }
 
 function SettingsRoute() {
-    const { layout, setLayout, user } = useOutletContext();
+    const {
+        autoStartCameras,
+        layout,
+        pauseCamerasOutsideLive,
+        setAutoStartCameras,
+        setLayout,
+        setPauseCamerasOutsideLive,
+    } = useOutletContext();
     return (
         <SettingsPage
-            endpoint={getStreamSocketUrl()}
+            autoStartCameras={autoStartCameras}
             layout={layout}
+            onAutoStartCamerasChange={setAutoStartCameras}
+            onPauseCamerasOutsideLiveChange={setPauseCamerasOutsideLive}
             onLayoutChange={setLayout}
-            onTestStreamService={testStreamServiceConnection}
-            user={user}
+            pauseCamerasOutsideLive={pauseCamerasOutsideLive}
         />
     );
 }

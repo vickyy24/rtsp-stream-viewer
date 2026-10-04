@@ -7,9 +7,13 @@ import LiveDashboard from "../pages/LiveDashboard.jsx";
 import {
     clearAuthToken,
     deleteSavedCamera,
+    getAutoStartCameras,
+    getPauseCamerasOutsideLive,
     getSavedDashboardLayout,
     listCameras,
+    saveAutoStartCameras,
     saveDashboardLayout,
+    savePauseCamerasOutsideLive,
     saveCamera,
 } from "../services/streamService.js";
 
@@ -33,17 +37,31 @@ export default function AppRoutes({ user, onLogout }) {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [layout, setLayoutState] = useState(getSavedDashboardLayout);
+    const [autoStartCameras, setAutoStartCamerasState] = useState(getAutoStartCameras);
+    const [pauseCamerasOutsideLive, setPauseCamerasOutsideLiveState] = useState(getPauseCamerasOutsideLive);
     const [streams, setStreams] = useState([]);
     const [statuses, setStatuses] = useState({});
     const [activities, setActivities] = useState([]);
     const streamListRef = useRef(streams);
     const statusMapRef = useRef(statuses);
+    const playbackPreferencesRef = useRef({});
+    playbackPreferencesRef.current = { autoStartCameras, showLive };
     streamListRef.current = streams;
     statusMapRef.current = statuses;
 
     function setLayout(nextLayout) {
         saveDashboardLayout(nextLayout);
         setLayoutState(nextLayout);
+    }
+
+    function setAutoStartCameras(enabled) {
+        saveAutoStartCameras(enabled);
+        setAutoStartCamerasState(Boolean(enabled));
+    }
+
+    function setPauseCamerasOutsideLive(enabled) {
+        savePauseCamerasOutsideLive(enabled);
+        setPauseCamerasOutsideLiveState(Boolean(enabled));
     }
 
     useEffect(() => {
@@ -61,10 +79,24 @@ export default function AppRoutes({ user, onLogout }) {
         if (!user) { setStreams([]); return undefined; }
         listCameras().then(({ cameras }) => {
             if (!active) return;
-            setStreams(cameras.map((camera) => ({ ...camera, playing: true, retryCount: 0 })));
+            setStreams(cameras.map((camera) => ({
+                ...camera,
+                playing: playbackPreferencesRef.current.showLive
+                    && playbackPreferencesRef.current.autoStartCameras,
+                retryCount: 0,
+            })));
         }).catch(() => {});
         return () => { active = false; };
     }, [user]);
+
+    useEffect(() => {
+        setStreams((current) => current.map((camera) => ({
+            ...camera,
+            playing: showLive
+                ? (autoStartCameras ? true : camera.playing)
+                : (pauseCamerasOutsideLive ? false : camera.playing),
+        })));
+    }, [autoStartCameras, pauseCamerasOutsideLive, showLive]);
 
     function signOut() {
         clearAuthToken();
@@ -97,10 +129,14 @@ export default function AppRoutes({ user, onLogout }) {
 
     async function addCamera(camera) {
         const savedCamera = await saveCamera({ name: camera.name, location: camera.location, url: camera.url });
-        const newCamera = { ...savedCamera, playing: true, retryCount: 0 };
+        const newCamera = { ...savedCamera, playing: showLive && autoStartCameras, retryCount: 0 };
         try {
             const { cameras } = await listCameras();
-            setStreams(cameras.map((c) => ({ ...c, playing: true, retryCount: 0 })));
+            setStreams(cameras.map((camera) => ({
+                ...camera,
+                playing: showLive && autoStartCameras,
+                retryCount: 0,
+            })));
         } catch {
             setStreams((current) => [...current, newCamera]);
         }
@@ -148,7 +184,20 @@ export default function AppRoutes({ user, onLogout }) {
 
     // Expose handlers via Outlet context so App.jsx route elements can use them
     const ctx = {
-        activities, layout, search, setLayout, setSearch, setStatusFilter, statuses, statusFilter, streams, user,
+        activities,
+        autoStartCameras,
+        layout,
+        pauseCamerasOutsideLive,
+        search,
+        setAutoStartCameras,
+        setLayout,
+        setPauseCamerasOutsideLive,
+        setSearch,
+        setStatusFilter,
+        statuses,
+        statusFilter,
+        streams,
+        user,
         addCamera, openCameraWizard, removeCamera, retryCamera, toggleCamera,
         navigate, location,
     };

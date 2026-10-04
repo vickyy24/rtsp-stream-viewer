@@ -72,7 +72,7 @@ Backend configuration is read from `backend/.env` outside the hosting platform a
 
 ## Workspace settings
 
-The Settings page lets a signed-in user choose a default camera grid layout saved in that browser. Its stream-service test opens the configured WebSocket, authenticates the current account, and closes without starting a camera feed or consuming a stream slot.
+The Settings page stores camera playback preferences in the current browser: the default grid layout, whether saved cameras start automatically on Live, and whether feeds pause when leaving Live. Preferences can be reset to their defaults at any time.
 
 ## API and stream flow
 

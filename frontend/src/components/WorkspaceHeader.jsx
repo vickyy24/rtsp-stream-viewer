@@ -33,7 +33,7 @@ export default function WorkspaceHeader({ onSearchChange, searchValue, user }) {
 
     return (
         <header className="sticky top-0 z-20 flex shrink-0 flex-col gap-3 border-b border-stone-200 bg-[var(--color-surface)] px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <label className="flex min-w-0 w-full items-center gap-2 rounded-lg border border-stone-200 bg-white/70 px-3 py-2 sm:max-w-sm">
+            <label className="flex min-h-10 min-w-0 w-full items-center gap-2 rounded-lg border border-stone-200 bg-white/70 px-3 py-2 sm:max-w-sm">
                     <LuSearch aria-hidden="true" className="size-4 shrink-0 text-stone-400" />
                     <span className="sr-only">Search cameras</span>
                     <input

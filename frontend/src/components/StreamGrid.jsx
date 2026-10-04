@@ -13,18 +13,18 @@ export default function StreamGrid({
 }) {
     const gridClass = {
         "1x1": "grid-cols-1",
-        "2x2": "grid-cols-1 md:grid-cols-2",
-        "3x3": "grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3",
-        "4x4": "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4",
-    }[layout] || "grid-cols-1 md:grid-cols-2";
+        "2x2": "grid-cols-2",
+        "3x3": "grid-cols-3",
+        "4x4": "grid-cols-4",
+    }[layout] || "grid-cols-2";
 
     if (!streams.length) return null;
 
     const fullscreenRows = {
         "1x1": "grid-rows-1",
         "2x2": "grid-rows-2",
-        "3x3": "grid-rows-2 2xl:grid-rows-3",
-        "4x4": "grid-rows-2 xl:grid-rows-3 2xl:grid-rows-4",
+        "3x3": "grid-rows-3",
+        "4x4": "grid-rows-4",
     }[layout] || "grid-rows-2";
 
     return (

@@ -78,8 +78,8 @@ export default function Sidebar({ activePage, onLogout, user }) {
             </nav>
 
             <div className="mt-auto hidden border-t border-stone-200 pt-4 lg:block">
-                <button className="mb-3 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-medium text-stone-600 transition hover:bg-stone-100 hover:text-stone-900" onClick={onLogout} type="button">
-                    <LuLogOut aria-hidden="true" className="size-4" />
+                <button className="mb-3 flex min-h-11 w-full items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-left text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" onClick={onLogout} type="button">
+                    <LuLogOut aria-hidden="true" className="size-[18px] shrink-0 stroke-[2.4]" />
                     Log out
                 </button>
                 <div className="flex items-center gap-2">

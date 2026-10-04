@@ -32,8 +32,8 @@ export default function DashboardToolbar({
                     </button>
                 ))}
             </div>
-            <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
-                <ToolbarButton className="col-span-2 sm:col-span-1" disabled={!streams.length} icon={LuExpand} label={isFullscreen ? "Exit full" : "Fullscreen"} onClick={onToggleFullscreen} />
+            <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap">
+                <ToolbarButton disabled={!streams.length} icon={LuExpand} label={isFullscreen ? "Exit full" : "Fullscreen"} onClick={onToggleFullscreen} />
                 <ToolbarButton disabled={!frameAvailable} icon={LuCamera} label="Snapshot" onClick={onSnapshot} />
                 <ToolbarButton icon={LuPlus} label="Add camera" onClick={onAddCamera} primary />
             </div>
@@ -44,7 +44,7 @@ export default function DashboardToolbar({
 function ToolbarButton({ icon: Icon, label, onClick, disabled, primary = false, className = "" }) {
     return (
         <button
-            className={`${primary ? "brand-gradient h-10 rounded-lg px-3.5 font-semibold" : "min-h-9 rounded-md border border-stone-200 bg-white/70 px-2.5 font-medium text-stone-700 hover:bg-stone-50"} ${className} inline-flex items-center justify-center gap-1.5 whitespace-nowrap text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-45`}
+            className={`${primary ? "brand-gradient h-9 rounded-lg px-1.5 font-semibold sm:h-10 sm:px-3.5" : "min-h-9 rounded-md border border-stone-200 bg-white/70 px-1.5 font-medium text-stone-700 hover:bg-stone-50 sm:px-2.5"} ${className} inline-flex min-w-0 items-center justify-center gap-1 whitespace-nowrap text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-45 sm:gap-1.5 sm:text-sm`}
             disabled={disabled}
             onClick={onClick}
             type="button"

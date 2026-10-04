@@ -259,16 +259,16 @@ export default function AuthPage({ onLogin }) {
                         <button aria-pressed={isSignup} className={isSignup ? "active" : ""} onClick={() => switchMode("signup")} type="button">Sign Up</button>
                     </div>
                 )}
-                <div className={`auth-content [@media(max-height:760px)_and_(min-width:681px)]:!py-[6px] max-[680px]:!flex-none max-[680px]:!py-[16px_0_24px] ${isSignup ? "!justify-start !pt-[clamp(8px,1.1vh,14px)]" : ""}`}>
+                <div className={`auth-content ${isSignup ? "auth-content-signup" : "[@media(max-height:760px)_and_(min-width:681px)]:!py-[6px]"} max-[680px]:!flex-none max-[680px]:!py-[16px_0_24px]`}>
 
-                    <header className="auth-heading max-[680px]:!mt-[28px] [@media(max-height:760px)_and_(min-width:681px)]:!mt-[15px] [@media(max-height:760px)_and_(min-width:681px)]:!mb-[8px]">
-                        <h1 className="max-[680px]:!text-[30px] [@media(max-height:760px)_and_(min-width:681px)]:!text-[clamp(28px,2.7vw,38px)]">
+                    <header className={`auth-heading ${isSignup ? "auth-heading-signup" : "[@media(max-height:760px)_and_(min-width:681px)]:!mt-[15px] [@media(max-height:760px)_and_(min-width:681px)]:!mb-[8px]"} max-[680px]:!mt-[28px]`}>
+                        <h1 className={`${isSignup ? "" : "[@media(max-height:760px)_and_(min-width:681px)]:!text-[clamp(28px,2.7vw,38px)]"} max-[680px]:!text-[30px]`}>
                             {isVerify ? "Verify your email"
                                 : isReset ? "Choose a new password"
                                     : isForgot ? "Forgot your password?"
                                         : isSignup ? "Create Your Account" : "Welcome Back"}
                         </h1>
-                        <p className="[@media(max-height:760px)_and_(min-width:681px)]:!mt-[3px] [@media(max-height:760px)_and_(min-width:681px)]:!text-[15px]">
+                        <p className={isSignup ? "" : "[@media(max-height:760px)_and_(min-width:681px)]:!mt-[3px] [@media(max-height:760px)_and_(min-width:681px)]:!text-[15px]"}>
                             {isVerify
                                 ? "Your account will be created after your email code is confirmed."
                                 : isReset ? "Verify the email code to reset your password."
@@ -366,7 +366,7 @@ export default function AuthPage({ onLogin }) {
                         </form>
                     ) : (
                         <>
-                            <form className={`auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px] ${isSignup ? "!gap-[clamp(10px,1.4vh,16px)]" : ""}`} noValidate onSubmit={submit}>
+                            <form className={`auth-form max-[680px]:mt-[26px] ${isSignup ? "auth-signup-form" : "[@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]"}`} noValidate onSubmit={submit}>
                                 <FormAlert>{error}</FormAlert>
                                 {isSignup ? (
                                     <>
@@ -479,17 +479,17 @@ export default function AuthPage({ onLogin }) {
                                         </div>
                                     </>
                                 )}
-                                <button className={`auth-submit brand-gradient [@media(max-height:760px)_and_(min-width:681px)]:!min-h-[44px] ${isSignup ? "!min-h-[clamp(54px,6.8vh,68px)] !text-[18px]" : ""}`} disabled={busy} type="submit">
+                                <button className={`auth-submit brand-gradient ${!isSignup ? "[@media(max-height:760px)_and_(min-width:681px)]:!min-h-[44px]" : ""}`} disabled={busy} type="submit">
                                     {busy ? "Please wait…" : isSignup ? "Sign Up" : "Sign In"}
                                 </button>
                             </form>
 
-                            <div className="auth-divider [@media(max-height:760px)_and_(min-width:681px)]:![margin:5px_0_4px]">
+                            <div className={`auth-divider ${isSignup ? "auth-signup-divider" : "[@media(max-height:760px)_and_(min-width:681px)]:![margin:5px_0_4px]"}`}>
                                 <span>OR</span>
                             </div>
 
                             <button
-                                className={`auth-google-btn [@media(max-height:760px)_and_(min-width:681px)]:!min-h-[44px] ${isSignup ? "!min-h-[clamp(54px,6.8vh,68px)] !text-[18px]" : ""}`}
+                                className={`auth-google-btn ${!isSignup ? "[@media(max-height:760px)_and_(min-width:681px)]:!min-h-[44px]" : ""}`}
                                 disabled={googleBusy}
                                 type="button"
                                 onClick={() => {
@@ -507,7 +507,7 @@ export default function AuthPage({ onLogin }) {
                                 Continue with Google
                             </button>
 
-                            <p className="auth-switch-prompt [@media(max-height:760px)_and_(min-width:681px)]:!mt-[6px]">
+                            <p className={`auth-switch-prompt ${isSignup ? "auth-signup-prompt" : "[@media(max-height:760px)_and_(min-width:681px)]:!mt-[6px]"}`}>
                                 {isSignup ? "Already have an account? " : "Don't have an account? "}
                                 <button onClick={() => switchMode(isSignup ? "signin" : "signup")} type="button">
                                     {isSignup ? "Sign In" : "Sign Up"}
@@ -520,4 +520,3 @@ export default function AuthPage({ onLogin }) {
         </main>
     );
 }
-

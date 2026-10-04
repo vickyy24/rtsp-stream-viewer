@@ -152,7 +152,6 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                 {step === 1 && (
                     <div className="grid gap-5 py-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
                         <div className="flex flex-col gap-4">
-                            <h2 className="text-base font-semibold text-stone-800">Camera details</h2>
                             <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600" htmlFor="camera-name">
                                 Camera name
                                 <input
@@ -172,7 +171,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                                 {fieldErrors.name && <span className="text-xs font-normal text-rose-700" id="camera-name-error">{fieldErrors.name}</span>}
                             </label>
                             <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600" htmlFor="camera-location">
-                                <span>Camera location <span aria-hidden="true" className="text-rose-700">*</span></span>
+                                Camera location
                                 <input
                                     aria-invalid={Boolean(fieldErrors.location)}
                                     aria-describedby={fieldErrors.location ? "camera-location-error" : undefined}

@@ -10,7 +10,7 @@ import {
     verifyAccountEmail,
 } from "../services/streamService.js";
 
-function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onChange, placeholder, type = "text", value }) {
+function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onChange, placeholder, roomy = false, type = "text", value }) {
     const [showPassword, setShowPassword] = useState(false);
     const FieldIcon = type === "email" ? FiMail
         : id.includes("password") ? FiLock
@@ -18,14 +18,14 @@ function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onCha
     const isPassword = type === "password";
     return (
         <div className="auth-field">
-            <label className="auth-label" htmlFor={id}>{label}</label>
-            <div className={`auth-control ${error ? "has-error" : ""}`}>
+            <label className={`auth-label [@media(max-height:760px)_and_(min-width:681px)]:!text-[12px] ${roomy ? "!text-[18px]" : ""}`} htmlFor={id}>{label}</label>
+            <div className={`auth-control [@media(max-height:760px)_and_(min-width:681px)]:!h-[42px] ${roomy ? "!h-[clamp(54px,6.8vh,68px)]" : ""} ${error ? "has-error" : ""}`}>
                 <FieldIcon aria-hidden="true" className="auth-control-icon" />
                 <input
                     aria-describedby={error ? `${id}-error` : undefined}
                     aria-invalid={Boolean(error)}
                     autoComplete={autoComplete}
-                    className="auth-input"
+                    className={`auth-input [@media(max-height:760px)_and_(min-width:681px)]:!text-[14px] ${roomy ? "!text-[18px]" : ""}`}
                     id={id}
                     inputMode={inputMode}
                     maxLength={maxLength}
@@ -205,23 +205,23 @@ export default function AuthPage({ onLogin }) {
                 </div>
             </aside>
 
-            <section className="auth-form-panel">
+            <section className="auth-form-panel max-[680px]:!overflow-y-auto max-[680px]:!px-6 max-[680px]:!pb-6">
                 {!isVerify && !isReset && !isForgot && (
                     <div aria-label="Account access" className="auth-tabs-bar" role="group">
                         <button aria-pressed={!isSignup} className={!isSignup ? "active" : ""} onClick={() => switchMode("signin")} type="button">Sign In</button>
                         <button aria-pressed={isSignup} className={isSignup ? "active" : ""} onClick={() => switchMode("signup")} type="button">Sign Up</button>
                     </div>
                 )}
-                <div className="auth-content">
+                <div className={`auth-content [@media(max-height:760px)_and_(min-width:681px)]:!py-[6px] max-[680px]:!flex-none max-[680px]:!py-[16px_0_24px] ${isSignup ? "!justify-start !pt-[clamp(8px,1.1vh,14px)]" : ""}`}>
 
-                    <header className="auth-heading max-[680px]:mt-[28px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[15px]">
-                        <h1 className="max-[680px]:text-[30px]">
+                    <header className="auth-heading max-[680px]:!mt-[28px] [@media(max-height:760px)_and_(min-width:681px)]:!mt-[15px] [@media(max-height:760px)_and_(min-width:681px)]:!mb-[8px]">
+                        <h1 className="max-[680px]:!text-[30px] [@media(max-height:760px)_and_(min-width:681px)]:!text-[clamp(28px,2.7vw,38px)]">
                             {isVerify ? "Verify your email"
                                 : isReset ? "Choose a new password"
                                     : isForgot ? "Forgot your password?"
                                         : isSignup ? "Create Your Account" : "Welcome Back"}
                         </h1>
-                        <p>
+                        <p className="[@media(max-height:760px)_and_(min-width:681px)]:!mt-[3px] [@media(max-height:760px)_and_(min-width:681px)]:!text-[15px]">
                             {isVerify
                                 ? "Your account will be created after your email code is confirmed."
                                 : isReset ? "Verify the email code to reset your password."
@@ -239,7 +239,7 @@ export default function AuthPage({ onLogin }) {
                     )}
 
                     {isVerify || isReset ? (
-                        <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:gap-[8px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
+                        <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
                             <p className="auth-instructions">
                                 Enter the six-digit code sent to <span className="font-medium text-stone-800">{verificationEmail || "your email"}</span>. The code expires in 10 minutes.
                             </p>
@@ -261,7 +261,7 @@ export default function AuthPage({ onLogin }) {
                                     <AuthInput autoComplete="new-password" error={fieldErrors.confirmation} id="confirm-password" label="Confirm new password" maxLength={128} onChange={(value) => updateField("confirmation", setConfirmation, value)} type="password" value={confirmation} />
                                 </>
                             )}
-                            <button className="auth-submit brand-gradient" disabled={busy} type="submit">
+                            <button className="auth-submit brand-gradient [@media(max-height:760px)_and_(min-width:681px)]:min-h-[44px]" disabled={busy} type="submit">
                                 {busy ? "Please wait…" : isReset ? "Reset password" : "Verify email and continue"}
                             </button>
                             <Link className="auth-secondary-link" to={isReset ? "/forgot-password" : "/signup"}>
@@ -269,10 +269,10 @@ export default function AuthPage({ onLogin }) {
                             </Link>
                         </form>
                     ) : isForgot ? (
-                        <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:gap-[8px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
+                        <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
                             <FormAlert>{error}</FormAlert>
                             <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} placeholder="Enter your email" type="email" value={email} />
-                            <button className="auth-submit brand-gradient" disabled={busy} type="submit">
+                            <button className="auth-submit brand-gradient [@media(max-height:760px)_and_(min-width:681px)]:min-h-[44px]" disabled={busy} type="submit">
                                 {busy ? "Sending code…" : "Send reset code"}
                             </button>
                             <Link className="auth-secondary-link" to="/signin">
@@ -281,7 +281,7 @@ export default function AuthPage({ onLogin }) {
                         </form>
                     ) : (
                         <>
-                            <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:gap-[8px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
+                            <form className={`auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px] ${isSignup ? "!gap-[clamp(10px,1.4vh,16px)]" : ""}`} noValidate onSubmit={submit}>
                                 <FormAlert>{error}</FormAlert>
                                 {isSignup ? (
                                     <>
@@ -293,6 +293,7 @@ export default function AuthPage({ onLogin }) {
                                             maxLength={150}
                                             onChange={(value) => updateField("fullName", setFullName, value)}
                                             placeholder="Full name"
+                                            roomy
                                             value={fullName}
                                         />
                                         <AuthInput
@@ -303,6 +304,7 @@ export default function AuthPage({ onLogin }) {
                                             maxLength={254}
                                             onChange={(value) => updateField("email", setEmail, value)}
                                             placeholder="Email address"
+                                            roomy
                                             type="email"
                                             value={email}
                                         />
@@ -314,6 +316,7 @@ export default function AuthPage({ onLogin }) {
                                             maxLength={128}
                                             onChange={(value) => updateField("password", setPassword, value)}
                                             placeholder="Password"
+                                            roomy
                                             type="password"
                                             value={password}
                                         />
@@ -325,6 +328,7 @@ export default function AuthPage({ onLogin }) {
                                             maxLength={128}
                                             onChange={(value) => updateField("confirmation", setConfirmation, value)}
                                             placeholder="Confirm password"
+                                            roomy
                                             type="password"
                                             value={confirmation}
                                         />
@@ -390,17 +394,17 @@ export default function AuthPage({ onLogin }) {
                                         </div>
                                     </>
                                 )}
-                                <button className="auth-submit brand-gradient" disabled={busy} type="submit">
+                                <button className={`auth-submit brand-gradient [@media(max-height:760px)_and_(min-width:681px)]:!min-h-[44px] ${isSignup ? "!min-h-[clamp(54px,6.8vh,68px)] !text-[18px]" : ""}`} disabled={busy} type="submit">
                                     {busy ? "Please wait…" : isSignup ? "Sign Up" : "Sign In"}
                                 </button>
                             </form>
 
-                            <div className="auth-divider">
+                            <div className="auth-divider [@media(max-height:760px)_and_(min-width:681px)]:![margin:5px_0_4px]">
                                 <span>OR</span>
                             </div>
 
                             <button
-                                className="auth-google-btn"
+                                className={`auth-google-btn [@media(max-height:760px)_and_(min-width:681px)]:!min-h-[44px] ${isSignup ? "!min-h-[clamp(54px,6.8vh,68px)] !text-[18px]" : ""}`}
                                 disabled={googleBusy}
                                 type="button"
                                 onClick={() => {
@@ -418,7 +422,7 @@ export default function AuthPage({ onLogin }) {
                                 Continue with Google
                             </button>
 
-                            <p className="auth-switch-prompt [@media(max-height:760px)_and_(min-width:681px)]:mt-[12px]">
+                            <p className="auth-switch-prompt [@media(max-height:760px)_and_(min-width:681px)]:!mt-[6px]">
                                 {isSignup ? "Already have an account? " : "Don't have an account? "}
                                 <button onClick={() => switchMode(isSignup ? "signin" : "signup")} type="button">
                                     {isSignup ? "Sign In" : "Sign Up"}

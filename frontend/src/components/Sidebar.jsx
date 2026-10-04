@@ -124,6 +124,17 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
                     </span>
                 </div>
             </div>
+            {!isDrawer && !expanded && (
+                <button
+                    aria-label="Log out"
+                    className="mt-auto flex size-9 shrink-0 items-center justify-center self-center rounded-lg border border-rose-200 bg-rose-50 text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
+                    onClick={onLogout}
+                    title="Log out"
+                    type="button"
+                >
+                    <LuLogOut aria-hidden="true" className="size-[18px] stroke-[2.4]" />
+                </button>
+            )}
         </>
     );
 }

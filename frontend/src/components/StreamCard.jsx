@@ -157,7 +157,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                         </span>
                     )}
                 </button>
-                <span className={`pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide ${status === "live"
+                <span className={`pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:left-3 sm:top-3 sm:gap-1.5 sm:px-2.5 sm:py-1.5 sm:text-xs ${status === "live"
                     ? "bg-black/75 text-[var(--color-olive-500)]"
                     : status === "error"
                         ? "bg-rose-950/90 text-rose-200"
@@ -166,7 +166,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                     <span className={`size-2 rounded-full ${status === "live" ? "bg-[var(--color-olive-500)]" : status === "error" ? "bg-rose-400" : "bg-stone-300"}`} />
                     {statusLabel}
                 </span>
-                <span className="pointer-events-none absolute right-3 top-3 z-10 rounded-md bg-black/70 px-2.5 py-1.5 text-xs font-medium text-white">
+                <span className="pointer-events-none absolute right-3 top-3 z-10 hidden rounded-md bg-black/70 px-2.5 py-1.5 text-xs font-medium text-white sm:block">
                     {new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date())}
                 </span>
                 {frameUrl && status === "error" && message && (
@@ -174,16 +174,16 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                         {message}
                     </span>
                 )}
-                <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pb-3 pt-12 text-white">
+                <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-2 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-2 pb-2 pt-8 text-white sm:gap-3 sm:px-4 sm:pb-3 sm:pt-12">
                     <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold uppercase tracking-wide">
-                            CAM {String(index + 1).padStart(2, "0")} / {stream.name || "Camera"}
+                        <span className="block truncate text-xs font-semibold uppercase leading-4 tracking-wide sm:text-sm">
+                            <span className="hidden sm:inline">CAM {String(index + 1).padStart(2, "0")} / </span>{stream.name || `Camera ${String(index + 1).padStart(2, "0")}`}
                         </span>
-                        <span className="mt-1 block truncate text-xs text-white/85">
+                        <span className="mt-0.5 block truncate text-[10px] leading-3 text-white/85 sm:mt-1 sm:text-xs sm:leading-normal">
                             {stream.location || "Live feed"}
                         </span>
                     </span>
-                    <span aria-hidden="true" className="flex h-6 shrink-0 items-end gap-1 pr-14">
+                    <span aria-hidden="true" className="hidden h-6 shrink-0 items-end gap-1 pr-14 sm:flex">
                         {[9, 14, 20].map((height) => (
                             <span className={`w-1.5 rounded-t-sm ${status === "live" ? "bg-[var(--color-olive-500)]" : "bg-white/40"}`} key={height} style={{ height }} />
                         ))}

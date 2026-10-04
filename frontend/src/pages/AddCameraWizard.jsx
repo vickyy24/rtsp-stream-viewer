@@ -141,12 +141,12 @@ export default function AddCameraWizard({ onCancel, onSave }) {
     }
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex h-full min-h-0 flex-col gap-5">
             <PageHeading
                 description="Add a stream source to this browser workspace."
                 title="Add camera"
             />
-            <section className="rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4 sm:p-5">
+            <section className="flex min-h-0 flex-1 flex-col rounded-xl border border-stone-200 bg-[var(--color-surface)] p-4 sm:p-5">
                 <StepIndicator currentStep={step} />
 
                 {step === 1 && (
@@ -255,7 +255,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                 )}
 
                 {step === 3 && (
-                    <div className="grid min-h-64 gap-4 py-5 md:grid-cols-[minmax(0,1fr)_16rem]">
+                    <div className="grid min-h-64 flex-1 gap-4 py-5 md:grid-cols-[minmax(0,1fr)_16rem]">
                         <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-stone-200 bg-stone-100 text-center">
                             <LuCircleCheck aria-hidden="true" className="size-8 text-[var(--color-olive-600)]" />
                             <h2 className="mt-3 text-base font-semibold text-stone-800">Source is reachable</h2>
@@ -283,7 +283,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                 )}
 
                 {error && step === 1 && <p className="pb-3 text-xs text-rose-600" role="alert">{error}</p>}
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-200 pt-4">
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-stone-200 pt-4">
                     <button
                         className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-stone-300 bg-[var(--color-surface)] px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition-colors hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2"
                         onClick={step === 1 ? onCancel : goBack}

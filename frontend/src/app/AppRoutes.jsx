@@ -204,6 +204,7 @@ export default function AppRoutes({ user, onLogout }) {
 
     return (
         <AppLayout
+            fillContent={location.pathname === "/add-camera"}
             header={<WorkspaceHeader onSearchChange={setSearch} searchValue={search} user={user} />}
             liveContent={(
                 <>

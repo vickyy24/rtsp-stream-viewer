@@ -106,6 +106,10 @@ a {
     border-radius: 0;
 }
 
+.camera-preview:fullscreen img {
+    object-fit: contain;
+}
+
 .auth-shell {
     display: grid;
     grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);

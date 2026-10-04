@@ -126,9 +126,8 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
     );
 }
 
-export default function Sidebar({ activePage, onLogout, user }) {
+export default function Sidebar({ activePage, mobileOpen, onLogout, onMobileOpenChange, user }) {
     const [expanded, setExpanded] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
-    const [mobileOpen, setMobileOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(() => !window.matchMedia("(min-width: 1024px)").matches);
 
     useEffect(() => {
@@ -136,58 +135,52 @@ export default function Sidebar({ activePage, onLogout, user }) {
         const handleBreakpointChange = (event) => {
             setIsMobile(!event.matches);
             setExpanded(event.matches);
-            setMobileOpen(false);
+            onMobileOpenChange(false);
         };
         breakpoint.addEventListener("change", handleBreakpointChange);
         return () => breakpoint.removeEventListener("change", handleBreakpointChange);
-    }, []);
+    }, [onMobileOpenChange]);
 
     function handleNavigate() {
-        if (!window.matchMedia("(min-width: 1024px)").matches) setMobileOpen(false);
+        if (!window.matchMedia("(min-width: 1024px)").matches) onMobileOpenChange(false);
     }
 
     function handleLogout() {
-        setMobileOpen(false);
+        onMobileOpenChange(false);
         onLogout();
     }
 
     return (
         <>
-            <aside className={`sticky top-0 z-30 flex h-dvh shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] py-3 transition-[width,padding] duration-200 ${expanded ? "w-14 px-1.5 sm:w-16 sm:px-2 lg:w-52 lg:px-4 lg:py-6" : "w-14 px-1.5 sm:w-16 sm:px-2 lg:w-16 lg:px-2 lg:py-6"}`}>
+            <aside className={`sticky top-0 z-30 hidden h-dvh shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] py-3 transition-[width,padding] duration-200 lg:flex ${expanded ? "w-52 px-4 py-6" : "w-16 px-2 py-6"}`}>
                 <SidebarContents
                     activePage={activePage}
                     expanded={expanded}
-                    isMobile={isMobile}
-                    mobileOpen={mobileOpen}
                     onLogout={handleLogout}
                     onNavigate={handleNavigate}
                     onToggle={() => {
-                        if (window.matchMedia("(min-width: 1024px)").matches) {
-                            setExpanded((current) => !current);
-                        } else {
-                            setMobileOpen(true);
-                        }
+                        setExpanded((current) => !current);
                     }}
                     user={user}
                 />
             </aside>
 
-            {mobileOpen && (
+            {isMobile && mobileOpen && (
                 <>
                     <button
                         aria-label="Close navigation"
-                        className="fixed inset-0 z-40 bg-stone-950/35 lg:hidden"
-                        onClick={() => setMobileOpen(false)}
+                        className="fixed inset-0 z-40 bg-stone-950/35"
+                        onClick={() => onMobileOpenChange(false)}
                         type="button"
                     />
-                    <aside aria-label="Navigation drawer" className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-4 py-4 shadow-xl lg:hidden">
+                    <aside aria-label="Navigation drawer" className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-y-auto border-r border-stone-200 bg-[var(--color-surface)] px-4 py-4 shadow-xl">
                         <SidebarContents
                             activePage={activePage}
                             expanded
                             isDrawer
                             onLogout={handleLogout}
                             onNavigate={handleNavigate}
-                            onToggle={() => setMobileOpen(false)}
+                            onToggle={() => onMobileOpenChange(false)}
                             user={user}
                         />
                     </aside>

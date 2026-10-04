@@ -35,6 +35,7 @@ export default function AppRoutes({ user, onLogout }) {
         || location.pathname.startsWith("/live/camera/");
 
     const [search, setSearch] = useState("");
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [statusFilter, setStatusFilter] = useState("all");
     const [layout, setLayoutState] = useState(getSavedDashboardLayout);
     const [autoStartCameras, setAutoStartCamerasState] = useState(getAutoStartCameras);
@@ -205,7 +206,14 @@ export default function AppRoutes({ user, onLogout }) {
     return (
         <AppLayout
             fillContent={location.pathname === "/add-camera"}
-            header={<WorkspaceHeader onSearchChange={setSearch} searchValue={search} user={user} />}
+            header={(
+                <WorkspaceHeader
+                    onMenuClick={() => setMobileSidebarOpen(true)}
+                    onSearchChange={setSearch}
+                    searchValue={search}
+                    user={user}
+                />
+            )}
             liveContent={(
                 <>
                     {selectedCamera && (
@@ -238,7 +246,15 @@ export default function AppRoutes({ user, onLogout }) {
                 </>
             )}
             showLive={showLive}
-            sidebar={<Sidebar activePage={activePage} onLogout={signOut} user={user} />}
+            sidebar={(
+                <Sidebar
+                    activePage={activePage}
+                    mobileOpen={mobileSidebarOpen}
+                    onLogout={signOut}
+                    onMobileOpenChange={setMobileSidebarOpen}
+                    user={user}
+                />
+            )}
         >
             <Outlet context={ctx} />
         </AppLayout>

@@ -15,6 +15,20 @@ const SIGNUP_CHALLENGE_KEY = "signal_pending_signup_challenge";
 const SIGNUP_CODE_EXPIRES_AT_KEY = "signal_signup_code_expires_at";
 const SIGNUP_RESEND_AT_KEY = "signal_signup_resend_at";
 const PASSWORD_RESET_CHALLENGE_KEY = "signal_pending_password_reset";
+const DASHBOARD_LAYOUT_KEY = "signal_dashboard_layout";
+const DASHBOARD_LAYOUTS = new Set(["1x1", "2x2", "3x3", "4x4"]);
+
+export function getSavedDashboardLayout() {
+    const savedLayout = window.localStorage.getItem(DASHBOARD_LAYOUT_KEY);
+    return DASHBOARD_LAYOUTS.has(savedLayout) ? savedLayout : "2x2";
+}
+
+export function saveDashboardLayout(layout) {
+    if (!DASHBOARD_LAYOUTS.has(layout)) {
+        throw new Error("Choose a supported camera layout.");
+    }
+    window.localStorage.setItem(DASHBOARD_LAYOUT_KEY, layout);
+}
 
 function saveSignupChallenge(result) {
     window.sessionStorage.setItem(SIGNUP_CHALLENGE_KEY, result.challenge_token);
@@ -204,6 +218,66 @@ export function getStreamSocketUrl() {
     backendUrl.search = "";
     backendUrl.hash = "";
     return backendUrl.toString();
+}
+
+export function testStreamServiceConnection() {
+    return new Promise((resolve, reject) => {
+        const token = getAuthToken();
+        if (!token) {
+            reject(new Error("Sign in again before testing the stream service."));
+            return;
+        }
+
+        let settled = false;
+        let socket;
+        const timeout = window.setTimeout(() => {
+            fail(new Error("The stream service did not respond in time."));
+        }, 10000);
+
+        function closeSocket() {
+            window.clearTimeout(timeout);
+            if (socket && socket.readyState < WebSocket.CLOSING) socket.close();
+        }
+
+        function fail(error) {
+            if (settled) return;
+            settled = true;
+            closeSocket();
+            reject(error);
+        }
+
+        try {
+            socket = new WebSocket(getStreamSocketUrl());
+        } catch {
+            fail(new Error("Could not open a connection to the stream service."));
+            return;
+        }
+
+        socket.onmessage = (event) => {
+            if (typeof event.data !== "string") return;
+            let message;
+            try {
+                message = JSON.parse(event.data);
+            } catch {
+                fail(new Error("The stream service returned an invalid response."));
+                return;
+            }
+            if (message.type === "ready") {
+                socket.send(JSON.stringify({ type: "auth", token }));
+            } else if (message.type === "authenticated") {
+                if (settled) return;
+                settled = true;
+                closeSocket();
+                resolve();
+            } else if (message.type === "error") {
+                fail(new Error(message.message || "The stream service rejected authentication."));
+            }
+        };
+        socket.onerror = () => fail(new Error("Could not connect to the stream service."));
+        socket.onclose = () => {
+            if (!settled) fail(new Error("The stream service closed the connection before authentication."));
+        };
+    });
 }
 
 export function testStreamConnection({ url }) {

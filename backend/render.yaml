@@ -25,7 +25,7 @@ services:
       - key: FFMPEG_BINARY
         value: ffmpeg
       - key: RTSP_MAX_CONCURRENT_STREAMS
-        value: "4"
+        value: "16"
       - key: FRONTEND_URL
         value: https://rtsp-stream-viewer-roan.vercel.app
       - key: EMAIL_PROVIDER

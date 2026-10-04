@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { LuBell, LuMaximize, LuSearch } from "react-icons/lu";
 
 function useClock() {
@@ -12,8 +13,15 @@ function useClock() {
     return now;
 }
 
-export default function WorkspaceHeader({ onSearchChange, searchValue }) {
+export default function WorkspaceHeader({ onSearchChange, searchValue, user }) {
     const now = useClock();
+    const displayName = user?.full_name?.trim() || user?.email || "Signal user";
+    const initials = displayName
+        .split(/[\s@._-]+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0].toUpperCase())
+        .join("") || "S";
 
     async function toggleFullscreen() {
         if (document.fullscreenElement) {
@@ -55,6 +63,14 @@ export default function WorkspaceHeader({ onSearchChange, searchValue }) {
                         }).format(now)}
                     </p>
                 </div>
+                <Link
+                    aria-label={`Account settings for ${displayName}`}
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-forest-700)] text-xs font-semibold text-white ring-2 ring-[var(--color-forest-100)] transition hover:ring-[var(--color-forest-200)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] focus-visible:ring-offset-2"
+                    title={displayName}
+                    to="/settings"
+                >
+                    {initials}
+                </Link>
                 <span
                     aria-label="Notifications are not configured"
                     className="flex size-9 shrink-0 items-center justify-center rounded-lg text-stone-400"

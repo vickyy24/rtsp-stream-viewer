@@ -117,5 +117,5 @@ CHANNEL_LAYERS = {
 FFMPEG_BINARY = os.environ.get("FFMPEG_BINARY", "ffmpeg")
 RTSP_MAX_CONCURRENT_STREAMS = max(
     1,
-    int(os.environ.get("RTSP_MAX_CONCURRENT_STREAMS", "4")),
+    int(os.environ.get("RTSP_MAX_CONCURRENT_STREAMS", "16")),
 )

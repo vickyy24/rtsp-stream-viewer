@@ -8,7 +8,15 @@ import CamerasPage from "./pages/CamerasPage.jsx";
 import ConnectionsPage from "./pages/ConnectionsPage.jsx";
 import LayoutsPage from "./pages/LayoutsPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
-import { clearAuthToken, consumeGoogleOAuthToken, getCurrentAccount, getAuthToken, saveAuthToken } from "./services/streamService.js";
+import {
+    clearAuthToken,
+    consumeGoogleOAuthToken,
+    getCurrentAccount,
+    getAuthToken,
+    getStreamSocketUrl,
+    saveAuthToken,
+    testStreamServiceConnection,
+} from "./services/streamService.js";
 
 // ── Route element wrappers — pull handlers from AppRoutes via Outlet context ──
 
@@ -58,6 +66,19 @@ function ArchiveRoute() {
 function ConnectionsRoute() {
     const { statuses, streams, removeCamera, retryCamera, toggleCamera } = useOutletContext();
     return <ConnectionsPage onRemove={removeCamera} onRetry={retryCamera} onToggle={toggleCamera} statuses={statuses} streams={streams} />;
+}
+
+function SettingsRoute() {
+    const { layout, setLayout, user } = useOutletContext();
+    return (
+        <SettingsPage
+            endpoint={getStreamSocketUrl()}
+            layout={layout}
+            onLayoutChange={setLayout}
+            onTestStreamService={testStreamServiceConnection}
+            user={user}
+        />
+    );
 }
 
 // ── App — owns BrowserRouter and every route in the project ──────────────────
@@ -111,7 +132,7 @@ export default function App() {
                     <Route path="/layouts"               element={<LayoutsRoute />} />
                     <Route path="/archive"               element={<ArchiveRoute />} />
                     <Route path="/connections"           element={<ConnectionsRoute />} />
-                    <Route path="/settings"              element={<SettingsPage />} />
+                    <Route path="/settings"              element={<SettingsRoute />} />
                     <Route path="*"                           element={<Navigate replace to="/live" />} />
                 </Route>
             </Routes>

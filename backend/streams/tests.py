@@ -8,6 +8,7 @@ from .consumers import validate_stream_url
 from .ffmpeg import (
     InvalidStreamUrl,
     MjpegFrameReader,
+    StreamCapacity,
     build_ffmpeg_command,
     extract_jpeg_frames,
     start_ffmpeg,
@@ -95,6 +96,26 @@ class StreamUrlTests(SimpleTestCase):
             with self.subTest(stream_url=stream_url[:40]):
                 with self.assertRaises(InvalidStreamUrl):
                     validate_stream_url(stream_url)
+
+
+class StreamCapacityTests(SimpleTestCase):
+    def test_capacity_allows_sixteen_streams_and_rejects_a_seventeenth(self):
+        capacity = StreamCapacity(16)
+
+        async def exercise_capacity():
+            acquired = []
+            for _ in range(16):
+                acquired.append(await capacity.acquire())
+            seventeenth_acquired = await capacity.acquire()
+            for _ in acquired:
+                await capacity.release()
+            return acquired, seventeenth_acquired, capacity.active
+
+        acquired, seventeenth_acquired, active_after_release = async_to_sync(exercise_capacity)()
+
+        self.assertEqual(acquired, [True] * 16)
+        self.assertFalse(seventeenth_acquired)
+        self.assertEqual(active_after_release, 0)
 
 
 class FfmpegTests(SimpleTestCase):

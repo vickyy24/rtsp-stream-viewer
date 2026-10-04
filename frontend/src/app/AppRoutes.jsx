@@ -7,7 +7,9 @@ import LiveDashboard from "../pages/LiveDashboard.jsx";
 import {
     clearAuthToken,
     deleteSavedCamera,
+    getSavedDashboardLayout,
     listCameras,
+    saveDashboardLayout,
     saveCamera,
 } from "../services/streamService.js";
 
@@ -30,7 +32,7 @@ export default function AppRoutes({ user, onLogout }) {
 
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
-    const [layout, setLayout] = useState("2x2");
+    const [layout, setLayoutState] = useState(getSavedDashboardLayout);
     const [streams, setStreams] = useState([]);
     const [statuses, setStatuses] = useState({});
     const [activities, setActivities] = useState([]);
@@ -38,6 +40,11 @@ export default function AppRoutes({ user, onLogout }) {
     const statusMapRef = useRef(statuses);
     streamListRef.current = streams;
     statusMapRef.current = statuses;
+
+    function setLayout(nextLayout) {
+        saveDashboardLayout(nextLayout);
+        setLayoutState(nextLayout);
+    }
 
     useEffect(() => {
         function expireSession() {
@@ -141,14 +148,14 @@ export default function AppRoutes({ user, onLogout }) {
 
     // Expose handlers via Outlet context so App.jsx route elements can use them
     const ctx = {
-        activities, layout, search, setLayout, setSearch, setStatusFilter, statuses, statusFilter, streams,
+        activities, layout, search, setLayout, setSearch, setStatusFilter, statuses, statusFilter, streams, user,
         addCamera, openCameraWizard, removeCamera, retryCamera, toggleCamera,
         navigate, location,
     };
 
     return (
         <AppLayout
-            header={<WorkspaceHeader onSearchChange={setSearch} searchValue={search} />}
+            header={<WorkspaceHeader onSearchChange={setSearch} searchValue={search} user={user} />}
             liveContent={(
                 <>
                     {selectedCamera && (

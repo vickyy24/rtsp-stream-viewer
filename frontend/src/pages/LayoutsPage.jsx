@@ -9,7 +9,7 @@ const layouts = [
 ];
 
 function LayoutPreview({ columns, rows, active }) {
-    const slots = Math.min(columns * rows, 9);
+    const slots = columns * rows;
     return (
         <div
             className="grid aspect-video w-full gap-1 rounded-lg border border-stone-200 bg-stone-50 p-2"
@@ -69,7 +69,7 @@ export default function LayoutsPage({ layout, onApply }) {
                 ))}
             </div>
             <p className="rounded-lg border border-stone-200 bg-[var(--color-surface)] p-3 text-xs leading-5 text-stone-500">
-                Layout choice applies to this browser session. The server currently limits active feeds to four per process.
+                Your selected layout is saved in this browser. The 4 × 4 layout supports up to 16 simultaneous camera streams.
             </p>
         </div>
     );

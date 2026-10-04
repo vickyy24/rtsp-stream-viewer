@@ -68,7 +68,11 @@ On Windows, FFmpeg can be installed with `winget install --id Gyan.FFmpeg.Shared
 
 ## Environment variables
 
-Backend configuration is read from `backend/.env` outside the hosting platform and from Render's service environment in deployment. `DJANGO_SECRET_KEY`, `CAMERA_URL_ENCRYPTION_KEY`, and PostgreSQL `DATABASE_URL` are required. `DJANGO_ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS` must match the deployed hosts. `DJANGO_SECURE_SSL_REDIRECT` enables app-level HTTPS redirects when the hosting proxy does not provide them. `FFMPEG_BINARY` selects the FFmpeg executable, and `RTSP_MAX_CONCURRENT_STREAMS` limits per-process FFmpeg work. Never commit production secrets or credential-bearing RTSP URLs.
+Backend configuration is read from `backend/.env` outside the hosting platform and from Render's service environment in deployment. `DJANGO_SECRET_KEY`, `CAMERA_URL_ENCRYPTION_KEY`, and PostgreSQL `DATABASE_URL` are required. `DJANGO_ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS` must match the deployed hosts. `DJANGO_SECURE_SSL_REDIRECT` enables app-level HTTPS redirects when the hosting proxy does not provide them. `FFMPEG_BINARY` selects the FFmpeg executable, and `RTSP_MAX_CONCURRENT_STREAMS` limits per-process FFmpeg work (default 16, matching the 4 × 4 dashboard layout). Ensure the backend host has enough CPU and memory for the chosen limit. Never commit production secrets or credential-bearing RTSP URLs.
+
+## Workspace settings
+
+The Settings page lets a signed-in user choose a default camera grid layout saved in that browser. Its stream-service test opens the configured WebSocket, authenticates the current account, and closes without starting a camera feed or consuming a stream slot.
 
 ## API and stream flow
 
@@ -98,7 +102,7 @@ Create a Vercel project connected to this repository and set the project root to
 
 The root `render.yaml` and `backend/Dockerfile` configure a Render Docker web service with FFmpeg, Daphne, health check, generated Django/workspace/encryption keys, and a PostgreSQL connection. Container startup applies Django migrations before Daphne starts. Docker installs FFmpeg and runs Daphne as an ASGI server that supports HTTP and persistent WebSocket connections. Enter the Vercel origin in `CORS_ALLOWED_ORIGINS`. Render supplies `PORT`; the container binds Daphne to it. Configure both Vercel environment variables listed above. To enable Google sign-in, create a Google OAuth web client and add `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REDIRECT_URI` to the backend environment. Set the authorized redirect URI in Google to `https://<backend-host>/api/auth/google/callback/`, and set `FRONTEND_URL` to the exact Vercel origin. Keep the client secret private. The in-memory Channels layer is suitable for a single service instance; choose a shared channel layer before scaling the backend to multiple instances.
 
-The free Render service uses 0.1 CPU and 512 MB RAM, can spin down after 15 minutes without inbound traffic, has an ephemeral filesystem, and is restricted to one instance and 750 workspace hours per month. Render documents free instances as suitable for previews and hobby use, not production. CPU and memory may limit real-time decoding or multiple simultaneous cameras. Keep `RTSP_MAX_CONCURRENT_STREAMS` small on free compute; raise it only after moving to suitable capacity. A deployed RTSP source must permit outbound connections from the backend host.
+The free Render service uses 0.1 CPU and 512 MB RAM, can spin down after 15 minutes without inbound traffic, has an ephemeral filesystem, and is restricted to one instance and 750 workspace hours per month. Render documents free instances as suitable for previews and hobby use, not production. The configured 16-stream limit is an application ceiling, not a performance guarantee: actual concurrent playback depends on the backend host's CPU, memory, network, and the camera encodings. A deployed RTSP source must permit outbound connections from the backend host.
 
 ### Future migration
 

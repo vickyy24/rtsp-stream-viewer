@@ -44,10 +44,10 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
 
     return (
         <>
-            <div className={`mb-5 flex flex-col items-center gap-2 ${isDrawer || expanded ? "lg:flex-row lg:justify-between" : ""}`}>
+            <div className={`mb-5 ${isDrawer ? "flex items-center justify-between" : "flex flex-col gap-2"} ${expanded && !isDrawer ? "items-stretch" : "items-center"}`}>
                 <Link
                     aria-label="Signal live dashboard"
-                    className="flex min-h-10 items-center justify-center gap-2 text-[var(--color-clay-700)]"
+                    className={`flex min-h-10 items-center gap-2 text-[var(--color-clay-700)] ${expanded || isDrawer ? "justify-start" : "justify-center"}`}
                     onClick={onNavigate}
                     title="Signal live dashboard"
                     to="/live"
@@ -62,7 +62,7 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
                 <button
                     aria-expanded={isDrawer ? true : isMobile ? mobileOpen : expanded}
                     aria-label={toggleLabel}
-                    className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-sm transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)]"
+                    className={`flex size-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-sm transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] ${expanded && !isDrawer ? "self-end" : ""}`}
                     onClick={onToggle}
                     title={toggleLabel}
                     type="button"

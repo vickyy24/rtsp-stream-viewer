@@ -239,7 +239,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                             {testState === "success" ? "Connection test passed" : testState === "testing" ? "Testing stream connection…" : "Test the camera connection"}
                         </h2>
                         <p className="mt-1 max-w-md text-xs leading-5 text-stone-500">
-                            The backend will open the RTSP source and wait for a video frame before confirming the test.
+                            The hosted stream server must be able to reach the camera’s RTSP address. Cameras available only on your local Wi-Fi cannot be tested from the hosted app.
                         </p>
                         {error && <p className="mt-3 text-xs text-rose-600" role="alert">{error}</p>}
                         {testState !== "success" && (

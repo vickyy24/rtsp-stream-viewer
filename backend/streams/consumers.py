@@ -213,7 +213,7 @@ class StreamConsumer(AsyncWebsocketConsumer):
         except (ConnectionError, OSError, RuntimeError):
             if not self.disconnecting and not self.stopping_stream:
                 logger.exception("The WebSocket stream delivery failed")
-                await self._send_error("The camera stream was interrupted.")
+                await self._send_error(self._stream_interruption_message())
         finally:
             if not self.disconnecting and not self.stopping_stream:
                 await self._stop_stream(notify=False)
@@ -227,12 +227,26 @@ class StreamConsumer(AsyncWebsocketConsumer):
     def _ffmpeg_failure_message(self):
         diagnostics = self.stderr_tail.decode("utf-8", errors="replace").lower()
         if "401" in diagnostics and "unauthor" in diagnostics:
-            return "The RTSP server rejected this address or its token (401 Unauthorized). Check the stream URL and access token."
+            return "The camera rejected the RTSP login (401 Unauthorized). Check the username and password in the RTSP address."
         if "403" in diagnostics or "forbidden" in diagnostics:
-            return "The RTSP server denied access (403 Forbidden). Check the account permissions for this stream."
+            return "The camera denied access (403 Forbidden). Check that this account is allowed to view the stream."
         if "404" in diagnostics or "not found" in diagnostics:
-            return "The RTSP server could not find this stream (404 Not Found). Check the stream path."
-        return "The camera connection ended before video was received. Check the stream address and network access."
+            return "The camera could not find that stream (404 Not Found). Check the RTSP path, including channel or profile."
+        if "connection refused" in diagnostics:
+            return "The camera refused the connection. Check its IP address, RTSP port (usually 554), and that RTSP is enabled."
+        if any(term in diagnostics for term in ("timed out", "timeout", "network is unreachable", "no route to host")):
+            return "The stream server could not reach the camera before the timeout. Check that the camera is online and that its RTSP port is reachable from the hosted server. Cameras available only on a private Wi-Fi network cannot be reached by the hosted app."
+        if "connection reset" in diagnostics or "end of file" in diagnostics:
+            return "The camera closed the RTSP connection before sending video. Check the stream path, login, and whether the camera allows another viewer."
+        if "does not contain any stream" in diagnostics or "matches no streams" in diagnostics:
+            return "The RTSP address opened, but it did not provide a video stream. Check the camera’s channel or profile path."
+        return "The camera connection ended before video arrived. Check the RTSP address, camera login, and network access from the hosted stream server."
+
+    def _stream_interruption_message(self):
+        diagnostics = self.stderr_tail.decode("utf-8", errors="replace").lower()
+        if diagnostics:
+            return self._ffmpeg_failure_message()
+        return "The stream stopped before the test completed. Check that the camera stays online and that its RTSP port is reachable from the hosted server, then try again. A camera available only on your local Wi-Fi cannot be reached by the hosted app."
 
     async def _stop_stream(self, notify):
         self.stopping_stream = True

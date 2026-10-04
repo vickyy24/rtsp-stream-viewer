@@ -212,8 +212,7 @@ export default function AuthPage({ onLogin }) {
                         <button aria-pressed={isSignup} className={isSignup ? "active" : ""} onClick={() => switchMode("signup")} type="button">Sign Up</button>
                     </div>
                 )}
-                <div className="auth-card-wrap">
-                <div className="auth-card">
+                <div className="auth-content">
 
                     <header className="auth-heading max-[680px]:mt-[28px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[15px]">
                         <h1 className="max-[680px]:text-[30px]">
@@ -427,7 +426,6 @@ export default function AuthPage({ onLogin }) {
                             </p>
                         </>
                     )}
-                </div>
                 </div>
             </section>
         </main>

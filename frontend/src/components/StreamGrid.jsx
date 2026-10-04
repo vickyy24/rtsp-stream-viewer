@@ -28,7 +28,7 @@ export default function StreamGrid({
     }[layout] || "grid-rows-2";
 
     return (
-        <div className={`${isFullscreen ? `grid min-h-0 flex-1 gap-3 ${fullscreenRows}` : "grid gap-3"} ${gridClass}`}>
+        <div className={`${isFullscreen ? `grid min-h-0 min-w-0 w-full flex-1 gap-3 ${fullscreenRows}` : "grid min-w-0 w-full gap-3"} ${gridClass}`}>
             {streams.map((stream, index) => (
                 <StreamCard
                     index={index}

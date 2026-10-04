@@ -127,12 +127,12 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
     }[status] || "Connecting";
 
     return (
-        <article className={`${isFullscreen ? "flex h-full min-h-0 flex-col" : ""} overflow-hidden rounded-xl border bg-[var(--color-surface)] transition-colors ${isSelected
+        <article className={`min-w-0 w-full ${isFullscreen ? "flex h-full min-h-0 flex-col" : ""} overflow-hidden rounded-xl border bg-[var(--color-surface)] transition-colors ${isSelected
             ? "border-[var(--color-olive-600)] ring-1 ring-[var(--color-olive-600)]"
             : "border-stone-200/80"
             }`}>
             <div
-                className={`camera-preview group relative flex w-full items-center justify-center overflow-hidden bg-stone-900 text-left ${isFullscreen ? "min-h-0 flex-1 aspect-auto" : "aspect-[3/2]"}`}
+                className={`camera-preview group relative flex min-w-0 w-full items-center justify-center overflow-hidden bg-stone-900 text-left ${isFullscreen ? "min-h-0 flex-1 aspect-auto" : "aspect-[3/2]"}`}
                 ref={previewRef}
             >
                 <button
@@ -149,15 +149,16 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                             src={frameUrl}
                         />
                     ) : (
-                        <span className="flex max-w-sm flex-col items-center px-5 text-center text-white/55">
-                            <CameraIcon className="size-9" />
-                            <span className="mt-3 max-w-xs text-xs font-medium leading-5 text-white/75">
-                                {message || (status === "connecting" ? "Connecting to camera…" : status === "error" ? "Camera connection failed" : "Camera paused")}
+                        <span className="flex min-w-0 max-w-sm flex-col items-center px-5 text-center text-white/55">
+                            <CameraIcon className="camera-fallback-icon size-9" />
+                            <span aria-label={message || (status === "error" ? "Camera connection failed" : "")} className="camera-fallback-message mt-3 max-w-xs text-xs font-medium leading-5 text-white/75" title={message}>
+                                <span className="hidden sm:inline">{message || (status === "connecting" ? "Connecting to camera…" : status === "error" ? "Camera connection failed" : "Camera paused")}</span>
+                                <span className="sm:hidden">{status === "connecting" ? "Connecting…" : status === "error" ? "Camera unavailable" : "Paused"}</span>
                             </span>
                         </span>
                     )}
                 </button>
-                <span className={`pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide sm:left-3 sm:top-3 sm:gap-1.5 sm:px-2.5 sm:py-1.5 sm:text-xs ${status === "live"
+                <span className={`camera-status-badge pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide sm:left-3 sm:top-3 sm:gap-1.5 sm:px-2.5 sm:py-1.5 sm:text-xs ${status === "live"
                     ? "bg-black/75 text-[var(--color-olive-500)]"
                     : status === "error"
                         ? "bg-rose-950/90 text-rose-200"
@@ -176,10 +177,10 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                 )}
                 <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-2 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-2 pb-2 pt-8 text-white sm:gap-3 sm:px-4 sm:pb-3 sm:pt-12">
                     <span className="min-w-0">
-                        <span className="block truncate text-[10px] font-semibold uppercase leading-3 tracking-wide sm:text-sm sm:leading-normal">
+                        <span className="camera-footer-title block truncate text-[10px] font-semibold uppercase leading-3 tracking-wide sm:text-sm sm:leading-normal">
                             <span className="hidden sm:inline">CAM {String(index + 1).padStart(2, "0")} / </span>{stream.name || `Camera ${String(index + 1).padStart(2, "0")}`}
                         </span>
-                        <span className="mt-0.5 block truncate text-[9px] leading-[11px] text-white/85 sm:mt-1 sm:text-xs sm:leading-normal">
+                        <span className="camera-footer-location mt-0.5 block truncate text-[9px] leading-[11px] text-white/85 sm:mt-1 sm:text-xs sm:leading-normal">
                             {stream.location || "Live feed"}
                         </span>
                     </span>
@@ -193,7 +194,7 @@ export default function StreamCard({ stream, index, isSelected, isFullscreen, on
                     {status === "error" && (
                         <button
                             aria-label={`Retry camera ${index + 1}`}
-                            className="rounded-md bg-black/75 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-black sm:px-2.5 sm:py-1.5 sm:text-sm"
+                            className="camera-retry-button rounded-md bg-black/75 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-black sm:px-2.5 sm:py-1.5 sm:text-sm"
                             onClick={onRetry}
                             type="button"
                         >

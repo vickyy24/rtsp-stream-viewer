@@ -99,7 +99,7 @@ export default function AuthPage({ onLogin }) {
     }, [mode, verificationEmail]);
 
     const codeSecondsLeft = verificationTiming
-        ? Math.max(0, Math.floor((verificationTiming.codeExpiresAt - clockNow) / 1000))
+        ? Math.min(10 * 60, Math.max(0, Math.floor((verificationTiming.codeExpiresAt - clockNow) / 1000)))
         : 10 * 60;
     const resendSecondsLeft = verificationTiming
         ? Math.max(0, Math.ceil((verificationTiming.resendAt - clockNow) / 1000))

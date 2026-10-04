@@ -62,7 +62,7 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
                 <button
                     aria-expanded={isDrawer ? true : isMobile ? mobileOpen : expanded}
                     aria-label={toggleLabel}
-                    className={`relative -top-3 flex shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-sm transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)] ${expanded || isDrawer ? "size-8" : "size-7"}`}
+                    className="relative -top-3 flex size-8 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-sm transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-forest-700)]"
                     onClick={onToggle}
                     title={toggleLabel}
                     type="button"

@@ -24,7 +24,7 @@ export default function AppRoutes({ user, onLogout }) {
     const selectedCameraId = singleCameraMatch?.params.cameraId || null;
 
     const activePage = location.pathname === "/add-camera"
-        ? (location.state?.returnTo === "/cameras" ? "cameras" : "live")
+        ? "cameras"
         : location.pathname.startsWith("/cameras") ? "cameras"
         : location.pathname.startsWith("/layouts") ? "layouts"
             : location.pathname.startsWith("/archive") ? "archive"

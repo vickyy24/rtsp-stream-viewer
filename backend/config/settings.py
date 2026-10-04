@@ -90,6 +90,9 @@ production_frontend_origin = "https://rtsp-stream-viewer-roan.vercel.app"
 if not DEBUG and production_frontend_origin not in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.append(production_frontend_origin)
 FRONTEND_URL = os.environ.get("FRONTEND_URL", production_frontend_origin).rstrip("/")
+GOOGLE_OAUTH_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID", "").strip()
+GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", "").strip()
+GOOGLE_OAUTH_REDIRECT_URI = os.environ.get("GOOGLE_OAUTH_REDIRECT_URI", "").strip()
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_PROVIDER = os.environ.get(
     "EMAIL_PROVIDER", "smtp" if DEBUG else "brevo"
@@ -116,4 +119,3 @@ RTSP_MAX_CONCURRENT_STREAMS = max(
     1,
     int(os.environ.get("RTSP_MAX_CONCURRENT_STREAMS", "4")),
 )
-

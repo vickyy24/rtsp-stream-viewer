@@ -8,7 +8,7 @@ import CamerasPage from "./pages/CamerasPage.jsx";
 import ConnectionsPage from "./pages/ConnectionsPage.jsx";
 import LayoutsPage from "./pages/LayoutsPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
-import { clearAuthToken, getCurrentAccount, getAuthToken } from "./services/streamService.js";
+import { clearAuthToken, consumeGoogleOAuthToken, getCurrentAccount, getAuthToken, saveAuthToken } from "./services/streamService.js";
 
 // ── Route element wrappers — pull handlers from AppRoutes via Outlet context ──
 
@@ -68,10 +68,17 @@ export default function App() {
 
     useEffect(() => {
         let active = true;
+        const googleToken = consumeGoogleOAuthToken();
+        if (googleToken) saveAuthToken(googleToken);
         if (!getAuthToken()) { setAuthReady(true); return undefined; }
         getCurrentAccount()
             .then(({ user: account }) => { if (active) setUser(account); })
-            .catch(() => { clearAuthToken(); })
+            .catch(() => {
+                clearAuthToken();
+                if (active && googleToken) {
+                    window.history.replaceState(window.history.state, "", `${window.location.pathname}?oauthError=failed`);
+                }
+            })
             .finally(() => { if (active) setAuthReady(true); });
         return () => { active = false; };
     }, []);

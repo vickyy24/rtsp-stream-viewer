@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.urls import path
 
-from accounts.api import current_user, request_password_reset, resend_signup_verification, reset_password, signin, signup, verify_email
+from accounts.api import current_user, google_oauth_callback, google_oauth_start, request_password_reset, resend_signup_verification, reset_password, signin, signup, verify_email
 from streams.api import camera_detail, cameras
 
 def health_check(_request):
@@ -13,6 +13,8 @@ urlpatterns = [
     path("api/auth/signup/", signup, name="signup"),
     path("api/auth/signup/resend/", resend_signup_verification, name="signup-resend"),
     path("api/auth/signin/", signin, name="signin"),
+    path("api/auth/google/", google_oauth_start, name="google-oauth-start"),
+    path("api/auth/google/callback/", google_oauth_callback, name="google-oauth-callback"),
     path("api/auth/verify-email/", verify_email, name="verify-email"),
     path("api/auth/password-reset/request/", request_password_reset, name="password-reset-request"),
     path("api/auth/password-reset/confirm/", reset_password, name="password-reset-confirm"),

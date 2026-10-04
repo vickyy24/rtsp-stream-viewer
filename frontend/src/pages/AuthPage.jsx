@@ -4,6 +4,7 @@ import { FiCamera, FiClock, FiEye, FiEyeOff, FiGrid, FiKey, FiLock, FiMail, FiPl
 import SignalLogo from "../components/SignalLogo.jsx";
 import {
     deferSignupResend,
+    getGoogleOAuthUrl,
     getSignupVerificationTiming,
     requestPasswordReset,
     resendSignupVerification,
@@ -71,6 +72,12 @@ export default function AuthPage({ onLogin }) {
             : location.pathname === "/forgot-password" ? "forgot"
                 : location.pathname === "/reset-password" ? "reset" : "signin";
     const verificationEmail = new URLSearchParams(location.search).get("email")?.trim().toLowerCase() || "";
+    const googleOAuthError = {
+        cancelled: "Google sign-in was cancelled.",
+        "not-configured": "Google sign-in is not configured yet. Use email and password instead.",
+        "invalid-state": "Google sign-in could not be verified. Please try again.",
+        failed: "Google sign-in could not be completed. Please try again.",
+    }[new URLSearchParams(location.search).get("oauthError")] || "";
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState(verificationEmail);
     const [password, setPassword] = useState("");
@@ -83,7 +90,7 @@ export default function AuthPage({ onLogin }) {
     const [verificationNotice, setVerificationNotice] = useState("");
     const [busy, setBusy] = useState(false);
     const [googleBusy, setGoogleBusy] = useState(false);
-    const [error, setError] = useState("");
+    const [error, setError] = useState(googleOAuthError);
     const [fieldErrors, setFieldErrors] = useState({});
 
     useEffect(() => {
@@ -494,7 +501,7 @@ export default function AuthPage({ onLogin }) {
                                 type="button"
                                 onClick={() => {
                                     setGoogleBusy(true);
-                                    window.location.href = `${import.meta.env.VITE_API_URL || "https://rtsp-stream-viewer-api.onrender.com"}/api/auth/google/`;
+                                    window.location.assign(getGoogleOAuthUrl());
                                 }}
                             >
                                 <svg viewBox="0 0 48 48" className="size-5 shrink-0">

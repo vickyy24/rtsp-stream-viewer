@@ -6,6 +6,9 @@ import logging
 import secrets
 import time
 from functools import wraps
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
@@ -14,9 +17,9 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_GET, require_http_methods
 
 from .models import User
 from .email_delivery import email_delivery_configured, send_transactional_email
@@ -33,6 +36,12 @@ SIGNUP_CHALLENGE_TTL = 24 * 60 * 60
 SIGNUP_MAX_ATTEMPTS = 5
 PASSWORD_RESET_TOKEN_SALT = "accounts.password-reset"
 PASSWORD_RESET_TOKEN_TTL = 10 * 60
+GOOGLE_OAUTH_COOKIE = "signal_google_oauth"
+GOOGLE_OAUTH_COOKIE_SALT = "accounts.google-oauth"
+GOOGLE_OAUTH_COOKIE_TTL = 10 * 60
+GOOGLE_AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo"
 
 
 def _signup_cache_key(kind, value):
@@ -80,6 +89,151 @@ def require_user(view):
 
 def _user_data(user):
     return {"id": user.pk, "email": user.email, "full_name": user.full_name}
+
+
+def _google_oauth_error_redirect(code):
+    return HttpResponseRedirect(f"{settings.FRONTEND_URL}/signin?oauthError={code}")
+
+
+def _google_oauth_configured():
+    return bool(
+        settings.GOOGLE_OAUTH_CLIENT_ID
+        and settings.GOOGLE_OAUTH_CLIENT_SECRET
+        and settings.GOOGLE_OAUTH_REDIRECT_URI
+    )
+
+
+def _google_json_request(url, *, data=None, access_token=None):
+    headers = {"accept": "application/json"}
+    if data is not None:
+        headers["content-type"] = "application/x-www-form-urlencoded"
+    if access_token:
+        headers["authorization"] = f"Bearer {access_token}"
+    request = Request(url, data=data, headers=headers, method="POST" if data is not None else "GET")
+    try:
+        with urlopen(request, timeout=10) as response:
+            payload = json.loads(response.read())
+    except HTTPError as error:
+        logger.warning("Google OAuth endpoint returned HTTP %s", error.code)
+        raise RuntimeError("Google OAuth request failed.") from None
+    except (URLError, TimeoutError, json.JSONDecodeError, UnicodeDecodeError) as error:
+        logger.warning("Google OAuth request failed: %s", type(error).__name__)
+        raise RuntimeError("Google OAuth request failed.") from None
+    if not isinstance(payload, dict):
+        raise RuntimeError("Google OAuth returned an invalid response.")
+    return payload
+
+
+@require_GET
+def google_oauth_start(request):
+    if not _google_oauth_configured():
+        return _google_oauth_error_redirect("not-configured")
+
+    state = secrets.token_urlsafe(32)
+    verifier = secrets.token_urlsafe(48)
+    challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode("ascii")).digest()).rstrip(b"=").decode("ascii")
+    authorization_url = f"{GOOGLE_AUTHORIZATION_URL}?{urlencode({
+        'client_id': settings.GOOGLE_OAUTH_CLIENT_ID,
+        'redirect_uri': settings.GOOGLE_OAUTH_REDIRECT_URI,
+        'response_type': 'code',
+        'scope': 'openid email profile',
+        'state': state,
+        'code_challenge': challenge,
+        'code_challenge_method': 'S256',
+    })}"
+    response = HttpResponseRedirect(authorization_url)
+    response.set_cookie(
+        GOOGLE_OAUTH_COOKIE,
+        signing.dumps({"state": state, "verifier": verifier}, salt=GOOGLE_OAUTH_COOKIE_SALT),
+        max_age=GOOGLE_OAUTH_COOKIE_TTL,
+        httponly=True,
+        secure=request.is_secure(),
+        samesite="Lax",
+        path="/api/auth/google/callback/",
+    )
+    response["Cache-Control"] = "no-store"
+    return response
+
+
+@require_GET
+def google_oauth_callback(request):
+    if not _google_oauth_configured():
+        return _google_oauth_error_redirect("not-configured")
+    if request.GET.get("error"):
+        response = _google_oauth_error_redirect("cancelled")
+        response.delete_cookie(GOOGLE_OAUTH_COOKIE, path="/api/auth/google/callback/", samesite="Lax")
+        return response
+
+    state = request.GET.get("state", "")
+    code = request.GET.get("code", "")
+    cookie = request.COOKIES.get(GOOGLE_OAUTH_COOKIE, "")
+    try:
+        oauth_session = signing.loads(cookie, salt=GOOGLE_OAUTH_COOKIE_SALT, max_age=GOOGLE_OAUTH_COOKIE_TTL)
+    except signing.BadSignature:
+        oauth_session = None
+    if (
+        not isinstance(oauth_session, dict)
+        or not isinstance(oauth_session.get("state"), str)
+        or not isinstance(oauth_session.get("verifier"), str)
+        or not state
+        or not secrets.compare_digest(state, oauth_session["state"])
+        or not code
+    ):
+        response = _google_oauth_error_redirect("invalid-state")
+        response.delete_cookie(GOOGLE_OAUTH_COOKIE, path="/api/auth/google/callback/", samesite="Lax")
+        return response
+
+    try:
+        token_payload = _google_json_request(
+            GOOGLE_TOKEN_URL,
+            data=urlencode({
+                "code": code,
+                "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
+                "client_secret": settings.GOOGLE_OAUTH_CLIENT_SECRET,
+                "redirect_uri": settings.GOOGLE_OAUTH_REDIRECT_URI,
+                "grant_type": "authorization_code",
+                "code_verifier": oauth_session["verifier"],
+            }).encode("ascii"),
+        )
+        access_token = token_payload.get("access_token")
+        if not isinstance(access_token, str) or not access_token:
+            raise RuntimeError("Google OAuth did not return an access token.")
+        profile = _google_json_request(GOOGLE_USERINFO_URL, access_token=access_token)
+        email = profile.get("email")
+        google_id = profile.get("sub")
+        if (
+            not isinstance(email, str)
+            or not isinstance(google_id, str)
+            or not google_id
+            or profile.get("email_verified") is not True
+        ):
+            raise RuntimeError("Google did not provide a verified email address.")
+        email = email.strip().lower()
+        validate_email(email)
+
+        user = User.objects.filter(email__iexact=email).first()
+        if user is None:
+            full_name = profile.get("name")
+            full_name = full_name.strip()[:150] if isinstance(full_name, str) else ""
+            user = User(email=email, full_name=full_name or email.partition("@")[0])
+            user.set_password(None)
+            try:
+                with transaction.atomic():
+                    user.save()
+            except IntegrityError:
+                user = User.objects.filter(email__iexact=email).first()
+                if user is None:
+                    raise
+        response = HttpResponseRedirect(
+            f"{settings.FRONTEND_URL}/signin#googleToken={create_access_token(user)}"
+        )
+    except (RuntimeError, ValidationError):
+        logger.info("Google OAuth sign-in could not be completed")
+        response = _google_oauth_error_redirect("failed")
+
+    response.delete_cookie(GOOGLE_OAUTH_COOKIE, path="/api/auth/google/callback/", samesite="Lax")
+    response["Cache-Control"] = "no-store"
+    return response
 
 
 @csrf_exempt

@@ -1,5 +1,6 @@
 
 const apiUrl = (
+  import.meta.env.VITE_API_URL ||
   import.meta.env.API_URL ||
   (import.meta.env.DEV
     ? "http://localhost:8000"
@@ -61,6 +62,22 @@ export function saveAuthToken(token, remember = true) {
 export function clearAuthToken() {
     window.localStorage.removeItem(AUTH_TOKEN_KEY);
     window.sessionStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
+export function getGoogleOAuthUrl() {
+    return `${apiUrl}/api/auth/google/`;
+}
+
+export function consumeGoogleOAuthToken() {
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const token = hashParams.get("googleToken");
+    if (!token) return null;
+    window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}${window.location.search}`,
+    );
+    return token;
 }
 
 async function apiRequest(path, options = {}) {

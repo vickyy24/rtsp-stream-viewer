@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LuBell, LuLogOut, LuMaximize, LuSearch } from "react-icons/lu";
+import { LuBell, LuMaximize, LuSearch } from "react-icons/lu";
 
 function useClock() {
     const [now, setNow] = useState(() => new Date());
@@ -12,7 +12,7 @@ function useClock() {
     return now;
 }
 
-export default function WorkspaceHeader({ onLogout, onSearchChange, searchValue }) {
+export default function WorkspaceHeader({ onSearchChange, searchValue }) {
     const now = useClock();
 
     async function toggleFullscreen() {
@@ -69,14 +69,6 @@ export default function WorkspaceHeader({ onLogout, onSearchChange, searchValue 
                     type="button"
                 >
                     <LuMaximize aria-hidden="true" className="size-[18px]" />
-                </button>
-                <button
-                    className="flex h-9 shrink-0 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 transition hover:bg-stone-100"
-                    onClick={onLogout}
-                    type="button"
-                >
-                    <LuLogOut aria-hidden="true" className="size-4" />
-                    <span>Log out</span>
                 </button>
             </div>
         </header>

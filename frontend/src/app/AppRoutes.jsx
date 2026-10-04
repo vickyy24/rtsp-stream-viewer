@@ -148,7 +148,7 @@ export default function AppRoutes({ user, onLogout }) {
 
     return (
         <AppLayout
-            header={<WorkspaceHeader onLogout={signOut} onSearchChange={setSearch} searchValue={search} />}
+            header={<WorkspaceHeader onSearchChange={setSearch} searchValue={search} />}
             liveContent={(
                 <>
                     {selectedCamera && (

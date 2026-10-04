@@ -78,6 +78,10 @@ export default function Sidebar({ activePage, onLogout, user }) {
             </nav>
 
             <div className="mt-auto hidden border-t border-stone-200 pt-4 lg:block">
+                <button className="mb-3 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-medium text-stone-600 transition hover:bg-stone-100 hover:text-stone-900" onClick={onLogout} type="button">
+                    <LuLogOut aria-hidden="true" className="size-4" />
+                    Log out
+                </button>
                 <div className="flex items-center gap-2">
                     <span className="brand-gradient flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">{user?.full_name?.[0]?.toUpperCase() || "S"}</span>
                     <span className="min-w-0">
@@ -85,10 +89,6 @@ export default function Sidebar({ activePage, onLogout, user }) {
                         <span className="block truncate text-xs text-stone-500">{user?.email}</span>
                     </span>
                 </div>
-                <button className="mt-3 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900" onClick={onLogout} type="button">
-                    <LuLogOut aria-hidden="true" className="size-4" />
-                    Sign out
-                </button>
             </div>
         </aside>
     );

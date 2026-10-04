@@ -21,14 +21,14 @@ function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onCha
     const isPassword = type === "password";
     return (
         <div className="auth-field">
-            <label className={`auth-label [@media(max-height:760px)_and_(min-width:681px)]:!text-[12px] ${roomy ? "!text-[18px]" : ""}`} htmlFor={id}>{label}</label>
-            <div className={`auth-control [@media(max-height:760px)_and_(min-width:681px)]:!h-[42px] ${roomy ? "!h-[clamp(54px,6.8vh,68px)]" : ""} ${error ? "has-error" : ""}`}>
+            <label className={`auth-label ${roomy ? "auth-label-roomy" : ""}`} htmlFor={id}>{label}</label>
+            <div className={`auth-control ${roomy ? "auth-control-roomy" : ""} ${error ? "has-error" : ""}`}>
                 <FieldIcon aria-hidden="true" className="auth-control-icon" />
                 <input
                     aria-describedby={error ? `${id}-error` : undefined}
                     aria-invalid={Boolean(error)}
                     autoComplete={autoComplete}
-                    className={`auth-input [@media(max-height:760px)_and_(min-width:681px)]:!text-[14px] ${roomy ? "!text-[18px]" : ""}`}
+                    className={`auth-input ${roomy ? "auth-input-roomy" : ""}`}
                     id={id}
                     inputMode={inputMode}
                     maxLength={maxLength}

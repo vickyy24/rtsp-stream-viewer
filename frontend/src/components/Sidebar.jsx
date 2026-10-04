@@ -47,7 +47,7 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
             <div className={`mb-5 flex min-w-0 items-center gap-2 ${isDrawer || expanded ? "justify-between" : "justify-center"}`}>
                 <Link
                     aria-label="Signal live dashboard"
-                    className={`-translate-y-2 flex min-h-10 min-w-0 items-center gap-1.5 text-[var(--color-clay-700)] ${expanded || isDrawer ? "flex-1 justify-start" : "hidden"}`}
+                    className={`-translate-y-2 flex min-h-10 min-w-0 items-center gap-1 text-[var(--color-clay-700)] ${expanded || isDrawer ? "flex-1 justify-start" : "hidden"}`}
                     onClick={onNavigate}
                     title="Signal live dashboard"
                     to="/live"
@@ -55,7 +55,7 @@ function SidebarContents({ activePage, expanded, isDrawer = false, isMobile = fa
                     <SignalLogo className="size-10 shrink-0" />
                     <span className={`${isDrawer ? "block" : expanded ? "hidden lg:block" : "hidden"} min-w-0 flex-1 text-left`}>
                         <span className="block truncate whitespace-nowrap text-sm font-bold tracking-[0.12em] text-stone-900">SIGNAL</span>
-                        <span className="mt-0.5 block truncate whitespace-nowrap text-[9px] font-medium tracking-tight text-stone-500">RTSP STREAM VIEWER</span>
+                        <span className="mt-0.5 block truncate whitespace-nowrap text-[10px] font-medium tracking-[-0.04em] text-stone-500">RTSP STREAM VIEWER</span>
                     </span>
                 </Link>
 

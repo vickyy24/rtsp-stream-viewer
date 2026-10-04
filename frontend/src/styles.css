@@ -894,24 +894,26 @@ a {
 }
 
 @media (max-width: 680px) {
-    .auth-shell-signup {
+    .auth-shell-mobile {
         min-height: 100dvh;
         height: auto;
         grid-template-columns: minmax(0, 1fr);
         overflow: visible;
     }
 
-    .auth-shell-signup .auth-story {
+    .auth-shell-mobile .auth-story {
         display: none;
     }
 
-    .auth-shell-signup .auth-form-panel {
+    .auth-shell-mobile .auth-form-panel {
         width: 100%;
         min-height: 100dvh;
         overflow: visible;
         padding: 0 20px 24px;
     }
+}
 
+@media (max-width: 680px) {
     .auth-shell-signup .auth-tabs-bar {
         width: 100%;
         max-width: 420px;

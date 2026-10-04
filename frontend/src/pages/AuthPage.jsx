@@ -235,7 +235,7 @@ export default function AuthPage({ onLogin }) {
     const passwordResetComplete = new URLSearchParams(location.search).get("passwordReset") === "success";
 
     return (
-        <main className={`auth-shell ${isSignup ? "auth-shell-signup" : ""} max-[900px]:grid-cols-[minmax(300px,0.85fr)_minmax(0,1.15fr)] max-[680px]:h-auto max-[680px]:min-h-dvh max-[680px]:overflow-visible max-[680px]:grid-cols-[minmax(0,1fr)]`}>
+        <main className={`auth-shell auth-shell-mobile ${isSignup ? "auth-shell-signup" : ""} max-[900px]:grid-cols-[minmax(300px,0.85fr)_minmax(0,1.15fr)] max-[680px]:h-auto max-[680px]:min-h-dvh max-[680px]:overflow-visible max-[680px]:grid-cols-[minmax(0,1fr)]`}>
             <aside className="auth-story max-[680px]:min-h-[300px] max-[380px]:min-h-[270px] before:max-[680px]:bg-[linear-gradient(90deg,rgba(251,251,246,0.97)_0%,rgba(251,251,246,0.90)_54%,rgba(251,251,246,0.25)_100%)]">
                 <img alt="" aria-hidden="true" className="auth-story-image" src="/camera-auth.webp" />
                 <div className="auth-story-content max-[900px]:pr-[28px] max-[900px]:pl-[36px] max-[680px]:p-[28px_28px_30px] [@media(max-height:760px)_and_(min-width:681px)]:py-[18px] max-[380px]:px-[20px]">

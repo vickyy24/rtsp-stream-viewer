@@ -70,6 +70,8 @@ On Windows, FFmpeg can be installed with `winget install --id Gyan.FFmpeg.Shared
 
 Backend configuration is read from `backend/.env` outside the hosting platform and from Render's service environment in deployment. `DJANGO_SECRET_KEY`, `CAMERA_URL_ENCRYPTION_KEY`, and PostgreSQL `DATABASE_URL` are required. `DJANGO_ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS` must match the deployed hosts. `DJANGO_SECURE_SSL_REDIRECT` enables app-level HTTPS redirects when the hosting proxy does not provide them. `FFMPEG_BINARY` selects the FFmpeg executable, and `RTSP_MAX_CONCURRENT_STREAMS` limits per-process FFmpeg work (default 16, matching the 4 × 4 dashboard layout). Ensure the backend host has enough CPU and memory for the chosen limit. Never commit production secrets or credential-bearing RTSP URLs.
 
+Transactional signup verification and password-reset emails use the Gmail API over HTTPS. Configure `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, and `GMAIL_SENDER_EMAIL` from a Google Cloud OAuth client authorized for the Gmail API `gmail.send` scope. Use the refresh token for the Gmail account named by `GMAIL_SENDER_EMAIL`; never place real credentials in `backend/.env.example` or commit `backend/.env`.
+
 ## Workspace settings
 
 The Settings page stores camera playback preferences in the current browser: the default grid layout, whether saved cameras start automatically on Live, and whether feeds pause when leaving Live. Preferences can be reset to their defaults at any time.

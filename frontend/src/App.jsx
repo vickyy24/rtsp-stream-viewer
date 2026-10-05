@@ -7,6 +7,7 @@ import AddCameraWizard from "./pages/AddCameraWizard.jsx";
 import CamerasPage from "./pages/CamerasPage.jsx";
 import ConnectionsPage from "./pages/ConnectionsPage.jsx";
 import LayoutsPage from "./pages/LayoutsPage.jsx";
+import LegalPage from "./pages/LegalPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
 import {
     clearAuthToken,
@@ -121,6 +122,9 @@ export default function App() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route path="/privacy" element={<LegalPage type="privacy" />} />
+                <Route path="/terms" element={<LegalPage type="terms" />} />
+
                 {/* ── Auth routes ───────────────────────────────────── */}
                 <Route path="/signin"          element={user ? <Navigate replace to="/live" /> : <AuthPage onLogin={setUser} />} />
                 <Route path="/signup"          element={user ? <Navigate replace to="/live" /> : <AuthPage onLogin={setUser} />} />

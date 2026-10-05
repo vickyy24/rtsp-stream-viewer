@@ -28,9 +28,13 @@ services:
         value: "16"
       - key: FRONTEND_URL
         value: https://rtsp-stream-viewer-roan.vercel.app
-      - key: EMAIL_PROVIDER
-        value: brevo
-      - key: BREVO_API_KEY
+      - key: GMAIL_CLIENT_ID
+        sync: false
+      - key: GMAIL_CLIENT_SECRET
+        sync: false
+      - key: GMAIL_REFRESH_TOKEN
+        sync: false
+      - key: GMAIL_SENDER_EMAIL
         sync: false
       - key: DEFAULT_FROM_EMAIL
-        value: vikassontakke2002@gmail.com
+        sync: false

@@ -434,13 +434,13 @@ export default function AuthPage({ onLogin }) {
                                                 />
                                                 <span className="auth-terms-text">
                                                     I agree to the{" "}
-                                                    <a className="auth-terms-link" href="#" onClick={(e) => e.preventDefault()}>
+                                                    <Link className="auth-terms-link" to="/terms">
                                                         Terms of Service
-                                                    </a>{" "}
+                                                    </Link>{" "}
                                                     and{" "}
-                                                    <a className="auth-terms-link" href="#" onClick={(e) => e.preventDefault()}>
+                                                    <Link className="auth-terms-link" to="/privacy">
                                                         Privacy Policy
-                                                    </a>
+                                                    </Link>
                                                 </span>
                                             </label>
                                             {fieldErrors.terms && (

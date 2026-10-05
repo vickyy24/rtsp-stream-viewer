@@ -19,7 +19,7 @@ const legalContent = {
                 heading: "How information is used",
                 paragraphs: [
                     "We use information to provide account access, verify email addresses, reset passwords, save and display your cameras, relay requested live streams, and maintain and protect the service. We do not use camera streams for advertising.",
-                    "Email delivery uses the Gmail API from the backend. When you use Google sign-in, Google processes your sign-in information under Google's own privacy terms.",
+                    "The backend handles account verification and password-reset email delivery. When you use Google sign-in, Google processes your sign-in information under Google's own privacy terms.",
                 ],
             },
             {

@@ -1,66 +1,106 @@
 import base64
-from email import message_from_bytes
-from email.policy import default
-from unittest.mock import patch
+import json
+from io import BytesIO
+from unittest.mock import Mock, patch
+from urllib.error import HTTPError, URLError
 
 from django.test import SimpleTestCase, override_settings
 
-from .email_delivery import GMAIL_SEND_SCOPE, email_delivery_configured, send_transactional_email
+from .email_delivery import (
+    EmailDeliveryUnavailable,
+    MailjetDeliveryError,
+    email_delivery_configured,
+    send_otp_email,
+)
 
 
-GMAIL_SETTINGS = {
-    "GMAIL_CLIENT_ID": "client-id",
-    "GMAIL_CLIENT_SECRET": "client-secret",
-    "GMAIL_REFRESH_TOKEN": "refresh-token",
-    "GMAIL_SENDER_EMAIL": "sender@gmail.com",
+MAILJET_SETTINGS = {
+    "MAILJET_API_KEY": "mailjet-api-key",
+    "MAILJET_SECRET_KEY": "mailjet-secret-key",
+    "MAILJET_FROM_EMAIL": "verified@example.com",
+    "MAILJET_FROM_NAME": "Signal",
 }
 
 
-@override_settings(**GMAIL_SETTINGS)
-class GmailApiEmailDeliveryTests(SimpleTestCase):
-    def test_email_delivery_requires_all_gmail_oauth_settings(self):
-        self.assertTrue(email_delivery_configured())
+@override_settings(**MAILJET_SETTINGS)
+class MailjetEmailDeliveryTests(SimpleTestCase):
+    def _response(self, body, status=200):
+        response = Mock()
+        response.status = status
+        response.read.return_value = json.dumps(body).encode("utf-8")
+        response.__enter__ = Mock(return_value=response)
+        response.__exit__ = Mock(return_value=False)
+        return response
 
-        with override_settings(GMAIL_REFRESH_TOKEN="", GMAIL_SENDER_EMAIL=""):
-            self.assertFalse(email_delivery_configured())
+    def test_send_uses_mailjet_v31_sender_recipient_and_basic_auth(self):
+        response = self._response({"Messages": [{"Status": "success"}]})
+        with patch("accounts.email_delivery.urlopen", return_value=response) as urlopen:
+            self.assertTrue(send_otp_email("user@example.com", "123456"))
 
-    @patch("accounts.email_delivery.build")
-    def test_transactional_email_uses_gmail_api_and_correct_message(self, build):
-        execute = build.return_value.users.return_value.messages.return_value.send.return_value.execute
-        execute.return_value = {"id": "gmail-message-id"}
-
-        result = send_transactional_email(
-            subject="Verification code",
-            message="Your code is 123456.",
-            recipient="user@example.com",
+        request = urlopen.call_args.args[0]
+        self.assertEqual(request.full_url, "https://api.mailjet.com/v3.1/send")
+        self.assertEqual(request.get_method(), "POST")
+        self.assertEqual(request.get_header("Content-type"), "application/json")
+        auth = request.get_header("Authorization")
+        self.assertTrue(auth.startswith("Basic "))
+        self.assertEqual(
+            base64.b64decode(auth.removeprefix("Basic ")).decode("utf-8"),
+            "mailjet-api-key:mailjet-secret-key",
         )
+        self.assertEqual(urlopen.call_args.kwargs["timeout"], 10)
 
-        self.assertEqual(result, 1)
-        build.assert_called_once()
-        arguments = build.call_args.kwargs
-        self.assertEqual(build.call_args.args, ("gmail", "v1"))
-        self.assertFalse(arguments["cache_discovery"])
-        self.assertEqual(arguments["credentials"].scopes, [GMAIL_SEND_SCOPE])
-        send = build.return_value.users.return_value.messages.return_value.send
-        send.assert_called_once()
-        self.assertEqual(send.call_args.kwargs["userId"], "me")
+        payload = json.loads(request.data)
+        message = payload["Messages"][0]
+        self.assertEqual(
+            message["From"],
+            {"Email": "verified@example.com", "Name": "Signal"},
+        )
+        self.assertEqual(message["To"], [{"Email": "user@example.com"}])
+        self.assertEqual(message["Subject"], "Your verification code")
+        self.assertIn("123456", message["TextPart"])
+        self.assertIn("10 minutes", message["TextPart"])
+        self.assertIn("do not share", message["TextPart"])
+        self.assertIn("<strong>123456</strong>", message["HTMLPart"])
 
-        encoded = send.call_args.kwargs["body"]["raw"]
-        decoded = base64.urlsafe_b64decode(encoded.encode("ascii"))
-        email = message_from_bytes(decoded, policy=default)
-        self.assertEqual(email["From"], "sender@gmail.com")
-        self.assertEqual(email["To"], "user@example.com")
-        self.assertEqual(email["Subject"], "Verification code")
-        self.assertEqual(email.get_content().strip(), "Your code is 123456.")
+    def test_incomplete_configuration_disables_email_delivery(self):
+        with override_settings(MAILJET_SECRET_KEY=""):
+            self.assertFalse(email_delivery_configured())
+            with self.assertRaises(EmailDeliveryUnavailable):
+                send_otp_email("user@example.com", "123456")
 
-    @patch("accounts.email_delivery.build")
-    def test_transactional_email_fails_if_gmail_api_does_not_confirm_send(self, build):
-        execute = build.return_value.users.return_value.messages.return_value.send.return_value.execute
-        execute.return_value = {}
+    def test_mailjet_http_error_is_reported_without_response_body(self):
+        error = HTTPError(
+            "https://api.mailjet.com/v3.1/send",
+            401,
+            "Unauthorized",
+            {},
+            BytesIO(b'{"ErrorMessage":"private response"}'),
+        )
+        with patch("accounts.email_delivery.urlopen", side_effect=error):
+            with self.assertRaisesMessage(MailjetDeliveryError, "HTTP 401") as raised:
+                send_otp_email("user@example.com", "123456")
 
-        with self.assertRaisesMessage(RuntimeError, "did not confirm"):
-            send_transactional_email(
-                subject="Verification code",
-                message="Your code is 123456.",
-                recipient="user@example.com",
-            )
+        self.assertNotIn("private response", str(raised.exception))
+        self.assertNotIn("mailjet-secret-key", str(raised.exception))
+
+    def test_timeout_and_connection_failures_are_reported(self):
+        for failure in (TimeoutError(), URLError("connection refused")):
+            with self.subTest(failure=type(failure).__name__):
+                with patch("accounts.email_delivery.urlopen", side_effect=failure):
+                    with self.assertRaises(MailjetDeliveryError):
+                        send_otp_email("user@example.com", "123456")
+
+    def test_invalid_mailjet_response_is_reported(self):
+        response = self._response({"Messages": [{"Status": "error"}]})
+        with patch("accounts.email_delivery.urlopen", return_value=response):
+            with self.assertRaisesMessage(MailjetDeliveryError, "did not confirm"):
+                send_otp_email("user@example.com", "123456")
+
+        response = Mock()
+        response.status = 200
+        response.read.return_value = b"not-json"
+        response.__enter__ = Mock(return_value=response)
+        response.__exit__ = Mock(return_value=False)
+        with patch("accounts.email_delivery.urlopen", return_value=response):
+            with self.assertRaisesMessage(MailjetDeliveryError, "invalid response"):
+                send_otp_email("user@example.com", "123456")

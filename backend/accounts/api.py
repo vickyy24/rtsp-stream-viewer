@@ -22,7 +22,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 
 from .models import User
-from .email_delivery import email_delivery_configured, send_transactional_email
+from .email_delivery import (
+    OTP_EXPIRATION_SECONDS,
+    email_delivery_configured,
+    send_otp_email,
+)
 from .tokens import (
     create_access_token,
     get_user_from_access_token,
@@ -31,11 +35,11 @@ from .tokens import (
 logger = logging.getLogger(__name__)
 MAX_REQUEST_BYTES = 8192
 SIGNUP_TOKEN_SALT = "accounts.signup-verification"
-SIGNUP_TOKEN_TTL = 10 * 60
+SIGNUP_TOKEN_TTL = OTP_EXPIRATION_SECONDS
 SIGNUP_CHALLENGE_TTL = 24 * 60 * 60
 SIGNUP_MAX_ATTEMPTS = 5
 PASSWORD_RESET_TOKEN_SALT = "accounts.password-reset"
-PASSWORD_RESET_TOKEN_TTL = 10 * 60
+PASSWORD_RESET_TOKEN_TTL = OTP_EXPIRATION_SECONDS
 GOOGLE_OAUTH_COOKIE = "signal_google_oauth"
 GOOGLE_OAUTH_COOKIE_SALT = "accounts.google-oauth"
 GOOGLE_OAUTH_COOKIE_TTL = 10 * 60
@@ -280,16 +284,7 @@ def signup(request):
         hashlib.sha256,
     ).hexdigest()
     try:
-        send_transactional_email(
-            subject="Your Signal verification code",
-            message=(
-                f"Hello {full_name.strip()},\n\n"
-                f"Your Signal signup verification code is {code}.\n"
-                "It expires in 10 minutes. If you did not request this code, ignore this email."
-            ),
-            recipient=email,
-            recipient_name=full_name.strip(),
-        )
+        send_otp_email(email, code)
     except Exception:
         cache.delete(send_key)
         logger.exception("Unable to create account or send its verification email")
@@ -367,16 +362,7 @@ def resend_signup_verification(request):
         hashlib.sha256,
     ).hexdigest()
     try:
-        send_transactional_email(
-            subject="Your Signal verification code",
-            message=(
-                f"Hello {new_challenge['full_name']},\n\n"
-                f"Your new Signal signup verification code is {code}.\n"
-                "It expires in 10 minutes. If you did not request this code, ignore this email."
-            ),
-            recipient=email,
-            recipient_name=new_challenge["full_name"],
-        )
+        send_otp_email(email, code)
     except Exception:
         cache.delete(send_key)
         logger.exception("Unable to resend signup verification email")
@@ -512,16 +498,7 @@ def request_password_reset(request):
 
     if user:
         try:
-            send_transactional_email(
-                subject="Your Signal password reset code",
-                message=(
-                    f"Hello {user.full_name},\n\n"
-                    f"Your Signal password reset code is {code}.\n"
-                    "It expires in 10 minutes. If you did not request this code, ignore this email."
-                ),
-                recipient=email,
-                recipient_name=user.full_name,
-            )
+            send_otp_email(email, code)
         except Exception:
             cache.delete(_signup_cache_key("password-reset-active", email))
             cache.delete(_signup_cache_key("password-reset-attempts", challenge_id))

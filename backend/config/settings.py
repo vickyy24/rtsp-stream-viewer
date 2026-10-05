@@ -93,10 +93,10 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", production_frontend_origin).rstrip
 GOOGLE_OAUTH_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID", "").strip()
 GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", "").strip()
 GOOGLE_OAUTH_REDIRECT_URI = os.environ.get("GOOGLE_OAUTH_REDIRECT_URI", "").strip()
-GMAIL_CLIENT_ID = os.environ.get("GMAIL_CLIENT_ID", "").strip()
-GMAIL_CLIENT_SECRET = os.environ.get("GMAIL_CLIENT_SECRET", "").strip()
-GMAIL_REFRESH_TOKEN = os.environ.get("GMAIL_REFRESH_TOKEN", "").strip()
-GMAIL_SENDER_EMAIL = os.environ.get("GMAIL_SENDER_EMAIL", "").strip()
+MAILJET_API_KEY = os.environ.get("MAILJET_API_KEY", "").strip()
+MAILJET_SECRET_KEY = os.environ.get("MAILJET_SECRET_KEY", "").strip()
+MAILJET_FROM_EMAIL = os.environ.get("MAILJET_FROM_EMAIL", "").strip()
+MAILJET_FROM_NAME = os.environ.get("MAILJET_FROM_NAME", "").strip()
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.environ.get(
     "DJANGO_SECURE_SSL_REDIRECT", "false"

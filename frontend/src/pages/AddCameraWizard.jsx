@@ -5,6 +5,15 @@ import { testStreamConnection } from "../services/streamService.js";
 
 const steps = ["Camera details", "Test connection", "Preview", "Save"];
 
+function buildStreamUrl(rawUrl, username, password) {
+    if (!username && !password) return rawUrl;
+
+    const streamUrl = new URL(rawUrl);
+    streamUrl.username = username;
+    streamUrl.password = password;
+    return streamUrl.toString();
+}
+
 function StepIndicator({ currentStep }) {
     return (
         <ol className="grid grid-cols-2 gap-3 border-b border-stone-200 pb-4 sm:grid-cols-4">
@@ -35,6 +44,8 @@ export default function AddCameraWizard({ onCancel, onSave }) {
     const [name, setName] = useState("");
     const [locationName, setLocationName] = useState("");
     const [url, setUrl] = useState("");
+    const [cameraUsername, setCameraUsername] = useState("");
+    const [cameraPassword, setCameraPassword] = useState("");
     const [testState, setTestState] = useState("idle");
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
@@ -59,7 +70,8 @@ export default function AddCameraWizard({ onCancel, onSave }) {
         setTestState("testing");
         setError("");
         try {
-            const session = await testStreamConnection({ url: url.trim() });
+            const streamUrl = buildStreamUrl(url.trim(), cameraUsername, cameraPassword);
+            const session = await testStreamConnection({ url: streamUrl });
             testSessionRef.current = session;
             setTestSession(session);
             setTestState("success");
@@ -75,10 +87,14 @@ export default function AddCameraWizard({ onCancel, onSave }) {
             const trimmedName = name.trim();
             const trimmedLocation = locationName.trim();
             const trimmedUrl = url.trim();
+            const hasCameraCredentials = Boolean(cameraUsername || cameraPassword);
             if (!trimmedName) nextFieldErrors.name = "Enter a camera name.";
             else if (trimmedName.length > 120) nextFieldErrors.name = "Use 120 characters or fewer.";
             if (!trimmedLocation) nextFieldErrors.location = "Enter a camera location.";
             else if (trimmedLocation.length > 160) nextFieldErrors.location = "Use 160 characters or fewer.";
+            if (hasCameraCredentials && (!cameraUsername || !cameraPassword)) {
+                nextFieldErrors.credentials = "Enter both the camera username and password, or leave both blank.";
+            }
             if (!trimmedUrl) {
                 nextFieldErrors.url = "Enter an RTSP or RTSPS address.";
             } else if (trimmedUrl.length > 2048) {
@@ -89,6 +105,11 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                     const parsedUrl = new URL(trimmedUrl);
                     if (!["rtsp:", "rtsps:"].includes(parsedUrl.protocol) || !parsedUrl.hostname) {
                         nextFieldErrors.url = "Enter a complete RTSP or RTSPS address.";
+                    } else if (hasCameraCredentials) {
+                        const streamUrl = buildStreamUrl(trimmedUrl, cameraUsername, cameraPassword);
+                        if (streamUrl.length > 2048) {
+                            nextFieldErrors.url = "The address with camera credentials must be 2,048 characters or fewer.";
+                        }
                     }
                 }
             } catch {
@@ -128,7 +149,7 @@ export default function AddCameraWizard({ onCancel, onSave }) {
             const savedCamera = await onSave({
                 location: locationName.trim(),
                 name: name.trim(),
-                url: url.trim(),
+                url: buildStreamUrl(url.trim(), cameraUsername, cameraPassword),
             });
             testSession.stop();
             testSessionRef.current = null;
@@ -210,6 +231,47 @@ export default function AddCameraWizard({ onCancel, onSave }) {
                                 />
                                 {fieldErrors.url && <span className="text-xs font-normal text-rose-700" id="camera-url-error">{fieldErrors.url}</span>}
                             </label>
+                            <p className="-mt-2 text-xs leading-5 text-stone-500">
+                                Camera login is separate from your app account. Leave these blank if the RTSP address already contains camera credentials; entering them here overrides credentials in the address.
+                            </p>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600" htmlFor="camera-username">
+                                    Camera username
+                                    <input
+                                        aria-invalid={Boolean(fieldErrors.credentials)}
+                                        aria-describedby={fieldErrors.credentials ? "camera-credentials-error" : undefined}
+                                        autoComplete="username"
+                                        className={`rounded-lg border bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)] ${fieldErrors.credentials ? "border-rose-500" : "border-stone-200"}`}
+                                        id="camera-username"
+                                        onChange={(event) => {
+                                            setCameraUsername(event.target.value);
+                                            setFieldErrors((current) => ({ ...current, credentials: "" }));
+                                            clearTestSession();
+                                        }}
+                                        placeholder="Optional"
+                                        value={cameraUsername}
+                                    />
+                                </label>
+                                <label className="flex flex-col gap-1.5 text-xs font-medium text-stone-600" htmlFor="camera-password">
+                                    Camera password
+                                    <input
+                                        aria-invalid={Boolean(fieldErrors.credentials)}
+                                        aria-describedby={fieldErrors.credentials ? "camera-credentials-error" : undefined}
+                                        autoComplete="new-password"
+                                        className={`rounded-lg border bg-[var(--color-canvas-soft)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-olive-600)] ${fieldErrors.credentials ? "border-rose-500" : "border-stone-200"}`}
+                                        id="camera-password"
+                                        onChange={(event) => {
+                                            setCameraPassword(event.target.value);
+                                            setFieldErrors((current) => ({ ...current, credentials: "" }));
+                                            clearTestSession();
+                                        }}
+                                        placeholder="Optional"
+                                        type="password"
+                                        value={cameraPassword}
+                                    />
+                                </label>
+                            </div>
+                            {fieldErrors.credentials && <span className="-mt-3 text-xs font-normal text-rose-700" id="camera-credentials-error">{fieldErrors.credentials}</span>}
                         </div>
                         <aside className="rounded-lg border border-stone-200 bg-stone-50 p-4">
                             <h3 className="text-sm font-semibold text-stone-700">Connection status</h3>

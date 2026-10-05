@@ -28,6 +28,12 @@ services:
         value: "16"
       - key: FRONTEND_URL
         value: https://rtsp-stream-viewer-roan.vercel.app
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_OAUTH_REDIRECT_URI
+        value: https://rtsp-stream-viewer-api.onrender.com/api/auth/google/callback/
       - key: GMAIL_CLIENT_ID
         sync: false
       - key: GMAIL_CLIENT_SECRET

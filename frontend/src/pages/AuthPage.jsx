@@ -374,7 +374,7 @@ export default function AuthPage({ onLogin }) {
                         </form>
                     ) : (
                         <>
-                            <form className={`auth-form max-[680px]:mt-[26px] ${isSignup ? "auth-signup-form" : "[@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]"}`} noValidate onSubmit={submit}>
+                            <form className={`auth-form max-[680px]:mt-[26px] ${isSignup ? "auth-signup-form" : "auth-signin-form [@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]"}`} noValidate onSubmit={submit}>
                                 <FormAlert>{error}</FormAlert>
                                 {isSignup ? (
                                     <>

@@ -37,7 +37,7 @@ class SignupOtpFlowTests(SimpleTestCase):
             patch.object(User.objects, "filter", return_value=existing_users),
             patch(
                 "accounts.api.send_otp_email",
-                side_effect=lambda recipient, otp: sent_emails.append((recipient, otp)),
+                side_effect=lambda recipient, otp, purpose: sent_emails.append((recipient, otp)),
             ),
         ):
             signup_response = self.client.post(

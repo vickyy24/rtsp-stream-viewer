@@ -30,16 +30,39 @@ def email_delivery_configured():
     )
 
 
-def send_otp_email(recipient_email, otp):
+def send_otp_email(recipient_email, otp, purpose):
     if not email_delivery_configured():
         raise EmailDeliveryUnavailable("Mailjet email delivery is not configured.")
+
+    purposes = {
+        "signup": {
+            "subject": "Verify your email to create your Signal account",
+            "heading": "Finish creating your Signal account",
+            "instruction": (
+                "Enter this code to verify your email address and finish creating "
+                "your Signal account."
+            ),
+            "preview": "Verify your email address to finish creating your Signal account.",
+        },
+        "password_reset": {
+            "subject": "Your Signal password reset code",
+            "heading": "Reset your Signal password",
+            "instruction": "Enter this code to reset the password for your Signal account.",
+            "preview": "Use this code to reset your Signal account password.",
+        },
+    }
+    try:
+        message_purpose = purposes[purpose]
+    except KeyError:
+        raise ValueError("Unsupported OTP email purpose.") from None
 
     escaped_otp = escape(otp, quote=True)
     text_part = (
         "SIGNAL | RTSP STREAM VIEWER\n\n"
-        "Your verification code\n\n"
+        f"{message_purpose['heading']}\n\n"
         f"{otp}\n\n"
-        f"Enter this code to continue. It expires in {OTP_EXPIRATION_MINUTES} minutes.\n\n"
+        f"{message_purpose['instruction']} "
+        f"It expires in {OTP_EXPIRATION_MINUTES} minutes.\n\n"
         "For your security, never share this code. If you did not request it, you can "
         "safely ignore this email."
     )
@@ -50,11 +73,11 @@ def send_otp_email(recipient_email, otp):
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
-    <title>Your verification code</title>
+    <title>{escape(message_purpose["subject"])}</title>
   </head>
   <body style="margin:0;padding:0;background-color:#f3f5f2;font-family:Arial,Helvetica,sans-serif;color:#17252a;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
-      Your one-time Signal verification code. It expires in {OTP_EXPIRATION_MINUTES} minutes.
+      {escape(message_purpose["preview"])} It expires in {OTP_EXPIRATION_MINUTES} minutes.
     </div>
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f3f5f2;">
       <tr>
@@ -75,8 +98,8 @@ def send_otp_email(recipient_email, otp):
                   <tr>
                     <td style="padding:34px 36px 32px;">
                       <p style="margin:0 0 10px;color:#559b75;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Secure account access</p>
-                      <h1 style="margin:0;color:#17252a;font-size:25px;font-weight:600;line-height:1.3;">Your verification code</h1>
-                      <p style="margin:12px 0 24px;color:#5f6e70;font-size:15px;line-height:1.6;">Enter this one-time code to continue. It expires in {OTP_EXPIRATION_MINUTES} minutes.</p>
+                      <h1 style="margin:0;color:#17252a;font-size:25px;font-weight:600;line-height:1.3;">{escape(message_purpose["heading"])}</h1>
+                      <p style="margin:12px 0 24px;color:#5f6e70;font-size:15px;line-height:1.6;">{escape(message_purpose["instruction"])} It expires in {OTP_EXPIRATION_MINUTES} minutes.</p>
                       <div style="padding:19px 12px;background-color:#f3f7f4;border:1px solid #e1ebe4;border-radius:8px;text-align:center;">
                         <span style="color:#1e514d;font-family:Arial,Helvetica,sans-serif;font-size:32px;font-weight:700;letter-spacing:9px;line-height:1.2;">{escaped_otp}</span>
                       </div>
@@ -107,7 +130,7 @@ def send_otp_email(recipient_email, otp):
                     "Name": settings.MAILJET_FROM_NAME,
                 },
                 "To": [{"Email": recipient_email}],
-                "Subject": "Your verification code",
+                "Subject": message_purpose["subject"],
                 "TextPart": text_part,
                 "HTMLPart": html_part,
             }

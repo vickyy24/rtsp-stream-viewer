@@ -284,7 +284,7 @@ def signup(request):
         hashlib.sha256,
     ).hexdigest()
     try:
-        send_otp_email(email, code)
+        send_otp_email(email, code, "signup")
     except Exception:
         cache.delete(send_key)
         logger.exception("Unable to create account or send its verification email")
@@ -362,7 +362,7 @@ def resend_signup_verification(request):
         hashlib.sha256,
     ).hexdigest()
     try:
-        send_otp_email(email, code)
+        send_otp_email(email, code, "signup")
     except Exception:
         cache.delete(send_key)
         logger.exception("Unable to resend signup verification email")
@@ -498,7 +498,7 @@ def request_password_reset(request):
 
     if user:
         try:
-            send_otp_email(email, code)
+            send_otp_email(email, code, "password_reset")
         except Exception:
             cache.delete(_signup_cache_key("password-reset-active", email))
             cache.delete(_signup_cache_key("password-reset-attempts", challenge_id))

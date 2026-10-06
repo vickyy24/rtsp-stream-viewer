@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { FiCamera, FiClock, FiEye, FiEyeOff, FiGrid, FiKey, FiLock, FiMail, FiPlayCircle, FiRefreshCw, FiShield, FiUser } from "react-icons/fi";
 import SignalLogo from "../components/SignalLogo.jsx";
@@ -14,7 +14,7 @@ import {
     verifyAccountEmail,
 } from "../services/streamService.js";
 
-function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onChange, placeholder, roomy = false, type = "text", value }) {
+function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onChange, pattern, placeholder, roomy = false, type = "text", value }) {
     const [showPassword, setShowPassword] = useState(false);
     const FieldIcon = type === "email" ? FiMail
         : id.includes("password") ? FiLock
@@ -34,6 +34,7 @@ function AuthInput({ autoComplete, error, id, inputMode, label, maxLength, onCha
                     inputMode={inputMode}
                     maxLength={maxLength}
                     onChange={(event) => onChange(event.target.value)}
+                    pattern={pattern}
                     placeholder={placeholder || label}
                     required
                     type={isPassword && showPassword ? "text" : type}
@@ -92,6 +93,24 @@ export default function AuthPage({ onLogin }) {
     const [googleBusy, setGoogleBusy] = useState(false);
     const [error, setError] = useState(googleOAuthError);
     const [fieldErrors, setFieldErrors] = useState({});
+    const previousPathname = useRef(location.pathname);
+
+    useLayoutEffect(() => {
+        if (previousPathname.current === location.pathname) return;
+        previousPathname.current = location.pathname;
+        setFullName("");
+        setEmail(mode === "verify" || mode === "reset" || mode === "signup" ? verificationEmail : "");
+        setPassword("");
+        setRememberMe(false);
+        setAgreeToTerms(false);
+        setConfirmation("");
+        setVerificationCode("");
+        setVerificationNotice("");
+        setBusy(false);
+        setGoogleBusy(false);
+        setError(googleOAuthError);
+        setFieldErrors({});
+    }, [location.pathname]);
 
     useEffect(() => {
         if (mode !== "verify") {
@@ -187,9 +206,9 @@ export default function AuthPage({ onLogin }) {
                 return;
             }
 
-            const emailInput = event.currentTarget.elements.email;
+            const emailInput = event.currentTarget.querySelector('input[type="email"]');
             if (!email.trim()) nextFieldErrors.email = "Enter your email address.";
-            else if (emailInput.validity.typeMismatch) nextFieldErrors.email = "Enter a valid email address.";
+            else if (!emailInput?.validity.valid) nextFieldErrors.email = "Enter a valid email address, such as name@example.com.";
             if (mode === "signin" && !password) nextFieldErrors.password = "Enter your password.";
 
             if (mode === "signup") {
@@ -364,7 +383,7 @@ export default function AuthPage({ onLogin }) {
                     ) : isForgot ? (
                         <form className="auth-form max-[680px]:mt-[26px] [@media(max-height:760px)_and_(min-width:681px)]:!gap-[5px] [@media(max-height:760px)_and_(min-width:681px)]:mt-[14px]" noValidate onSubmit={submit}>
                             <FormAlert>{error}</FormAlert>
-                            <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} placeholder="Enter your email" type="email" value={email} />
+                            <AuthInput autoComplete="email" error={fieldErrors.email} id="email" label="Email address" maxLength={254} onChange={(value) => updateField("email", setEmail, value)} pattern=".+@.+[.].+" placeholder="Enter your email" type="email" value={email} />
                             <button className="auth-submit brand-gradient [@media(max-height:760px)_and_(min-width:681px)]:min-h-[44px]" disabled={busy} type="submit">
                                 {busy ? "Sending code…" : "Send reset code"}
                             </button>
@@ -396,6 +415,7 @@ export default function AuthPage({ onLogin }) {
                                             label="Email address"
                                             maxLength={254}
                                             onChange={(value) => updateField("email", setEmail, value)}
+                                            pattern=".+@.+[.].+"
                                             placeholder="Email address"
                                             roomy
                                             type="email"
@@ -457,6 +477,7 @@ export default function AuthPage({ onLogin }) {
                                             label="Email address"
                                             maxLength={254}
                                             onChange={(value) => updateField("email", setEmail, value)}
+                                            pattern=".+@.+[.].+"
                                             placeholder="Enter your email"
                                             type="email"
                                             value={email}

@@ -57,10 +57,25 @@ class MailjetEmailDeliveryTests(SimpleTestCase):
         )
         self.assertEqual(message["To"], [{"Email": "user@example.com"}])
         self.assertEqual(message["Subject"], "Your verification code")
+        self.assertIn("SIGNAL | RTSP STREAM VIEWER", message["TextPart"])
         self.assertIn("123456", message["TextPart"])
         self.assertIn("10 minutes", message["TextPart"])
-        self.assertIn("do not share", message["TextPart"])
-        self.assertIn("<strong>123456</strong>", message["HTMLPart"])
+        self.assertIn("never share this code", message["TextPart"].lower())
+        self.assertIn("max-width:520px", message["HTMLPart"])
+        self.assertIn("Your verification code", message["HTMLPart"])
+        self.assertIn(">123456</span>", message["HTMLPart"])
+        self.assertIn("expires in 10 minutes", message["HTMLPart"])
+        self.assertIn("never ask you to share it", message["HTMLPart"])
+        self.assertIn("background-color:#f3f5f2", message["HTMLPart"])
+
+    def test_otp_is_escaped_in_html_email(self):
+        response = self._response({"Messages": [{"Status": "success"}]})
+        with patch("accounts.email_delivery.urlopen", return_value=response) as urlopen:
+            send_otp_email("user@example.com", "<123456>")
+
+        html_part = json.loads(urlopen.call_args.args[0].data)["Messages"][0]["HTMLPart"]
+        self.assertIn("&lt;123456&gt;", html_part)
+        self.assertNotIn("<123456>", html_part)
 
     def test_incomplete_configuration_disables_email_delivery(self):
         with override_settings(MAILJET_SECRET_KEY=""):

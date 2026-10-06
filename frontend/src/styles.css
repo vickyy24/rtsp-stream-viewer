@@ -1022,6 +1022,10 @@ a {
     line-height: 1.5;
 }
 
+.auth-content-signin .auth-heading p {
+    margin-bottom: 8px;
+}
+
 .auth-content-signup .auth-signup-form,
 .auth-content-signin .auth-signin-form {
     gap: 12px;

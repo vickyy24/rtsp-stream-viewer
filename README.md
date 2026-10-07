@@ -2,6 +2,32 @@
 
 A responsive web application for viewing one or more RTSP camera feeds in a browser. The project uses React for the client and Django, Django Channels, WebSockets, and FFmpeg for stream processing.
 
+[Open the deployed application](https://rtsp-stream-viewer-roan.vercel.app)
+
+## Application screenshots
+
+Screenshots below show the deployed web application at a 1366 × 768 laptop viewport.
+
+### Live dashboard
+
+![Live dashboard showing the camera grid, stream controls, and system status](./frontend/public/screenshots/live-dashboard.png)
+
+### Camera management
+
+![Camera management page showing saved camera sources and their status](./frontend/public/screenshots/camera-management.png)
+
+### Settings
+
+![Settings page showing camera playback preferences](./frontend/public/screenshots/settings.png)
+
+### Sign in
+
+![Sign-in page](./frontend/public/screenshots/signin-page.png)
+
+### Sign up
+
+![Sign-up page](./frontend/public/screenshots/signup-page.png)
+
 ## Project status
 
 The React workspace saves camera records through the Django API. Django encrypts each RTSP URL before storing it, returns only safe camera metadata to the browser, and resolves saved cameras by ID when a Channels WebSocket asks to stream. FFmpeg runs on the backend and sends JPEG frames to the browser. User accounts and access control are not implemented; camera management and streams are public to visitors of the deployed application.
